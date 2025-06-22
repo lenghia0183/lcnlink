@@ -31,7 +31,7 @@ export default registerAs<AppConfig>('app', () => {
 
   return {
     nodeEnv: process.env.NODE_ENV || 'development',
-    port: getValueOrDefault(process.env.APP_PORT ?? process.env.PORT, 9000),
+    port: getValueOrDefault(process.env.APP_PORT ?? process.env.PORT, 3001),
     apiPrefix: process.env.API_PREFIX || 'api/v1',
   };
 });
