@@ -10,6 +10,15 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
+    "paths": {
+      "@components/*": ["src/components/*"],
+      "@database/*": ["src/database/*"],
+      "@config/*": ["src/config/*"],
+      "@constant/*": ["src/constant/*"],
+      "@utils/*": ["src/utils/*"],
+      "@core/*": ["src/core/*"],
+      "@helpers/*": ["src/helpers/*"]
+    },
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
