@@ -1,4 +1,4 @@
-import { DataSourceOptions } from 'typeorm';
+import { DatabaseType } from 'typeorm';
 
 export type AppConfig = {
   nodeEnv: string;
@@ -7,13 +7,15 @@ export type AppConfig = {
 };
 
 export type DatabaseConfig = {
-  type: DataSourceOptions['type'];
+  type: DatabaseType;
   host: string;
   port: number;
   username: string;
   password: string;
   database: string;
   ssl: boolean;
+  synchronize: boolean;
+  logging: boolean;
 };
 
 export type AllConfigType = {

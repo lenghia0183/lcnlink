@@ -1,9 +1,7 @@
 import {
   IsBoolean,
-  IsEnum,
   IsInt,
   IsNotEmpty,
-  IsOptional,
   IsString,
   Max,
   Min,
@@ -12,18 +10,9 @@ import { registerAs } from '@nestjs/config';
 import validateConfig from 'src/utils/validate-config';
 import { getValueOrDefault } from 'src/utils/common';
 import { DatabaseConfig } from './config.type';
-import { DataSourceOptions } from 'typeorm';
-
-export enum DatabaseType {
-  MySQL = 'mysql',
-  Postgres = 'postgres',
-  SQLite = 'sqlite',
-  MongoDB = 'mongodb',
-  MSSQL = 'mssql',
-}
+import { DatabaseType } from 'typeorm';
 
 class DatabaseEnvValidator {
-  @IsEnum(DatabaseType)
   @IsNotEmpty()
   DB_TYPE: DatabaseType;
 
@@ -51,18 +40,26 @@ class DatabaseEnvValidator {
 
   @IsBoolean()
   DB_SSL: boolean;
+
+  @IsBoolean()
+  DB_SYNCHRONIZE: boolean;
+
+  @IsBoolean()
+  DB_LOGGING: boolean;
 }
 
 export default registerAs<DatabaseConfig>('database', () => {
   validateConfig(process.env, DatabaseEnvValidator);
 
   return {
-    type: process.env.DB_TYPE as DataSourceOptions['type'],
+    type: process.env.DB_TYPE as DatabaseType,
     host: process.env.DB_HOST || '',
     port: getValueOrDefault(process.env.DB_PORT, 5432),
     username: process.env.DB_USERNAME || '',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || '',
     ssl: process.env.DB_SSL === 'true',
+    synchronize: process.env.DB_SYNCHRONIZE === 'true',
+    logging: process.env.DB_DB_LOGGING === 'true',
   };
 });

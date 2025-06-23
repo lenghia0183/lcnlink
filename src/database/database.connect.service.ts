@@ -8,8 +8,17 @@ export default class DatabaseConnectService implements TypeOrmOptionsFactory {
   constructor(private readonly configService: ConfigService<AllConfigType>) {}
   createTypeOrmOptions(): TypeOrmModuleOptions {
     const databaseConfig = this.configService.get('database', { infer: true });
-    const { type, host, port, username, password, database, ssl } =
-      databaseConfig!;
+    const {
+      type,
+      host,
+      port,
+      username,
+      password,
+      database,
+      ssl,
+      synchronize,
+      logging,
+    } = databaseConfig!;
     return {
       type: 'postgres',
       url: this.buildConnectionString({
@@ -20,9 +29,9 @@ export default class DatabaseConnectService implements TypeOrmOptionsFactory {
         password,
         database,
       }),
-
-      synchronize: false,
-      logging: false,
+      entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+      synchronize: synchronize,
+      logging: logging,
       autoLoadEntities: true,
       ssl: ssl ? { rejectUnauthorized: false } : false,
     };
