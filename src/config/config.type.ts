@@ -18,7 +18,15 @@ export type DatabaseConfig = {
   logging: boolean;
 };
 
+export type AuthConfig = {
+  accessSecret?: string;
+  accessExpires?: string;
+  refreshSecret?: string;
+  refreshExpires?: string;
+};
+
 export type AllConfigType = {
   app: AppConfig;
   database: DatabaseConfig;
+  auth: AuthConfig;
 };
