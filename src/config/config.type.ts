@@ -4,6 +4,7 @@ export type AppConfig = {
   nodeEnv: string;
   port: number;
   apiPrefix: string;
+  fallbackLanguage: string;
 };
 
 export type DatabaseConfig = {

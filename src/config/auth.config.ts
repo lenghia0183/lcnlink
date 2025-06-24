@@ -1,20 +1,24 @@
 import { registerAs } from '@nestjs/config';
-import { IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 import { AuthConfig } from './config.type';
 import validateConfig from '@utils/validate-config';
 
 class EnvironmentVariablesValidator {
   @IsString()
+  @IsNotEmpty()
   AUTH_ACCESS_SECRET: string;
 
   @IsString()
+  @IsNotEmpty()
   AUTH_ACCESS_TOKEN_EXPIRES_IN: string;
 
   @IsString()
+  @IsNotEmpty()
   AUTH_REFRESH_SECRET: string;
 
   @IsString()
+  @IsNotEmpty()
   AUTH_REFRESH_TOKEN_EXPIRES_IN: string;
 }
 

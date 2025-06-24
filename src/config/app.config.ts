@@ -25,6 +25,9 @@ class EnvironmentVariablesValidator {
   @IsString()
   @IsOptional()
   API_PREFIX: string;
+
+  @IsString()
+  FALLBACK_LANGUAGE: string;
 }
 export default registerAs<AppConfig>('app', () => {
   validateConfig(process.env, EnvironmentVariablesValidator);
@@ -33,5 +36,6 @@ export default registerAs<AppConfig>('app', () => {
     nodeEnv: process.env.NODE_ENV || 'development',
     port: getValueOrDefault(process.env.APP_PORT ?? process.env.PORT, 3001),
     apiPrefix: process.env.API_PREFIX || 'api/v1',
+    fallbackLanguage: process.env.FALLBACK_LANGUAGE || 'vi',
   };
 });

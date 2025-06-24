@@ -14,6 +14,7 @@ import { DatabaseType } from 'typeorm';
 
 class DatabaseEnvValidator {
   @IsNotEmpty()
+  @IsString()
   DB_TYPE: DatabaseType;
 
   @IsString()
@@ -54,7 +55,7 @@ export default registerAs<DatabaseConfig>('database', () => {
   return {
     type: process.env.DB_TYPE as DatabaseType,
     host: process.env.DB_HOST || '',
-    port: getValueOrDefault(process.env.DB_PORT, 5432),
+    port: getValueOrDefault(process.env.DB_PORT, 3001),
     username: process.env.DB_USERNAME || '',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || '',
