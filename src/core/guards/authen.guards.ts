@@ -1,6 +1,5 @@
 import {
   Scope,
-  Inject,
   Injectable,
   CanActivate,
   ExecutionContext,
@@ -15,8 +14,18 @@ import { ConfigService } from '@nestjs/config';
 import { AllConfigType } from '@config/config.type';
 import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { IS_PUBLIC_KEY, REQUEST_USER_KEY } from '@constant/app.enum';
-import { UserRepositoryInterface } from '@database/repository/user/user.repository.interface';
+
 import { BusinessException } from '@core/exeption-filters/business-exception.filter';
+import { UserService } from '@components/user/user.service';
+import { User } from '@database/entities/user.entity';
+
+interface AuthenticatedRequest extends Request {
+  userId?: string;
+  [REQUEST_USER_KEY]?: User;
+  body: Record<string, any> & { user?: User; userId?: string };
+  params: Record<string, any> & { userId?: string };
+  query: Record<string, any> & { userId?: string };
+}
 
 export interface IJwtPayload {
   id: string;
@@ -36,8 +45,7 @@ export class AuthenGuard implements CanActivate {
 
     private configService: ConfigService<AllConfigType>,
 
-    @Inject('UserRepositoryInterface')
-    private readonly userRepository: UserRepositoryInterface,
+    private readonly userService: UserService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -50,7 +58,7 @@ export class AuthenGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
@@ -89,7 +97,7 @@ export class AuthenGuard implements CanActivate {
     }
 
     const { id } = payload;
-    const user = await this.userRepository.findOne({ _id: id });
+    const user = await this.userService.findById(id);
 
     if (!user) {
       throw new UnauthorizedException();
@@ -104,12 +112,10 @@ export class AuthenGuard implements CanActivate {
     }
 
     if (request.params) {
-      request.params.user = user;
       request.params.userId = user.id;
     }
 
     if (request.query) {
-      request.query.user = user;
       request.query.userId = user.id;
     }
 

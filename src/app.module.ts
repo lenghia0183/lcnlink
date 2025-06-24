@@ -9,6 +9,7 @@ import databaseConfig from '@config/database.config';
 import DatabaseConnectModule from '@database/database.connect.module';
 import { RequestLoggingMiddleware } from '@core/middlewares/request-logging.middleware';
 import { JwtModule } from '@nestjs/jwt';
+import { UserModule } from '@components/user/user.module';
 import {
   AcceptLanguageResolver,
   CookieResolver,
@@ -29,6 +30,7 @@ import path from 'path';
     }),
     JwtModule.register({}),
     DatabaseConnectModule,
+    UserModule,
     I18nModule.forRootAsync({
       useFactory: (configService: ConfigService<AllConfigType>) => ({
         fallbackLanguage: configService.getOrThrow('app.fallbackLanguage', {
