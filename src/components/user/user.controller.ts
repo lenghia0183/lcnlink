@@ -1,12 +1,12 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Put, 
-  Delete, 
-  Param, 
-  Body, 
-  Query 
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+  Query,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
@@ -18,9 +18,7 @@ import { GetListUserRequestDto } from './dto/request/get-list-user.request.dto';
 @ApiTags('Users')
 @Controller('users')
 export class UserController {
-  constructor(
-    private readonly userService: UserService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new user' })
@@ -45,7 +43,10 @@ export class UserController {
 
   @Get('summary')
   @ApiOperation({ summary: 'Get user summary by role' })
-  @ApiResponse({ status: 200, description: 'User summary retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'User summary retrieved successfully',
+  })
   async getUserSummary() {
     return await this.userService.getSummaryUsers();
   }
@@ -64,7 +65,7 @@ export class UserController {
   @ApiResponse({ status: 404, description: 'User not found' })
   async updateUser(
     @Param('id') id: string,
-    @Body() updateUserDto: UpdateUserRequestDto
+    @Body() updateUserDto: UpdateUserRequestDto,
   ) {
     return await this.userService.updateUser(id, updateUserDto);
   }

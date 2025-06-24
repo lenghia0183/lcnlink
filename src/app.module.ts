@@ -19,7 +19,7 @@ import {
   QueryResolver,
 } from 'nestjs-i18n';
 import { AllConfigType } from '@config/config.type';
-import path from 'path';
+import * as path from 'path';
 
 @Module({
   imports: [

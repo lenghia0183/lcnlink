@@ -1,10 +1,22 @@
-import { Expose, Transform } from 'class-transformer';
+import { Expose, Transform, TransformFnParams } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class BaseResponseDto {
   @ApiProperty()
   @Expose({ name: '_id' })
-  @Transform((value) => value.obj._id?.toString() || value.obj.id)
+  @Transform(({ obj }: TransformFnParams): string => {
+    if (
+      typeof obj === 'object' &&
+      obj !== null &&
+      '_id' in obj &&
+      typeof (obj as { _id?: { toString?: () => string } })._id?.toString ===
+        'function'
+    ) {
+      return (obj as { _id: { toString: () => string } })._id.toString();
+    }
+
+    return (obj as { id: string }).id;
+  })
   id: string;
 
   @ApiProperty()
