@@ -1,3 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, 
+@typescript-eslint/no-unsafe-call, 
+@typescript-eslint/no-unsafe-assignment ,
+ @typescript-eslint/no-unsafe-return,
+ @typescript-eslint/no-unsafe-argument
+ */
+
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsEnum, IsString, IsNotEmpty } from 'class-validator';

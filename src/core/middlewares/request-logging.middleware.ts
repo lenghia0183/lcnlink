@@ -101,7 +101,7 @@ export class RequestLoggingMiddleware implements NestMiddleware {
     next();
   }
 
-  private writeLogToFile(logInfo: any): void {
+  private writeLogToFile(logInfo: RequestLoggingType): void {
     const today = moment().format('YYYY-MM-DD');
     const logFilePath = path.join(this.logDirectory, `request-${today}.log`);
 
