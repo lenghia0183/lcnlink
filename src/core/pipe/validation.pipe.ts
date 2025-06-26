@@ -19,6 +19,7 @@ import { validate, ValidationError } from 'class-validator';
 import { DEFAULT_LANG } from '@constant/app.enum';
 import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { ApiError } from '@utils/api.error';
+import { isEmpty } from 'lodash';
 
 const classValidationPatterns = {
   IS_INSTANCE:
@@ -178,7 +179,7 @@ export class ValidationPipe implements PipeTransform<any> {
     if (!metatype || !this.toValidate(metatype)) {
       return value;
     }
-    if (!value) {
+    if (!value || isEmpty(value)) {
       throw new BadRequestException('No data submitted');
     }
     const object = plainToInstance(metatype, value);
@@ -187,7 +188,7 @@ export class ValidationPipe implements PipeTransform<any> {
       const message = await this.getMessage(errors, value?.lang);
       console.log('message', message);
       return {
-        request: object,
+        request: object || {},
         responseError: new ApiError(
           ResponseCodeEnum.BAD_REQUEST,
           message,
@@ -195,8 +196,8 @@ export class ValidationPipe implements PipeTransform<any> {
       };
     }
     return {
-      request: object,
-      responseError: {},
+      request: object || {},
+      responseError: undefined,
     };
   }
 

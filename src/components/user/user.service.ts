@@ -12,7 +12,7 @@ import { ResponseBuilder } from '@utils/response-builder';
 import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { I18nService } from 'nestjs-i18n';
 import { plainToInstance } from 'class-transformer';
-import { BaseResponseDto } from '@core/dto/base.response.dto';
+
 import { CreateUserResponseDTo } from './dto/response/create-user.response.dto';
 
 @Injectable()
@@ -50,9 +50,7 @@ export class UserService {
     });
   }
 
-  // Business logic methods
   async createUser(data: CreateUserRequestDto) {
-    console.log('data', data);
     const { secret } = twoFactor.generateSecret();
 
     const user = this.userRepository.create({
@@ -67,13 +65,16 @@ export class UserService {
       twoFactorSecret: secret,
     });
 
-    const response = plainToInstance(CreateUserResponseDTo, user, {
+    // Save user to database
+    const savedUser = await this.userRepository.save(user);
+
+    const response = plainToInstance(CreateUserResponseDTo, savedUser, {
       excludeExtraneousValues: true,
     });
 
     return new ResponseBuilder(response)
       .withCode(ResponseCodeEnum.CREATED)
-      .withMessage(this.i18n.translate('message.CREATE_SUCCESS'))
+      .withMessage(await this.i18n.translate('message.CREATE_SUCCESS'))
       .build();
   }
 

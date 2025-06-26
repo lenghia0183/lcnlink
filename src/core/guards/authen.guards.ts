@@ -22,9 +22,9 @@ import { User } from '@database/entities/user.entity';
 interface AuthenticatedRequest extends Request {
   userId?: string;
   [REQUEST_USER_KEY]?: User;
-  body: Record<string, any> & { user?: User; userId?: string };
-  params: Record<string, any> & { userId?: string };
-  query: Record<string, any> & { userId?: string };
+  body: Record<string, unknown> & { user?: User; userId?: string };
+  params: Record<string, string> & { userId?: string };
+  query: Record<string, string | string[] | undefined> & { userId?: string };
 }
 
 export interface IJwtPayload {

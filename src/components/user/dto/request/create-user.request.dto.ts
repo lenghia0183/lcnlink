@@ -15,7 +15,7 @@ import {
   USER_ROLE_ENUM,
 } from '@components/user/user.constant';
 
-export class CreateUserRequestDto extends BaseDto {
+export class CreateUserRequestDto extends BaseDto<CreateUserRequestDto> {
   @ApiProperty({ description: 'name', example: 'kamil mysliwiec' })
   @IsNotEmpty()
   @IsString()

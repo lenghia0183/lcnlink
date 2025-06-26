@@ -2,7 +2,7 @@ import { BaseDto } from '@core/dto/base.request.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 
-export class CreateUserResponseDTo extends BaseDto {
+export class CreateUserResponseDTo extends BaseDto<CreateUserResponseDTo> {
   @ApiProperty()
   @Expose()
   name: string;

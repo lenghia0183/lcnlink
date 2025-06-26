@@ -1,8 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export class BaseDto {
-  request: any;
+import { ResponsePayload } from '@utils/response-payload';
 
-  responseError: any;
+export class BaseDto<T = unknown> {
+  request: T;
+
+  responseError?: ResponsePayload<undefined>;
 
   userId?: string;
 

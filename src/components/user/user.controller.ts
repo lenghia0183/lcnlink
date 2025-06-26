@@ -25,12 +25,13 @@ export class UserController {
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({ status: 201, description: 'User created successfully' })
   async createUser(@Body() payload: CreateUserRequestDto) {
-    console.log('payload', payload);
     const { request, responseError } = payload;
     if (!isEmpty(responseError)) {
       return responseError;
     }
-    return await this.userService.createUser(request);
+
+    const userData = request;
+    return await this.userService.createUser(userData);
   }
 
   @Get()

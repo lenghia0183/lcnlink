@@ -22,8 +22,8 @@ export class ApiError extends Error {
     return this._message || getMessage(this._errorCode);
   }
 
-  toResponse(): ResponsePayload<unknown> {
-    return new ResponseBuilder<unknown>()
+  toResponse(): ResponsePayload<undefined> {
+    return new ResponseBuilder<undefined>()
       .withCode(this._errorCode)
       .withMessage(this.message)
       .build();

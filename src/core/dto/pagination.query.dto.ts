@@ -1,10 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access, 
-@typescript-eslint/no-unsafe-call, 
-@typescript-eslint/no-unsafe-assignment ,
- @typescript-eslint/no-unsafe-return,
- @typescript-eslint/no-unsafe-argument
- */
-
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsEnum, IsString, IsNotEmpty } from 'class-validator';
@@ -38,7 +31,7 @@ export class Filter {
   text: string;
 }
 
-export class PaginationQuery extends BaseDto {
+export class PaginationQuery extends BaseDto<PaginationQuery> {
   @Transform(({ value }) => (value ? Number(value) : 1))
   page: number = 1;
 
