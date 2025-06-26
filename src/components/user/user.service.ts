@@ -8,10 +8,17 @@ import { User } from '@database/entities/user.entity';
 import { CreateUserRequestDto } from './dto/request/create-user.request.dto';
 import { UpdateUserRequestDto } from './dto/request/update-user.request.dto';
 import { GetListUserRequestDto } from './dto/request/get-list-user.request.dto';
+import { ResponseBuilder } from '@utils/response-builder';
+import { ResponseCodeEnum } from '@constant/response-code.enum';
+import { I18nService } from 'nestjs-i18n';
+import { plainToInstance } from 'class-transformer';
+import { BaseResponseDto } from '@core/dto/base.response.dto';
+import { CreateUserResponseDTo } from './dto/response/create-user.response.dto';
 
 @Injectable()
 export class UserService {
   constructor(
+    private readonly i18n: I18nService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {}
@@ -44,12 +51,13 @@ export class UserService {
   }
 
   // Business logic methods
-  async createUser(data: CreateUserRequestDto): Promise<User> {
+  async createUser(data: CreateUserRequestDto) {
+    console.log('data', data);
     const { secret } = twoFactor.generateSecret();
 
     const user = this.userRepository.create({
       email: data.email,
-      fullname: data.fullname,
+      name: data.name,
       password: data.password,
       role: data.role,
       gender: data.gender,
@@ -59,7 +67,14 @@ export class UserService {
       twoFactorSecret: secret,
     });
 
-    return await this.userRepository.save(user);
+    const response = plainToInstance(CreateUserResponseDTo, user, {
+      excludeExtraneousValues: true,
+    });
+
+    return new ResponseBuilder(response)
+      .withCode(ResponseCodeEnum.CREATED)
+      .withMessage(this.i18n.translate('message.CREATE_SUCCESS'))
+      .build();
   }
 
   async updateUser(id: string, data: UpdateUserRequestDto): Promise<User> {

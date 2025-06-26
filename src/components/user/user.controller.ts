@@ -14,6 +14,7 @@ import { UserService } from './user.service';
 import { CreateUserRequestDto } from './dto/request/create-user.request.dto';
 import { UpdateUserRequestDto } from './dto/request/update-user.request.dto';
 import { GetListUserRequestDto } from './dto/request/get-list-user.request.dto';
+import { isEmpty } from 'lodash';
 
 @ApiTags('Users')
 @Controller('users')
@@ -23,8 +24,13 @@ export class UserController {
   @Post()
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({ status: 201, description: 'User created successfully' })
-  async createUser(@Body() createUserDto: CreateUserRequestDto) {
-    return await this.userService.createUser(createUserDto);
+  async createUser(@Body() payload: CreateUserRequestDto) {
+    console.log('payload', payload);
+    const { request, responseError } = payload;
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+    return await this.userService.createUser(request);
   }
 
   @Get()

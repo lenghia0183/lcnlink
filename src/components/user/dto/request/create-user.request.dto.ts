@@ -16,11 +16,11 @@ import {
 } from '@components/user/user.constant';
 
 export class CreateUserRequestDto extends BaseDto {
-  @ApiProperty({ description: 'fullname', example: 'kamil mysliwiec' })
+  @ApiProperty({ description: 'name', example: 'kamil mysliwiec' })
   @IsNotEmpty()
   @IsString()
   @MaxLength(50)
-  fullname: string;
+  name: string;
 
   @ApiProperty({ description: 'email', example: 'kamil@mysliwiec' })
   @IsNotEmpty()

@@ -173,6 +173,7 @@ export class ValidationPipe implements PipeTransform<any> {
   constructor(private readonly i18n: I18nService) {}
   async transform(value, metadata: ArgumentMetadata) {
     console.log('value', value);
+    console.log('metadata', metadata);
     const { metatype } = metadata;
     if (!metatype || !this.toValidate(metatype)) {
       return value;
@@ -184,6 +185,7 @@ export class ValidationPipe implements PipeTransform<any> {
     const errors = await validate(object);
     if (errors.length > 0) {
       const message = await this.getMessage(errors, value?.lang);
+      console.log('message', message);
       return {
         request: object,
         responseError: new ApiError(
@@ -208,30 +210,30 @@ export class ValidationPipe implements PipeTransform<any> {
     lang: string,
   ): Promise<string> {
     const error = errors[0];
-    console.log('test', test);
+    console.log('error', error);
     if (!error) return 'Unknown error';
     if (!error.children || !error.children.length) {
       let match: string[] | null = null;
       let constraint: string = '';
       const property = this.i18n.translate(`property.${error.property}`);
-      let patternFinder;
-      if (error.constraints) {
-        for (const key in classValidationPatterns) {
-          const pattern = classValidationPatterns[key].replace('$', '\\$');
-          constraint = Object.values(error.constraints)[0].replace(
+      console.log('property', property);
+      let patternFinder = '';
+      for (const key in classValidationPatterns) {
+        const pattern = classValidationPatterns[key].replace('$', '\\$');
+
+        constraint =
+          Object.values(error.constraints || {})[0]?.replace(
             error.property,
             `{property}`,
-          );
-          match = new RegExp(pattern, 'g').exec(constraint);
-          if (match) {
-            patternFinder = key;
-            break;
-          }
+          ) || '';
+        console.log('constraint', constraint);
+        match = new RegExp(pattern, 'g').exec(constraint);
+        if (match) {
+          patternFinder = key;
+          break;
         }
-      } else {
-        constraint = '';
-        match = null;
       }
+      console.log('constaint', constraint);
 
       let i18nKey = constraint;
       const replacements = { property };
@@ -248,7 +250,7 @@ export class ValidationPipe implements PipeTransform<any> {
             args: replacements,
           })
         : this.i18n.translate(
-            `validation.${error.constraints ? Object.values(error.constraints)[0] : 'unknown'}`,
+            `validation.${Object.values(error.constraints || {})[0] || 'unknown'}`,
             {
               lang: lang !== undefined ? lang : DEFAULT_LANG,
               args: replacements,

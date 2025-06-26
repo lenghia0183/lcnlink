@@ -1,9 +1,4 @@
-import {
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  ValidationPipe,
-} from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -25,6 +20,7 @@ import {
 } from 'nestjs-i18n';
 import { AllConfigType } from '@config/config.type';
 import * as path from 'path';
+import { ValidationPipe } from '@core/pipe/validation.pipe';
 
 @Module({
   imports: [
