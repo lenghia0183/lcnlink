@@ -19,7 +19,7 @@ import { BusinessException } from '@core/exeption-filters/business-exception.fil
 import { UserService } from '@components/user/user.service';
 import { User } from '@database/entities/user.entity';
 
-interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequest extends Request {
   userId?: string;
   [REQUEST_USER_KEY]?: User;
   body: Record<string, unknown> & { user?: User; userId?: string };
