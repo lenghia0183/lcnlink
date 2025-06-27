@@ -190,10 +190,44 @@ export class ValidationPipe implements PipeTransform<unknown> {
     if (!value) {
       throw new BadRequestException('No data submitted');
     }
-    const object = plainToInstance(metatype, value, {
-      enableImplicitConversion:
-        this.options.transformOptions?.enableImplicitConversion ?? true,
-    });
+
+    let object = {};
+    try {
+      object = plainToInstance(metatype, value, {
+        enableImplicitConversion:
+          this.options.transformOptions?.enableImplicitConversion ?? true,
+      });
+    } catch (transformError) {
+      let errorMessage = '';
+
+      if (transformError instanceof Error) {
+        const message = transformError.message.toLowerCase();
+        if (message.includes('filter')) {
+          errorMessage = this.i18n.translate(
+            'validation.INVALID_FILTER_FORMAT',
+            {
+              lang: value?.lang || DEFAULT_LANG,
+            },
+          );
+        } else if (message.includes('sort')) {
+          errorMessage = this.i18n.translate('validation.INVALID_SORT_FORMAT', {
+            lang: value?.lang || DEFAULT_LANG,
+          });
+        } else {
+          errorMessage = this.i18n.translate('validation.INVALID_DATA_FORMAT', {
+            lang: value?.lang || DEFAULT_LANG,
+          });
+        }
+      }
+
+      return {
+        request: {},
+        responseError: new ApiError(
+          ResponseCodeEnum.BAD_REQUEST,
+          errorMessage,
+        ).toResponse(),
+      };
+    }
 
     const errors = await validate(object, validationOptions);
 

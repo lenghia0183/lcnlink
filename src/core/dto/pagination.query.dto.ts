@@ -4,7 +4,7 @@ import { IsEnum, IsString, IsNotEmpty, Allow } from 'class-validator';
 
 import { EnumSort } from '@utils/common';
 import { BaseDto } from './base.request.dto';
-import { isJson } from '@helpers/string.helper';
+import { ValidationHelper } from '@core/helpers/validation.helper';
 
 export class Sort {
   @ApiProperty()
@@ -43,25 +43,35 @@ export class PaginationQuery extends BaseDto<PaginationQuery> {
   @Allow()
   keyword?: string;
 
+  @ApiProperty({
+    description: 'Filter array in JSON format',
+    example: '[{"column":"name","text":"john"}]',
+    required: false,
+  })
   @Allow()
   @Type(() => Filter)
   @Transform(({ value }) => {
-    if (value instanceof Array) return value;
-
-    if (value) value = value.replace(/\\/g, '');
-
-    if (isJson(value)) return JSON.parse(value);
+    try {
+      return ValidationHelper.validateAndTransformFilter(value);
+    } catch {
+      throw new Error('Invalid filter format');
+    }
   })
   filter?: Filter[];
 
+  @ApiProperty({
+    description: 'Sort array in JSON format',
+    example: '[{"column":"name","order":"ASC"}]',
+    required: false,
+  })
   @Allow()
   @Type(() => Sort)
   @Transform(({ value }) => {
-    if (value instanceof Array) return value;
-
-    if (value) value = value.replace(/\\/g, '');
-
-    if (isJson(value)) return JSON.parse(decodeURIComponent(value));
+    try {
+      return ValidationHelper.validateAndTransformSort(value);
+    } catch {
+      throw new Error('Invalid sort format');
+    }
   })
   sort?: Sort[];
 

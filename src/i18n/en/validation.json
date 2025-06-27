@@ -100,5 +100,8 @@
   "MAXIMAL_ALLOWED_DATE_FOR": "maximal allowed date for {property} is {constraint1}",
   "MINIMAL_ALLOWED_DATE_FOR": "minimal allowed date for {property} is {constraint1}",
   "NESTED_PROPERTY_MUST_BE_EITHER_OBJECT_OR_ARRAY": "nested property {property} must be either object or array",
-  "PROPERTY_IS_NOT_BLANK": "{property} invalid"
+  "PROPERTY_IS_NOT_BLANK": "{property} invalid",
+  "INVALID_FILTER_FORMAT": "Invalid filter format",
+  "INVALID_SORT_FORMAT": "Invalid sort format",
+  "INVALID_DATA_FORMAT": "Invalid data format"
 }

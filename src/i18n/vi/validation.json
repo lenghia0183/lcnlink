@@ -107,5 +107,8 @@
   "PROPERTY_IS_NOT_BLANK": "{property} không hợp lệ",
   "NOT_INCLUDE_SPECIAL_CHARACTER": "{property} không được chứa ký tự đặc biệt",
   "MSG_194_1": "Loại kho không tồn tại trong hệ thống",
-  "PROPERTY_SHOULD_NOT_EXIST": "Trường {property} không nên tồn tại"
+  "PROPERTY_SHOULD_NOT_EXIST": "Trường {property} không nên tồn tại",
+  "INVALID_FILTER_FORMAT": "Định dạng filter không hợp lệ",
+  "INVALID_SORT_FORMAT": "Định dạng sort không hợp lệ",
+  "INVALID_DATA_FORMAT": "Định dạng dữ liệu không hợp lệ"
 }
