@@ -2,8 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { AllConfigType } from './config/config.type';
 import { ConfigService } from '@nestjs/config';
-
-import { BusinessExceptionFilter } from '@core/exeption-filters/business-exception.filter';
+import { BusinessExceptionFilter } from '@core/exception-filters/business-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

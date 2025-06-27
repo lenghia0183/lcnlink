@@ -5,13 +5,25 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { USER_ROLE_ENUM } from '@components/user/user.constant';
 import { REQUEST_USER_KEY, ROLES_KEY } from '@constant/app.enum';
 import { User } from '@database/entities/user.entity';
-import { AuthenticatedRequest } from './authen.guards';
+import { AuthenticatedRequest } from './authenticate.guards';
+import { I18nService } from 'nestjs-i18n';
+
+import { ResponseCodeEnum } from '@constant/response-code.enum';
+import { BusinessException } from '@core/exception-filters/business-exception.filter';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(
+    private reflector: Reflector,
+    private readonly i18n: I18nService,
+  ) {}
 
   canActivate(context: ExecutionContext): boolean {
+    console.log('context', context);
+
+    console.log('context.getHandler()', context.getHandler());
+    console.log('context.getClass()', context.getClass());
+
     const requiredRoles = this.reflector.getAllAndOverride<USER_ROLE_ENUM[]>(
       ROLES_KEY,
       [context.getHandler(), context.getClass()],
@@ -25,9 +37,18 @@ export class RoleGuard implements CanActivate {
     const user = request[REQUEST_USER_KEY] as User;
 
     if (!user) {
-      return false;
+      throw new BusinessException(
+        this.i18n.translate('error.FORBIDDEN'),
+        ResponseCodeEnum.FORBIDDEN,
+      );
     }
-
-    return requiredRoles.includes(user.role);
+    if (requiredRoles.includes(user.role)) {
+      return true;
+    } else {
+      throw new BusinessException(
+        this.i18n.translate('error.FORBIDDEN'),
+        ResponseCodeEnum.FORBIDDEN,
+      );
+    }
   }
 }

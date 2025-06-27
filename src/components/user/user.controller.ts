@@ -7,6 +7,7 @@ import {
   Param,
   Body,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
@@ -15,8 +16,13 @@ import { CreateUserRequestDto } from './dto/request/create-user.request.dto';
 import { UpdateUserRequestDto } from './dto/request/update-user.request.dto';
 import { GetListUserRequestDto } from './dto/request/get-list-user.request.dto';
 import { isEmpty } from 'lodash';
+import { RoleGuard } from '@core/guards/role.guards';
+import { Roles } from '@core/decorators/role.decorator';
+import { USER_ROLE_ENUM } from './user.constant';
 
 @ApiTags('Users')
+@UseGuards(RoleGuard)
+@Roles(USER_ROLE_ENUM.ADMIN)
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}

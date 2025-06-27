@@ -22,6 +22,8 @@ import {
 import { AllConfigType } from '@config/config.type';
 import * as path from 'path';
 import { ValidationPipe } from '@core/pipe/validation.pipe';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthenticateGuard } from '@core/guards/authenticate.guards';
 
 @Module({
   imports: [
@@ -67,6 +69,10 @@ import { ValidationPipe } from '@core/pipe/validation.pipe';
         });
       },
       inject: [I18nService],
+    },
+    {
+      provide: APP_GUARD,
+      useClass: AuthenticateGuard,
     },
     AppService,
   ],

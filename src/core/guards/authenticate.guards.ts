@@ -15,9 +15,9 @@ import { AllConfigType } from '@config/config.type';
 import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { IS_PUBLIC_KEY, REQUEST_USER_KEY } from '@constant/app.enum';
 
-import { BusinessException } from '@core/exeption-filters/business-exception.filter';
 import { UserService } from '@components/user/user.service';
 import { User } from '@database/entities/user.entity';
+import { BusinessException } from '@core/exception-filters/business-exception.filter';
 
 export interface AuthenticatedRequest extends Request {
   userId?: string;
@@ -35,7 +35,7 @@ export interface IJwtPayload {
 }
 
 @Injectable({ scope: Scope.REQUEST })
-export class AuthenGuard implements CanActivate {
+export class AuthenticateGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
 
@@ -62,7 +62,10 @@ export class AuthenGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      throw new UnauthorizedException();
+      throw new BusinessException(
+        this.i18n.translate('error.UNAUTHORIZED'),
+        ResponseCodeEnum.UNAUTHORIZED,
+      );
     }
 
     const authConfig = this.configService.get('auth', {
