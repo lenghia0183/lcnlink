@@ -55,7 +55,7 @@ export class UserService {
 
     const user = this.userRepository.create({
       email: data.email,
-      name: data.name,
+      fullname: data.fullname,
       password: data.password,
       role: data.role,
       gender: data.gender,

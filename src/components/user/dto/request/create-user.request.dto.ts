@@ -16,11 +16,11 @@ import {
 } from '@components/user/user.constant';
 
 export class CreateUserRequestDto extends BaseDto<CreateUserRequestDto> {
-  @ApiProperty({ description: 'name', example: 'kamil mysliwiec' })
+  @ApiProperty({ description: 'fullname', example: 'kamil mysliwiec' })
   @IsNotEmpty()
   @IsString()
   @MaxLength(20)
-  name: string;
+  fullname: string;
 
   @ApiProperty({ description: 'email', example: 'kamil@mysliwiec' })
   @IsNotEmpty()
@@ -42,6 +42,10 @@ export class CreateUserRequestDto extends BaseDto<CreateUserRequestDto> {
   @IsEnum(USER_GENDER_ENUM)
   @IsOptional()
   gender?: USER_GENDER_ENUM;
+
+  @ApiProperty({ description: 'date of birth', example: '01-08-2003' })
+  @IsOptional()
+  dateOfBirth?: Date;
 
   @ApiProperty({ description: 'avatar', example: 'https://...' })
   @IsOptional()

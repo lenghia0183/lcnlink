@@ -3,9 +3,6 @@ import { BaseModel } from '@core/schema/base.model';
 
 @Entity('users')
 export class User extends BaseModel {
-  @Column({ length: 100 })
-  name: string;
-
   @Column({ length: 100, nullable: true })
   fullname: string;
 
@@ -23,6 +20,9 @@ export class User extends BaseModel {
 
   @Column({ type: 'int', nullable: true })
   gender: number;
+
+  @Column({ type: 'date', nullable: true })
+  dateOfBirth: Date;
 
   @Column({ nullable: true })
   avatar: string;

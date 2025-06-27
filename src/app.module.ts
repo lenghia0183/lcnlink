@@ -23,7 +23,7 @@ import { AllConfigType } from '@config/config.type';
 import * as path from 'path';
 import { ValidationPipe } from '@core/pipe/validation.pipe';
 import { APP_GUARD } from '@nestjs/core';
-import { AuthenticateGuard } from '@core/guards/authenticate.guards';
+import { AuthenticateGuard } from '@core/guards/authenticate.guard';
 
 @Module({
   imports: [

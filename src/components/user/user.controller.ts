@@ -16,7 +16,7 @@ import { CreateUserRequestDto } from './dto/request/create-user.request.dto';
 import { UpdateUserRequestDto } from './dto/request/update-user.request.dto';
 import { GetListUserRequestDto } from './dto/request/get-list-user.request.dto';
 import { isEmpty } from 'lodash';
-import { RoleGuard } from '@core/guards/role.guards';
+import { RoleGuard } from '@core/guards/role.guard';
 import { Roles } from '@core/decorators/role.decorator';
 import { USER_ROLE_ENUM } from './user.constant';
 
