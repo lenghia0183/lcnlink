@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsEnum, IsString, IsNotEmpty } from 'class-validator';
+import { IsEnum, IsString, IsNotEmpty, Allow } from 'class-validator';
 
 import { EnumSort } from '@utils/common';
 import { BaseDto } from './base.request.dto';
@@ -32,14 +32,18 @@ export class Filter {
 }
 
 export class PaginationQuery extends BaseDto<PaginationQuery> {
+  @Allow()
   @Transform(({ value }) => (value ? Number(value) : 1))
   page: number = 1;
 
+  @Allow()
   @Transform(({ value }) => (value ? Number(value) : 10))
   limit: number = 10;
 
+  @Allow()
   keyword?: string;
 
+  @Allow()
   @Type(() => Filter)
   @Transform(({ value }) => {
     if (value instanceof Array) return value;
@@ -50,6 +54,7 @@ export class PaginationQuery extends BaseDto<PaginationQuery> {
   })
   filter?: Filter[];
 
+  @Allow()
   @Type(() => Sort)
   @Transform(({ value }) => {
     if (value instanceof Array) return value;
@@ -60,6 +65,7 @@ export class PaginationQuery extends BaseDto<PaginationQuery> {
   })
   sort?: Sort[];
 
+  @Allow()
   @Transform(({ obj }) => {
     const page = obj.page !== undefined ? Number(obj.page) : 1;
     const limit = obj.limit !== undefined ? Number(obj.limit) : 10;
@@ -67,6 +73,7 @@ export class PaginationQuery extends BaseDto<PaginationQuery> {
   })
   skip: number = 0;
 
+  @Allow()
   @Transform(({ obj }) => {
     const limit = obj.limit !== undefined ? Number(obj.limit) : 10;
     return limit;

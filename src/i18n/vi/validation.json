@@ -106,5 +106,6 @@
   "PROPERTY_VALUE_MAX_LENGTH": "Giá trị trường {property} không được vượt quá {maxLength} kí tự",
   "PROPERTY_IS_NOT_BLANK": "{property} không hợp lệ",
   "NOT_INCLUDE_SPECIAL_CHARACTER": "{property} không được chứa ký tự đặc biệt",
-  "MSG_194_1": "Loại kho không tồn tại trong hệ thống"
+  "MSG_194_1": "Loại kho không tồn tại trong hệ thống",
+  "PROPERTY_SHOULD_NOT_EXIST": "Trường {property} không nên tồn tại"
 }

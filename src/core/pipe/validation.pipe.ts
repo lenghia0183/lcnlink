@@ -11,6 +11,7 @@ import {
   PipeTransform,
   ArgumentMetadata,
   BadRequestException,
+  ValidationPipeOptions,
 } from '@nestjs/common';
 import { I18nService } from 'nestjs-i18n';
 import { plainToInstance } from 'class-transformer';
@@ -19,7 +20,6 @@ import { validate, ValidationError } from 'class-validator';
 import { DEFAULT_LANG } from '@constant/app.enum';
 import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { ApiError } from '@utils/api.error';
-import { isEmpty } from 'lodash';
 
 const classValidationPatterns = {
   IS_INSTANCE:
@@ -167,21 +167,36 @@ const classValidationPatterns = {
   PROPERTY_MUST_BE_SQL_OR_NOSQL_ID:
     '{property} must be a valid SQL or NoSQL ID',
   PROPERTY_IS_NOT_BLANK: '{property} is not blank',
+  PROPERTY_SHOULD_NOT_EXIST: 'property (\\S+) should not exist',
 };
 
 @Injectable()
 export class ValidationPipe implements PipeTransform<unknown> {
-  constructor(private readonly i18n: I18nService) {}
-  async transform(value, metadata: ArgumentMetadata) {
+  constructor(
+    private readonly i18n: I18nService,
+    private readonly options: ValidationPipeOptions = {},
+  ) {}
+
+  async transform(value: any, metadata: ArgumentMetadata) {
+    const validationOptions = {
+      ...this.options,
+    };
+
     const { metatype } = metadata;
+
     if (!metatype || !this.toValidate(metatype)) {
       return value;
     }
-    if (!value || isEmpty(value)) {
+    if (!value) {
       throw new BadRequestException('No data submitted');
     }
-    const object = plainToInstance(metatype, value);
-    const errors = await validate(object);
+    const object = plainToInstance(metatype, value, {
+      enableImplicitConversion:
+        this.options.transformOptions?.enableImplicitConversion ?? true,
+    });
+
+    const errors = await validate(object, validationOptions);
+
     if (errors.length > 0) {
       const message = await this.getMessage(errors, value?.lang);
 
@@ -199,7 +214,7 @@ export class ValidationPipe implements PipeTransform<unknown> {
     };
   }
 
-  private toValidate(metatype): boolean {
+  private toValidate(metatype: any): boolean {
     const types = [String, Boolean, Number, Array, Object];
     return !types.find((type) => metatype === type);
   }
@@ -214,13 +229,19 @@ export class ValidationPipe implements PipeTransform<unknown> {
     if (!error.children || !error.children.length) {
       let match: string[] | null = null;
       let constraint: string = '';
-      const property = this.i18n.translate(`property.${error.property}`);
+      let property = '';
 
-      constraint =
-        Object.values(error.constraints || {})[0]?.replace(
-          error.property,
-          `{property}`,
-        ) || '';
+      const firstConstraintKey = Object.keys(error.constraints || {})[0];
+      const firstConstraintsValue = Object.values(error.constraints || {})[0];
+
+      if (firstConstraintKey === 'whitelistValidation') {
+        constraint = firstConstraintsValue;
+        property = error.property;
+      } else {
+        constraint =
+          firstConstraintsValue?.replace(error.property, `{property}`) || '';
+        property = this.i18n.translate(`property.${error.property}`);
+      }
 
       let patternFinder = '';
       for (const key in classValidationPatterns) {

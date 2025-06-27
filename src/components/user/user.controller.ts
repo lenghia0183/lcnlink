@@ -45,7 +45,13 @@ export class UserController {
   @ApiOperation({ summary: 'Get users with pagination and filters' })
   @ApiResponse({ status: 200, description: 'User list retrieved successfully' })
   async getUserList(@Query() query: GetListUserRequestDto) {
-    return await this.userService.list(query);
+    const { request, responseError } = query;
+
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+
+    return await this.userService.list(request);
   }
 
   @Get('summary')

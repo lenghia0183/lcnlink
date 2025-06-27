@@ -16,6 +16,7 @@ import {
   HeaderResolver,
   I18nJsonLoader,
   I18nModule,
+  I18nService,
   QueryResolver,
 } from 'nestjs-i18n';
 import { AllConfigType } from '@config/config.type';
@@ -54,7 +55,18 @@ import { ValidationPipe } from '@core/pipe/validation.pipe';
   providers: [
     {
       provide: 'APP_PIPE',
-      useClass: ValidationPipe,
+      useFactory: (i18nService: I18nService) => {
+        return new ValidationPipe(i18nService, {
+          transform: true,
+          whitelist: true,
+          forbidNonWhitelisted: true,
+          enableDebugMessages: true,
+          transformOptions: {
+            enableImplicitConversion: true,
+          },
+        });
+      },
+      inject: [I18nService],
     },
     AppService,
   ],
