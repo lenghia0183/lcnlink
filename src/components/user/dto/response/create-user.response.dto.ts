@@ -1,6 +1,7 @@
 import { BaseDto } from '@core/dto/base.request.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
+import { IsPhoneNumber } from 'class-validator';
 
 export class CreateUserResponseDTo extends BaseDto<CreateUserResponseDTo> {
   @ApiProperty()
@@ -13,6 +14,7 @@ export class CreateUserResponseDTo extends BaseDto<CreateUserResponseDTo> {
 
   @ApiProperty()
   @Expose()
+  @IsPhoneNumber()
   phone: string;
 
   @ApiProperty()

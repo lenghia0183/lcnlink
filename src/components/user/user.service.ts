@@ -50,6 +50,12 @@ export class UserService {
     });
   }
 
+  async getUserByEmail(email: string): Promise<User | null> {
+    return await this.userRepository.findOne({
+      where: { email: email },
+    });
+  }
+
   async createUser(data: CreateUserRequestDto) {
     const { secret } = twoFactor.generateSecret();
 

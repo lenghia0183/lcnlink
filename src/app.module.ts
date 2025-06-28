@@ -24,6 +24,7 @@ import * as path from 'path';
 import { ValidationPipe } from '@core/pipe/validation.pipe';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthenticateGuard } from '@core/guards/authenticate.guard';
+import { AuthModule } from '@components/auth/auth.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { AuthenticateGuard } from '@core/guards/authenticate.guard';
     JwtModule.register({}),
     DatabaseConnectModule,
     UserModule,
+    AuthModule,
     I18nModule.forRootAsync({
       useFactory: (configService: ConfigService<AllConfigType>) => ({
         fallbackLanguage: configService.getOrThrow('app.fallbackLanguage', {

@@ -19,7 +19,7 @@ export class CreateUserRequestDto extends BaseDto<CreateUserRequestDto> {
   @ApiProperty({ description: 'fullname', example: 'kamil mysliwiec' })
   @IsNotEmpty()
   @IsString()
-  @MaxLength(20)
+  @MaxLength(50)
   fullname: string;
 
   @ApiProperty({ description: 'email', example: 'kamil@mysliwiec' })

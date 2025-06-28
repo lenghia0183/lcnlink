@@ -1,5 +1,6 @@
-import { Entity, Column } from 'typeorm';
+import { Entity, Column, BeforeInsert, BeforeUpdate } from 'typeorm';
 import { BaseModel } from '@core/schema/base.model';
+import bcrypt from 'bcrypt';
 
 @Entity('users')
 export class User extends BaseModel {
@@ -38,4 +39,13 @@ export class User extends BaseModel {
 
   @Column({ default: false })
   isLocked: boolean;
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  async hashPassword() {
+    if (this.password && !this.password.startsWith('$2b$')) {
+      const salt = await bcrypt.genSalt(10);
+      this.password = await bcrypt.hash(this.password, salt);
+    }
+  }
 }

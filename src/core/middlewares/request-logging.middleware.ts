@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as moment from 'moment';
+
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Request, Response, NextFunction } from 'express';
@@ -9,6 +9,7 @@ import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
 import { AllConfigType } from '@config/config.type';
 import { RequestLoggingType } from '@components/types/request-logging.type';
 import { JwtPayload } from '@components/types/jwt-payload.type';
+import moment from 'moment';
 
 @Injectable()
 export class RequestLoggingMiddleware implements NestMiddleware {
