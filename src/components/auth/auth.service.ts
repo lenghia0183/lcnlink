@@ -12,14 +12,23 @@ import { I18nService } from 'nestjs-i18n';
 import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { UserService } from '@components/user/user.service';
 import { BusinessException } from '@core/exception-filters/business-exception.filter';
+import { LoginRequestDto } from './dto/request/login.request.dto';
+import bcrypt from 'bcrypt';
+import { AllConfigType } from '@config/config.type';
+import { ConfigService } from '@nestjs/config';
+import { LoginResponseDTO } from './dto/response/login.response.dto';
+import { USER_ROLE_ENUM } from '@components/user/user.constant';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly i18n: I18nService,
+    private readonly jwt: JwtService,
 
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
+    private readonly configService: ConfigService<AllConfigType>,
 
     private readonly userService: UserService,
   ) {}
@@ -43,6 +52,7 @@ export class AuthService {
       phone: data.phone,
       createdBy: data.userId,
       twoFactorSecret: secret,
+      role: USER_ROLE_ENUM.USER,
     });
 
     const savedUser = await this.userRepository.save(user);
@@ -54,6 +64,64 @@ export class AuthService {
     return new ResponseBuilder(response)
       .withCode(ResponseCodeEnum.CREATED)
       .withMessage(await this.i18n.translate('message.REGISTER_SUCCESS'))
+      .build();
+  }
+
+  async login(data: LoginRequestDto) {
+    const existedUser = await this.userService.getUserByEmail(data.email);
+    if (!existedUser) {
+      throw new BusinessException(
+        await this.i18n.translate('error.EMAIL_OR_PASSWORD_INVALID'),
+        ResponseCodeEnum.BAD_REQUEST,
+      );
+    }
+
+    if (existedUser.isLocked) {
+      throw new BusinessException(
+        await this.i18n.translate('error.ACCOUNT_IS_LOCKED'),
+        ResponseCodeEnum.BAD_REQUEST,
+      );
+    }
+
+    const isMatch = await bcrypt.compare(data.password, existedUser.password);
+
+    if (!isMatch) {
+      throw new BusinessException(
+        await this.i18n.translate('error.EMAIL_OR_PASSWORD_INVALID'),
+        ResponseCodeEnum.BAD_REQUEST,
+      );
+    }
+
+    const authConfig = this.configService.get('auth', { infer: true });
+
+    const payload = {
+      email: existedUser.email,
+      fullname: existedUser.fullname,
+      role: existedUser.role,
+      id: existedUser.id,
+    };
+
+    const accessToken = await this.jwt.signAsync(payload, {
+      secret: authConfig?.accessSecret,
+      expiresIn: authConfig?.accessExpires,
+    });
+
+    const refreshToken = await this.jwt.signAsync(payload, {
+      secret: authConfig?.refreshSecret,
+      expiresIn: authConfig?.refreshExpires,
+    });
+
+    await this.userRepository.update({ id: existedUser.id }, { refreshToken });
+
+    const response = plainToInstance(LoginResponseDTO, existedUser, {
+      excludeExtraneousValues: true,
+    });
+    response.refreshToken = refreshToken;
+    response.accessToken = accessToken;
+
+    return new ResponseBuilder(response)
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .withMessage(await this.i18n.translate('message.LOGIN_SUCCESS'))
       .build();
   }
 }

@@ -40,6 +40,9 @@ export class User extends BaseModel {
   @Column({ default: false })
   isLocked: boolean;
 
+  @Column({ nullable: true })
+  refreshToken: string;
+
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword() {
