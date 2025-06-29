@@ -17,7 +17,8 @@ import bcrypt from 'bcrypt';
 import { AllConfigType } from '@config/config.type';
 import { ConfigService } from '@nestjs/config';
 import { LoginResponseDTO } from './dto/response/login.response.dto';
-import { USER_ROLE_ENUM } from '@components/user/user.constant';
+import { IS_2FA_ENUM, USER_ROLE_ENUM } from '@components/user/user.constant';
+import { Toggle2faRequestDto } from './dto/request/toggle-2fa.request.dto';
 
 @Injectable()
 export class AuthService {
@@ -122,6 +123,26 @@ export class AuthService {
     return new ResponseBuilder(response)
       .withCode(ResponseCodeEnum.SUCCESS)
       .withMessage(await this.i18n.translate('message.LOGIN_SUCCESS'))
+      .build();
+  }
+
+  async toggle2Fa(data: Toggle2faRequestDto) {
+    const user = await this.userService.getUserById(data.id);
+
+    const isEnable2FA =
+      user?.isEnable2FA === IS_2FA_ENUM.DISABLED
+        ? IS_2FA_ENUM.ENABLED
+        : IS_2FA_ENUM.DISABLED;
+
+    await this.userRepository.update({ id: user?.id }, { isEnable2FA });
+
+    return new ResponseBuilder()
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .withMessage(
+        isEnable2FA === IS_2FA_ENUM.ENABLED
+          ? await this.i18n.translate('message.ENABLE_2FA_SUCCESS')
+          : await this.i18n.translate('message.DISABLE_2FA_SUCCESS'),
+      )
       .build();
   }
 }

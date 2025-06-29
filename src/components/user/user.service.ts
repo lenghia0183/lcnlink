@@ -14,6 +14,7 @@ import { I18nService } from 'nestjs-i18n';
 import { plainToInstance } from 'class-transformer';
 
 import { CreateUserResponseDTo } from './dto/response/create-user.response.dto';
+import { BusinessException } from '@core/exception-filters/business-exception.filter';
 
 @Injectable()
 export class UserService {
@@ -54,6 +55,20 @@ export class UserService {
     return await this.userRepository.findOne({
       where: { email: email },
     });
+  }
+
+  async getUserById(id: string): Promise<User | null> {
+    const user = await this.userRepository.findOne({
+      where: { id: id },
+    });
+
+    if (!user) {
+      throw new BusinessException(
+        await this.i18n.translate('error.NOT_FOUND'),
+        ResponseCodeEnum.NOT_FOUND,
+      );
+    }
+    return user;
   }
 
   async createUser(data: CreateUserRequestDto) {

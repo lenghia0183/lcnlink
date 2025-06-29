@@ -1,6 +1,7 @@
 import { Entity, Column, BeforeInsert, BeforeUpdate } from 'typeorm';
 import { BaseModel } from '@core/schema/base.model';
 import bcrypt from 'bcrypt';
+import { IS_2FA_ENUM } from '@components/user/user.constant';
 
 @Entity('users')
 export class User extends BaseModel {
@@ -33,6 +34,14 @@ export class User extends BaseModel {
 
   @Column({ nullable: true })
   twoFactorSecret: string;
+
+  @Column({
+    type: 'int',
+    enum: IS_2FA_ENUM,
+    default: IS_2FA_ENUM.DISABLED,
+    nullable: true,
+  })
+  isEnable2FA: IS_2FA_ENUM;
 
   @Column({ default: true })
   isActive: boolean;

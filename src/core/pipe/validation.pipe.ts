@@ -182,7 +182,10 @@ export class ValidationPipe implements PipeTransform<unknown> {
       ...this.options,
     };
 
+    console.log('value', value);
+
     const { metatype } = metadata;
+    console.log('metatype', metatype);
 
     if (!metatype || !this.toValidate(metatype)) {
       return value;
@@ -197,6 +200,7 @@ export class ValidationPipe implements PipeTransform<unknown> {
         enableImplicitConversion:
           this.options.transformOptions?.enableImplicitConversion ?? true,
       });
+      console.log('object', object);
     } catch (transformError) {
       let errorMessage = '';
 
@@ -219,6 +223,7 @@ export class ValidationPipe implements PipeTransform<unknown> {
           });
         }
       }
+      console.log('object', object);
 
       return {
         request: {},
