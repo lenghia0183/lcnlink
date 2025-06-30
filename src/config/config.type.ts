@@ -5,6 +5,7 @@ export type AppConfig = {
   port: number;
   apiPrefix: string;
   fallbackLanguage: string;
+  appName: string;
 };
 
 export type DatabaseConfig = {

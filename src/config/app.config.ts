@@ -28,6 +28,9 @@ class EnvironmentVariablesValidator {
 
   @IsString()
   FALLBACK_LANGUAGE: string;
+
+  @IsString()
+  APP_NAME: string;
 }
 export default registerAs<AppConfig>('app', () => {
   validateConfig(process.env, EnvironmentVariablesValidator);
@@ -37,5 +40,6 @@ export default registerAs<AppConfig>('app', () => {
     port: getValueOrDefault(process.env.APP_PORT ?? process.env.PORT, 3001),
     apiPrefix: process.env.API_PREFIX || 'api/v1',
     fallbackLanguage: process.env.FALLBACK_LANGUAGE || 'vi',
+    appName: process.env.APP_NAME || 'lcnlink',
   };
 });

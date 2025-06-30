@@ -14,7 +14,7 @@ import { UserService } from '@components/user/user.service';
 import { BusinessException } from '@core/exception-filters/business-exception.filter';
 import { LoginRequestDto } from './dto/request/login.request.dto';
 import bcrypt from 'bcrypt';
-import { AllConfigType } from '@config/config.type';
+import { AllConfigType, AppConfig } from '@config/config.type';
 import { ConfigService } from '@nestjs/config';
 import { LoginResponseDTO } from './dto/response/login.response.dto';
 import { IS_2FA_ENUM, USER_ROLE_ENUM } from '@components/user/user.constant';
@@ -147,9 +147,11 @@ export class AuthService {
 
   async generate2fa(userId: string) {
     const user = await this.userService.getUserById(userId);
-    console.log('user', user);
+
+    const appConfig = this.configService.get<AppConfig>('app')!;
+
     const { secret, uri, qr } = twoFactor.generateSecret({
-      name: 'lcnlink',
+      name: appConfig?.appName,
       account: user?.email || '',
     });
 
