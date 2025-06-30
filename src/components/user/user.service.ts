@@ -14,7 +14,7 @@ import { I18nService } from 'nestjs-i18n';
 import { plainToInstance } from 'class-transformer';
 
 import { CreateUserResponseDTo } from './dto/response/create-user.response.dto';
-import { BusinessException } from '@core/exception-filters/business-exception.filter';
+import { ExceptionUtil } from '@utils/exception.util';
 
 @Injectable()
 export class UserService {
@@ -57,21 +57,18 @@ export class UserService {
     });
   }
 
-  async getUserById(id: string): Promise<User | null> {
+  async getUserById(id: string, lang?: string): Promise<User | null> {
     const user = await this.userRepository.findOne({
       where: { id: id },
     });
 
     if (!user) {
-      throw new BusinessException(
-        await this.i18n.translate('error.NOT_FOUND'),
-        ResponseCodeEnum.NOT_FOUND,
-      );
+      await ExceptionUtil.throwNotFound(this.i18n, lang);
     }
     return user;
   }
 
-  async createUser(data: CreateUserRequestDto) {
+  async createUser(data: CreateUserRequestDto & { lang?: string }) {
     const { secret } = twoFactor.generateSecret();
 
     const user = this.userRepository.create({
@@ -93,10 +90,14 @@ export class UserService {
       excludeExtraneousValues: true,
     });
 
-    return new ResponseBuilder(response)
-      .withCode(ResponseCodeEnum.CREATED)
-      .withMessage(await this.i18n.translate('message.CREATE_SUCCESS'))
-      .build();
+    // Using the new i18n method for response codes
+    const builder = await new ResponseBuilder(response).withCodeI18n(
+      ResponseCodeEnum.CREATED,
+      this.i18n,
+      data.lang,
+    );
+
+    return builder.build();
   }
 
   async updateUser(id: string, data: UpdateUserRequestDto): Promise<User> {

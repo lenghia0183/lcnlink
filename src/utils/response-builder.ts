@@ -1,5 +1,7 @@
 import { ResponsePayload } from './response-payload';
 import { ResponseCodeEnum, getMessage } from '@constant/response-code.enum';
+import { ResponseMessageUtil } from './response-message.util';
+import { I18nService } from 'nestjs-i18n';
 
 export class ResponseBuilder<T> {
   private payload: ResponsePayload<T> = {
@@ -15,6 +17,20 @@ export class ResponseBuilder<T> {
     if (withMessage) {
       this.payload.message = getMessage(code);
     }
+    return this;
+  }
+
+  async withCodeI18n(
+    code: ResponseCodeEnum,
+    i18nService: I18nService,
+    lang?: string,
+  ): Promise<ResponseBuilder<T>> {
+    this.payload.statusCode = code;
+    this.payload.message = await ResponseMessageUtil.getLocalizedMessage(
+      i18nService,
+      code,
+      lang,
+    );
     return this;
   }
 

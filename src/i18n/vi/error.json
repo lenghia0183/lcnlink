@@ -24,5 +24,8 @@
   "NO_DATA_RECORDS": "Không thể xuất dữ liệu, vì không có bản ghi nào được tìm thấy",
   "CAPTCHA_INVALID": "Captcha không chính xác",
   "EMAIL_NOT_EXIST": "Email không tồn tại trong hệ thống",
-  "TWO_FA_ALREADY_SET": "Trạng thái xác thực yếu tố không hợp lệ"
+  "TWO_FA_ALREADY_SET": "Trạng thái xác thực yếu tố không hợp lệ",
+  "INTERNAL_SERVER_ERROR": "Lỗi máy chủ nội bộ",
+  "CODE_EXIST": "Mã đã tồn tại",
+  "NOT_ACCEPTABLE": "Không thể chấp nhận"
 }

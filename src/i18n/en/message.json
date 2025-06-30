@@ -7,5 +7,15 @@
   "LOCK_SUCCESS": "Locked successfully",
   "SUCCESS": "Success",
   "REGISTER_SUCCESS": "Registered successfully",
-  "LOGIN_SUCCESS": "Logged in successfully"
+  "LOGIN_SUCCESS": "Logged in successfully",
+  "CONTINUE": "Continue",
+  "SWITCHING_PROTOCOLS": "Switching Protocols",
+  "PROCESSING": "Processing",
+  "EARLY_HINTS": "Early Hints",
+  "CREATED": "Created",
+  "ACCEPTED": "Accepted",
+  "NON_AUTHORITATIVE_INFORMATION": "Non-Authoritative Information",
+  "NO_CONTENT": "No Content",
+  "TOO_MANY_REQUESTS": "Too Many Requests",
+  "UNKNOWN_ERROR": "Unknown Error"
 }
