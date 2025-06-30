@@ -1,10 +1,11 @@
 import { Public } from '@core/decorators/public.decorator';
-import { Body, Controller, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Request } from '@nestjs/common';
 import { RegisterRequestDTO } from './dto/request/register.request.dto';
 import { isEmpty } from 'lodash';
 import { AuthService } from './auth.service';
 import { LoginRequestDto } from './dto/request/login.request.dto';
-import { Toggle2faRequestDto } from './dto/request/toggle-2fa.request.dto';
+
+import { AuthenticatedRequest } from '@core/guards/authenticate.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -28,13 +29,13 @@ export class AuthController {
     return await this.authService.login(request);
   }
 
-  @Put('/toggle-2fa/:id')
-  async toggle2fa(@Param() params: Toggle2faRequestDto) {
-    const { request, responseError } = params;
+  @Put('/toggle-2fa')
+  async toggle2fa(@Request() requestCustom: AuthenticatedRequest) {
+    return await this.authService.toggle2fa(requestCustom?.userId || '');
+  }
 
-    if (!isEmpty(responseError)) {
-      return responseError;
-    }
-    return await this.authService.toggle2Fa(request);
+  @Get('/generate-2fa')
+  async generate2fa(@Request() requestCustom: AuthenticatedRequest) {
+    return await this.authService.generate2fa(requestCustom?.userId || '');
   }
 }

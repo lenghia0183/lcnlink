@@ -18,7 +18,6 @@ import { AllConfigType } from '@config/config.type';
 import { ConfigService } from '@nestjs/config';
 import { LoginResponseDTO } from './dto/response/login.response.dto';
 import { IS_2FA_ENUM, USER_ROLE_ENUM } from '@components/user/user.constant';
-import { Toggle2faRequestDto } from './dto/request/toggle-2fa.request.dto';
 
 @Injectable()
 export class AuthService {
@@ -126,8 +125,8 @@ export class AuthService {
       .build();
   }
 
-  async toggle2Fa(data: Toggle2faRequestDto) {
-    const user = await this.userService.getUserById(data.id);
+  async toggle2fa(userId: string) {
+    const user = await this.userService.getUserById(userId);
 
     const isEnable2FA =
       user?.isEnable2FA === IS_2FA_ENUM.DISABLED
@@ -142,6 +141,28 @@ export class AuthService {
         isEnable2FA === IS_2FA_ENUM.ENABLED
           ? await this.i18n.translate('message.ENABLE_2FA_SUCCESS')
           : await this.i18n.translate('message.DISABLE_2FA_SUCCESS'),
+      )
+      .build();
+  }
+
+  async generate2fa(userId: string) {
+    const user = await this.userService.getUserById(userId);
+    console.log('user', user);
+    const { secret, uri, qr } = twoFactor.generateSecret({
+      name: 'lcnlink',
+      account: user?.email || '',
+    });
+
+    const response = {
+      secret,
+      qrCodeUrl: qr,
+      uri,
+    };
+
+    return new ResponseBuilder(response)
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .withMessage(
+        await this.i18n.translate('message.GENERATE_2FA_SECRET_SUCCESS'),
       )
       .build();
   }
