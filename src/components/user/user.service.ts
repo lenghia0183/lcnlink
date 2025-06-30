@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { isEmpty } from 'lodash';
@@ -15,6 +15,9 @@ import { plainToInstance } from 'class-transformer';
 
 import { CreateUserResponseDTo } from './dto/response/create-user.response.dto';
 import { BusinessException } from '@core/exception-filters/business-exception.filter';
+import { UpdateUserResponseDto } from './dto/response/update-user.response.dto';
+import { I18nErrorKeys } from '@constant/i18n-keys.enum';
+import { GetUserDetailResponseDto } from './dto/response/get-user-detail.response.dto';
 
 @Injectable()
 export class UserService {
@@ -57,14 +60,14 @@ export class UserService {
     });
   }
 
-  async getUserById(id: string): Promise<User | null> {
+  async getUserById(id: string): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id: id },
     });
 
     if (!user) {
       throw new BusinessException(
-        await this.i18n.translate('error.NOT_FOUND'),
+        await this.i18n.translate(I18nErrorKeys.NOT_FOUND),
         ResponseCodeEnum.NOT_FOUND,
       );
     }
@@ -93,32 +96,44 @@ export class UserService {
       excludeExtraneousValues: true,
     });
 
-    return new ResponseBuilder(response)
-      .withCode(ResponseCodeEnum.CREATED)
-      .withMessage(await this.i18n.translate('message.CREATE_SUCCESS'))
-      .build();
+    return (
+      await new ResponseBuilder(response).withCodeI18n(
+        ResponseCodeEnum.CREATED,
+        this.i18n,
+      )
+    ).build();
   }
 
-  async updateUser(id: string, data: UpdateUserRequestDto): Promise<User> {
-    const user = await this.findById(id);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+  async updateUser(id: string, data: UpdateUserRequestDto) {
+    const user = await this.getUserById(id);
 
-    // Update fields
-    user.email = data.email;
-    user.fullname = data.fullname;
-    user.role = data.role;
-    user.gender = data.gender;
-    user.phone = data.phone;
-
-    return await this.userRepository.save(user);
-  }
-
-  async getDetail(id: string): Promise<User | null> {
-    return await this.userRepository.findOne({
-      where: { id, deletedAt: IsNull() },
+    Object.assign(user, {
+      ...data,
     });
+
+    await this.userRepository.save(user);
+
+    const response = plainToInstance(UpdateUserResponseDto, user);
+
+    return (
+      await new ResponseBuilder(response).withCodeI18n(
+        ResponseCodeEnum.SUCCESS,
+        this.i18n,
+      )
+    ).build();
+  }
+
+  async getDetail(id: string) {
+    const user = this.getUserById(id);
+
+    const response = plainToInstance(GetUserDetailResponseDto, user);
+
+    return (
+      await new ResponseBuilder(response).withCodeI18n(
+        ResponseCodeEnum.SUCCESS,
+        this.i18n,
+      )
+    ).build();
   }
 
   async list(
