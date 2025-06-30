@@ -1,0 +1,89 @@
+/**
+ * Translation keys constants for i18n
+ * This enum provides IntelliSense support for translation keys
+ */
+export enum I18nErrorKeys {
+  // Authentication & Authorization
+  UNAUTHORIZED = 'error.UNAUTHORIZED',
+  FORBIDDEN = 'error.FORBIDDEN',
+  EMAIL_EXIST = 'error.EMAIL_EXIST',
+  EMAIL_OR_PASSWORD_INVALID = 'error.EMAIL_OR_PASSWORD_INVALID',
+  ACCOUNT_IS_LOCKED = 'error.ACCOUNT_IS_LOCKED',
+  TOKEN_INVALID = 'error.TOKEN_INVALID',
+  TOKEN_EXPIRED = 'error.TOKEN_EXPIRED',
+
+  // OTP & 2FA
+  OTP_INVALID = 'error.OTP_INVALID',
+  OTP_EXPIRED = 'error.OTP_EXPIRED',
+  TWO_FA_ALREADY_SET = 'error.TWO_FA_ALREADY_SET',
+
+  // General
+  NOT_FOUND = 'error.NOT_FOUND',
+  BAD_REQUEST = 'error.BAD_REQUEST',
+  STATUS_INVALID = 'error.STATUS_INVALID',
+  OLD_PASSWORD_INVALID = 'error.OLD_PASSWORD_INVALID',
+  TOO_MANY_REQUEST = 'error.TOO_MANY_REQUEST',
+
+  // File Upload
+  UPLOAD_FAILED = 'error.UPLOAD_FAILED',
+  FILE_TYPE_INVALID = 'error.FILE_TYPE_INVALID',
+  FILE_SIZE_INVALID = 'error.FILE_SIZE_INVALID',
+  DELETE_FAILED = 'error.DELETE_FAILED',
+  FILE_IS_REQUIRED = 'error.FILE_IS_REQUIRED',
+  FILE_MAXIMUM_QUANTITY = 'error.FILE_MAXIMUM_QUANTITY',
+
+  // Captcha
+  VALIDATE_CAPTCHA_FAILED = 'error.VALIDATE_CAPTCHA_FAILED',
+  CAPTCHA_INVALID = 'error.CAPTCHA_INVALID',
+
+  // Email
+  EMAIL_NOT_EXIST = 'error.EMAIL_NOT_EXIST',
+
+  // Data Export
+  NO_DATA_RECORDS = 'error.NO_DATA_RECORDS',
+}
+
+export enum I18nMessageKeys {
+  // General Messages
+  HELLO_WORLD = 'message.HELLO_WORLD',
+  SUCCESS = 'message.SUCCESS',
+
+  // CRUD Operations
+  CREATE_SUCCESS = 'message.CREATE_SUCCESS',
+  UPDATE_SUCCESS = 'message.UPDATE_SUCCESS',
+  DELETE_SUCCESS = 'message.DELETE_SUCCESS',
+
+  // Authentication
+  REGISTER_SUCCESS = 'message.REGISTER_SUCCESS',
+  LOGIN_SUCCESS = 'message.LOGIN_SUCCESS',
+  CHANGE_PASSWORD_SUCCESS = 'message.CHANGE_PASSWORD_SUCCESS',
+
+  // Account Status
+  UNLOCK_SUCCESS = 'message.UNLOCK_SUCCESS',
+  LOCK_SUCCESS = 'message.LOCK_SUCCESS',
+
+  // 2FA
+  ENABLE_2FA_SUCCESS = 'message.ENABLE_2FA_SUCCESS',
+  DISABLE_2FA_SUCCESS = 'message.DISABLE_2FA_SUCCESS',
+  GENERATE_2FA_SECRET_SUCCESS = 'message.GENERATE_2FA_SECRET_SUCCESS',
+  CHANGE_2FA_SECRET_SUCCESS = 'message.CHANGE_2FA_SECRET_SUCCESS',
+
+  // File Upload
+  UPLOAD_SUCCESS = 'message.UPLOAD_SUCCESS',
+}
+
+export enum I18nValidationKeys {
+  // Format validation
+  INVALID_FILTER_FORMAT = 'validation.INVALID_FILTER_FORMAT',
+  INVALID_SORT_FORMAT = 'validation.INVALID_SORT_FORMAT',
+  INVALID_DATA_FORMAT = 'validation.INVALID_DATA_FORMAT',
+
+  // Common validation patterns
+  IS_DECIMAL = 'validation.IS_DECIMAL',
+  IS_BOOLEAN = 'validation.IS_BOOLEAN',
+  IS_DATE = 'validation.IS_DATE',
+  IS_EMAIL = 'validation.IS_EMAIL',
+  IS_NOT_EMPTY = 'validation.IS_NOT_EMPTY',
+  IS_STRING = 'validation.IS_STRING',
+  IS_NUMBER = 'validation.IS_NUMBER',
+}

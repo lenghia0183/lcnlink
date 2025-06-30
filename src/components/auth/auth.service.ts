@@ -21,6 +21,7 @@ import { IS_2FA_ENUM, USER_ROLE_ENUM } from '@components/user/user.constant';
 import { Toggle2faRequestDto } from './dto/request/toggle-2fa.request.dto';
 import { Change2FaDto } from './dto/request/change-2fa.request.dto';
 import { Change2faResponseDto } from './dto/response/change-2fa.response.dto';
+import { I18nErrorKeys, I18nMessageKeys } from '@constant/i18n-keys.enum';
 
 @Injectable()
 export class AuthService {
@@ -40,7 +41,7 @@ export class AuthService {
 
     if (existedUser) {
       throw new BusinessException(
-        await this.i18n.translate('error.EMAIL_EXIST'),
+        await this.i18n.translate(I18nErrorKeys.EMAIL_EXIST),
         ResponseCodeEnum.BAD_REQUEST,
       );
     }
@@ -66,7 +67,7 @@ export class AuthService {
 
     return new ResponseBuilder(response)
       .withCode(ResponseCodeEnum.CREATED)
-      .withMessage(await this.i18n.translate('message.REGISTER_SUCCESS'))
+      .withMessage(await this.i18n.translate(I18nMessageKeys.REGISTER_SUCCESS))
       .build();
   }
 
@@ -74,14 +75,14 @@ export class AuthService {
     const existedUser = await this.userService.getUserByEmail(data.email);
     if (!existedUser) {
       throw new BusinessException(
-        await this.i18n.translate('error.EMAIL_OR_PASSWORD_INVALID'),
+        await this.i18n.translate(I18nErrorKeys.EMAIL_OR_PASSWORD_INVALID),
         ResponseCodeEnum.BAD_REQUEST,
       );
     }
 
     if (existedUser.isLocked) {
       throw new BusinessException(
-        await this.i18n.translate('error.ACCOUNT_IS_LOCKED'),
+        await this.i18n.translate(I18nErrorKeys.ACCOUNT_IS_LOCKED),
         ResponseCodeEnum.BAD_REQUEST,
       );
     }
@@ -90,7 +91,7 @@ export class AuthService {
 
     if (!isMatch) {
       throw new BusinessException(
-        await this.i18n.translate('error.EMAIL_OR_PASSWORD_INVALID'),
+        await this.i18n.translate(I18nErrorKeys.EMAIL_OR_PASSWORD_INVALID),
         ResponseCodeEnum.BAD_REQUEST,
       );
     }
@@ -124,7 +125,7 @@ export class AuthService {
 
     return new ResponseBuilder(response)
       .withCode(ResponseCodeEnum.SUCCESS)
-      .withMessage(await this.i18n.translate('message.LOGIN_SUCCESS'))
+      .withMessage(await this.i18n.translate(I18nMessageKeys.LOGIN_SUCCESS))
       .build();
   }
 
@@ -144,8 +145,8 @@ export class AuthService {
       .withCode(ResponseCodeEnum.SUCCESS)
       .withMessage(
         isEnable2FA === IS_2FA_ENUM.ENABLED
-          ? await this.i18n.translate('message.ENABLE_2FA_SUCCESS')
-          : await this.i18n.translate('message.DISABLE_2FA_SUCCESS'),
+          ? await this.i18n.translate(I18nMessageKeys.ENABLE_2FA_SUCCESS)
+          : await this.i18n.translate(I18nMessageKeys.DISABLE_2FA_SUCCESS),
       )
       .build();
   }
@@ -167,7 +168,7 @@ export class AuthService {
     return new ResponseBuilder(response)
       .withCode(ResponseCodeEnum.SUCCESS)
       .withMessage(
-        await this.i18n.translate('message.GENERATE_2FA_SECRET_SUCCESS'),
+        await this.i18n.translate(I18nMessageKeys.GENERATE_2FA_SECRET_SUCCESS),
       )
       .build();
   }
@@ -190,7 +191,7 @@ export class AuthService {
     return new ResponseBuilder(response)
       .withCode(ResponseCodeEnum.SUCCESS)
       .withMessage(
-        await this.i18n.translate('message.CHANGE_2FA_SECRET_SUCCESS'),
+        await this.i18n.translate(I18nMessageKeys.CHANGE_2FA_SECRET_SUCCESS),
       );
   }
 
@@ -201,7 +202,7 @@ export class AuthService {
     const verificationResult = twoFactor.verifyToken(twoFactorSecret, otp);
     if (!verificationResult || verificationResult.delta !== 0) {
       throw new BusinessException(
-        await this.i18n.translate('error.OTP_INVALID'),
+        await this.i18n.translate(I18nErrorKeys.OTP_INVALID),
         ResponseCodeEnum.BAD_REQUEST,
       );
     }
