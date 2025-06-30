@@ -148,9 +148,7 @@ export class AuthService {
       .build();
   }
 
-  async generate2fa(userId: string) {
-    const user = await this.userService.getUserById(userId);
-
+  async generate2fa(user: User) {
     const appConfig = this.configService.get<AppConfig>('app')!;
 
     const { secret, uri, qr } = twoFactor.generateSecret({

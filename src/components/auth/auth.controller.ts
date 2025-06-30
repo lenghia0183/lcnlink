@@ -7,6 +7,8 @@ import { LoginRequestDto } from './dto/request/login.request.dto';
 
 import { AuthenticatedRequest } from '@core/guards/authenticate.guard';
 import { Toggle2faRequestDto } from './dto/request/toggle-2fa.request.dto';
+import { ResponseBuilder } from '@utils/response-builder';
+import { ResponseCodeEnum } from '@constant/response-code.enum';
 
 @Controller('auth')
 export class AuthController {
@@ -43,6 +45,14 @@ export class AuthController {
 
   @Get('/generate-2fa')
   async generate2fa(@Request() requestCustom: AuthenticatedRequest) {
-    return await this.authService.generate2fa(requestCustom?.userId || '');
+    const user = requestCustom.user;
+
+    if (!user) {
+      return new ResponseBuilder()
+        .withCode(ResponseCodeEnum.BAD_REQUEST, true)
+        .build();
+    }
+
+    return await this.authService.generate2fa(user);
   }
 }
