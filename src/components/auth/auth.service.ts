@@ -12,7 +12,6 @@ import { I18nService } from 'nestjs-i18n';
 import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { UserService } from '@components/user/user.service';
 import { BusinessException } from '@core/exception-filters/business-exception.filter';
-import { ExceptionUtil } from '@utils/exception.util';
 import { LoginRequestDto } from './dto/request/login.request.dto';
 import bcrypt from 'bcrypt';
 import { AllConfigType, AppConfig } from '@config/config.type';
@@ -37,15 +36,13 @@ export class AuthService {
 
     private readonly userService: UserService,
   ) {}
-  async register(data: RegisterRequestDTO & { lang?: string }) {
+  async register(data: RegisterRequestDTO) {
     const existedUser = await this.userService.getUserByEmail(data.email);
 
     if (existedUser) {
-      await ExceptionUtil.throwWithKey(
-        I18nErrorKeys.EMAIL_EXIST,
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.EMAIL_EXIST),
         ResponseCodeEnum.BAD_REQUEST,
-        this.i18n,
-        data.lang,
       );
     }
 
@@ -68,43 +65,34 @@ export class AuthService {
       excludeExtraneousValues: true,
     });
 
-    const builder = await new ResponseBuilder(response).withCodeI18n(
-      ResponseCodeEnum.CREATED,
-      this.i18n,
-      data.lang,
-    );
-
-    return builder.build();
+    return new ResponseBuilder(response)
+      .withCode(ResponseCodeEnum.CREATED)
+      .withMessage(await this.i18n.translate(I18nMessageKeys.REGISTER_SUCCESS))
+      .build();
   }
 
-  async login(data: LoginRequestDto & { lang?: string }) {
+  async login(data: LoginRequestDto) {
     const existedUser = await this.userService.getUserByEmail(data.email);
     if (!existedUser) {
-      await ExceptionUtil.throwWithKey(
-        I18nErrorKeys.EMAIL_OR_PASSWORD_INVALID,
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.EMAIL_OR_PASSWORD_INVALID),
         ResponseCodeEnum.BAD_REQUEST,
-        this.i18n,
-        data.lang,
       );
     }
 
     if (existedUser.isLocked) {
-      await ExceptionUtil.throwWithKey(
-        I18nErrorKeys.ACCOUNT_IS_LOCKED,
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.ACCOUNT_IS_LOCKED),
         ResponseCodeEnum.BAD_REQUEST,
-        this.i18n,
-        data.lang,
       );
     }
 
     const isMatch = await bcrypt.compare(data.password, existedUser.password);
 
     if (!isMatch) {
-      await ExceptionUtil.throwWithKey(
-        I18nErrorKeys.EMAIL_OR_PASSWORD_INVALID,
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.EMAIL_OR_PASSWORD_INVALID),
         ResponseCodeEnum.BAD_REQUEST,
-        this.i18n,
-        data.lang,
       );
     }
 
