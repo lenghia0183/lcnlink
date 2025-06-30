@@ -1,5 +1,6 @@
 {
   "name": "Tên",
   "email": "Email",
-  "otp": "Mã OTP"
+  "otp": "Mã OTP",
+  "newSecretKey": "newSecretKey"
 }

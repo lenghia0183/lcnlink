@@ -19,6 +19,8 @@ import { ConfigService } from '@nestjs/config';
 import { LoginResponseDTO } from './dto/response/login.response.dto';
 import { IS_2FA_ENUM, USER_ROLE_ENUM } from '@components/user/user.constant';
 import { Toggle2faRequestDto } from './dto/request/toggle-2fa.request.dto';
+import { Change2FaDto } from './dto/request/change-2fa.request.dto';
+import { Change2faResponseDto } from './dto/response/change-2fa.response.dto';
 
 @Injectable()
 export class AuthService {
@@ -168,6 +170,28 @@ export class AuthService {
         await this.i18n.translate('message.GENERATE_2FA_SECRET_SUCCESS'),
       )
       .build();
+  }
+
+  async change2fa(data: Change2FaDto) {
+    const { user } = data;
+
+    await this.verifyOtp2Fa(user?.twoFactorSecret || '', data.otp);
+
+    await this.userRepository.update(
+      {
+        id: user?.id,
+      },
+      { twoFactorSecret: data.newTwoFactorSecret },
+    );
+    const response = plainToInstance(Change2faResponseDto, {
+      twoFactorSecret: data.newTwoFactorSecret,
+    });
+
+    return new ResponseBuilder(response)
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .withMessage(
+        await this.i18n.translate('message.CHANGE_2FA_SECRET_SUCCESS'),
+      );
   }
 
   private async verifyOtp2Fa(

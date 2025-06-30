@@ -9,6 +9,7 @@ import { AuthenticatedRequest } from '@core/guards/authenticate.guard';
 import { Toggle2faRequestDto } from './dto/request/toggle-2fa.request.dto';
 import { ResponseBuilder } from '@utils/response-builder';
 import { ResponseCodeEnum } from '@constant/response-code.enum';
+import { Change2FaDto } from './dto/request/change-2fa.request.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -54,5 +55,15 @@ export class AuthController {
     }
 
     return await this.authService.generate2fa(user);
+  }
+
+  @Put('/change-2fa')
+  async change2fa(@Body() payload: Change2FaDto) {
+    const { request, responseError } = payload;
+
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+    return await this.authService.change2fa(request);
   }
 }
