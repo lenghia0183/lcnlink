@@ -16,23 +16,10 @@ import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { IS_PUBLIC_KEY, REQUEST_USER_KEY } from '@constant/app.enum';
 
 import { UserService } from '@components/user/user.service';
-import { User } from '@database/entities/user.entity';
+
 import { BusinessException } from '@core/exception-filters/business-exception.filter';
-
-export interface AuthenticatedRequest extends Request {
-  userId?: string;
-  [REQUEST_USER_KEY]?: User;
-  body: Record<string, unknown> & { user?: User; userId?: string };
-  params: Record<string, string> & { userId?: string };
-  query: Record<string, string | string[] | undefined> & { userId?: string };
-}
-
-export interface IJwtPayload {
-  id: string;
-  role?: number;
-  email?: string;
-  isAdmin?: boolean;
-}
+import { LoggedInRequest } from '@core/types/logged-in-request.type';
+import { JwtPayload } from '@core/types/jwt-payload.type';
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthenticateGuard implements CanActivate {
@@ -58,7 +45,7 @@ export class AuthenticateGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
+    const request = context.switchToHttp().getRequest<LoggedInRequest>();
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
@@ -72,10 +59,10 @@ export class AuthenticateGuard implements CanActivate {
       infer: true,
     })!;
 
-    let payload: IJwtPayload | null = null;
+    let payload: JwtPayload | null = null;
 
     try {
-      payload = this.jwtService.verify<IJwtPayload>(token, {
+      payload = this.jwtService.verify<JwtPayload>(token, {
         secret: authConfig.accessSecret,
       });
     } catch (e) {

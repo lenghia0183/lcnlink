@@ -7,9 +7,10 @@ import { Request, Response, NextFunction } from 'express';
 import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
 
 import { AllConfigType } from '@config/config.type';
-import { RequestLoggingType } from '@components/types/request-logging.type';
-import { JwtPayload } from '@components/types/jwt-payload.type';
+import { RequestLoggingType } from '@core/types/request-logging.type';
+
 import moment from 'moment';
+import { JwtPayload } from '@core/types/jwt-payload.type';
 
 @Injectable()
 export class RequestLoggingMiddleware implements NestMiddleware {

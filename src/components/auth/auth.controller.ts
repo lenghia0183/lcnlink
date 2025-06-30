@@ -5,11 +5,11 @@ import { isEmpty } from 'lodash';
 import { AuthService } from './auth.service';
 import { LoginRequestDto } from './dto/request/login.request.dto';
 
-import { AuthenticatedRequest } from '@core/guards/authenticate.guard';
 import { Toggle2faRequestDto } from './dto/request/toggle-2fa.request.dto';
 import { ResponseBuilder } from '@utils/response-builder';
 import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { Change2FaDto } from './dto/request/change-2fa.request.dto';
+import { LoggedInRequest } from '@core/types/logged-in-request.type';
 
 @Controller('auth')
 export class AuthController {
@@ -45,8 +45,8 @@ export class AuthController {
   }
 
   @Get('/generate-2fa')
-  async generate2fa(@Request() requestCustom: AuthenticatedRequest) {
-    const user = requestCustom.user;
+  async generate2fa(@Request() loggedInRequest: LoggedInRequest) {
+    const user = loggedInRequest.user;
 
     if (!user) {
       return new ResponseBuilder()

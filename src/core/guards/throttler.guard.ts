@@ -12,7 +12,7 @@ import { REQUEST_USER_KEY } from '@constant/app.enum';
 
 import { USER_ROLE_ENUM } from '@components/user/user.constant';
 import { User } from '@database/entities/user.entity';
-import { AuthenticatedRequest } from './authenticate.guard';
+import { LoggedInRequest } from '@core/types/logged-in-request.type';
 
 @Injectable()
 export class CustomThrottlerGuard extends ThrottlerGuard {
@@ -36,7 +36,7 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
 
   // Customize the rate-limit based on user roles
   protected getLimit(context: ExecutionContext): number {
-    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
+    const request = context.switchToHttp().getRequest<LoggedInRequest>();
     const user = request[REQUEST_USER_KEY] as User;
 
     if (user?.role === USER_ROLE_ENUM.ADMIN) {
