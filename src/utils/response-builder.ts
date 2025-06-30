@@ -26,11 +26,13 @@ export class ResponseBuilder<T> {
     lang?: string,
   ): Promise<ResponseBuilder<T>> {
     this.payload.statusCode = code;
-    this.payload.message = await ResponseMessageUtil.getLocalizedMessage(
-      i18nService,
-      code,
-      lang,
-    );
+    if (i18nService) {
+      this.payload.message = await ResponseMessageUtil.getLocalizedMessage(
+        i18nService,
+        code,
+        lang,
+      );
+    }
     return this;
   }
 
