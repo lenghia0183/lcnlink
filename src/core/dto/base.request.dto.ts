@@ -1,3 +1,4 @@
+import { User } from '@database/entities/user.entity';
 import { ResponsePayload } from '@utils/response-payload';
 import { Allow } from 'class-validator';
 
@@ -13,4 +14,7 @@ export class BaseDto<T = unknown> {
 
   @Allow()
   lang?: string;
+
+  @Allow()
+  user?: User;
 }

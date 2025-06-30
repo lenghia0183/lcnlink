@@ -18,6 +18,7 @@ import { AllConfigType, AppConfig } from '@config/config.type';
 import { ConfigService } from '@nestjs/config';
 import { LoginResponseDTO } from './dto/response/login.response.dto';
 import { IS_2FA_ENUM, USER_ROLE_ENUM } from '@components/user/user.constant';
+import { Toggle2faRequestDto } from './dto/request/toggle-2fa.request.dto';
 
 @Injectable()
 export class AuthService {
@@ -125,8 +126,10 @@ export class AuthService {
       .build();
   }
 
-  async toggle2fa(userId: string) {
-    const user = await this.userService.getUserById(userId);
+  async toggle2fa(data: Toggle2faRequestDto) {
+    const { user } = data;
+
+    await this.verifyOtp2Fa(user?.twoFactorSecret || '', data.otp);
 
     const isEnable2FA =
       user?.isEnable2FA === IS_2FA_ENUM.DISABLED
@@ -167,5 +170,19 @@ export class AuthService {
         await this.i18n.translate('message.GENERATE_2FA_SECRET_SUCCESS'),
       )
       .build();
+  }
+
+  private async verifyOtp2Fa(
+    twoFactorSecret: string,
+    otp: string,
+  ): Promise<boolean> {
+    const verificationResult = twoFactor.verifyToken(twoFactorSecret, otp);
+    if (!verificationResult || verificationResult.delta !== 0) {
+      throw new BusinessException(
+        await this.i18n.translate('error.OTP_INVALID'),
+        ResponseCodeEnum.BAD_REQUEST,
+      );
+    }
+    return true;
   }
 }

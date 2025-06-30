@@ -98,10 +98,10 @@ export class AuthenticateGuard implements CanActivate {
           );
       }
     }
-    console.log('payload', payload);
+
     const { id } = payload;
     const user = await this.userService.findById(id);
-    console.log('user', user);
+
     if (!user) {
       throw new UnauthorizedException();
     }

@@ -1,4 +1,5 @@
 {
   "name": "Tên",
-  "email": "Email"
+  "email": "Email",
+  "otp": "Mã OTP"
 }

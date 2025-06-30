@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { LoginRequestDto } from './dto/request/login.request.dto';
 
 import { AuthenticatedRequest } from '@core/guards/authenticate.guard';
+import { Toggle2faRequestDto } from './dto/request/toggle-2fa.request.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -30,8 +31,14 @@ export class AuthController {
   }
 
   @Put('/toggle-2fa')
-  async toggle2fa(@Request() requestCustom: AuthenticatedRequest) {
-    return await this.authService.toggle2fa(requestCustom?.userId || '');
+  async toggle2fa(@Body() payload: Toggle2faRequestDto) {
+    const { request, responseError } = payload;
+
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+
+    return await this.authService.toggle2fa(request);
   }
 
   @Get('/generate-2fa')
