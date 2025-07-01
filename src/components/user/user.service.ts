@@ -3,7 +3,7 @@ import { isEmpty } from 'lodash';
 import * as twoFactor from 'node-2fa';
 
 import { User } from '@database/entities/user.entity';
-import { UserRepository } from '@database/repositories/user.repository';
+import { UserRepository } from '@database/repositories/user/user.repository';
 import { CreateUserRequestDto } from './dto/request/create-user.request.dto';
 import { UpdateUserRequestDto } from './dto/request/update-user.request.dto';
 import { GetListUserRequestDto } from './dto/request/get-list-user.request.dto';

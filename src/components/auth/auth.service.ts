@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { RegisterRequestDTO } from './dto/request/register.request.dto';
 import { User } from '@database/entities/user.entity';
-import { UserRepository } from '@database/repositories/user.repository';
+import { UserRepository } from '@database/repositories/user/user.repository';
 import { JwtService } from '@nestjs/jwt';
 import * as twoFactor from 'node-2fa';
 import { plainToInstance } from 'class-transformer';

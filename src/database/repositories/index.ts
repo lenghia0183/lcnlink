@@ -1,10 +1,10 @@
 // Export interfaces
 export * from '../../core/repository/base-repository.interface';
-export * from './interfaces/user-repository.interface';
+export * from './user/user-repository.interface';
 
 // Export implementations
 export * from '../../core/repository/base.repository';
-export * from './user.repository';
+export * from './user/user.repository';
 
 // Export module
 export * from './repository.module';
