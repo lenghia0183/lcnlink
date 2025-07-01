@@ -10,6 +10,7 @@ import DatabaseConnectModule from '@database/database.connect.module';
 import { RequestLoggingMiddleware } from '@core/middlewares/request-logging.middleware';
 import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from '@components/user/user.module';
+import { RepositoryModule } from '@database/repositories/repository.module';
 import {
   AcceptLanguageResolver,
   CookieResolver,
@@ -35,6 +36,7 @@ import { AuthModule } from '@components/auth/auth.module';
     }),
     JwtModule.register({}),
     DatabaseConnectModule,
+    RepositoryModule,
     UserModule,
     AuthModule,
     I18nModule.forRootAsync({

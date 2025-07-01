@@ -15,11 +15,10 @@ import { AllConfigType } from '@config/config.type';
 import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { IS_PUBLIC_KEY, REQUEST_USER_KEY } from '@constant/app.enum';
 
-import { UserService } from '@components/user/user.service';
-
 import { BusinessException } from '@core/exception-filters/business-exception.filter';
 import { LoggedInRequest } from '@core/types/logged-in-request.type';
 import { JwtPayload } from '@core/types/jwt-payload.type';
+import { UserRepository } from '@database/repositories';
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthenticateGuard implements CanActivate {
@@ -32,7 +31,7 @@ export class AuthenticateGuard implements CanActivate {
 
     private configService: ConfigService<AllConfigType>,
 
-    private readonly userService: UserService,
+    private readonly userRepository: UserRepository,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -87,7 +86,7 @@ export class AuthenticateGuard implements CanActivate {
     }
 
     const { id } = payload;
-    const user = await this.userService.findById(id);
+    const user = await this.userRepository.findById(id);
 
     if (!user) {
       throw new UnauthorizedException();

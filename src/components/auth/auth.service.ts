@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { RegisterRequestDTO } from './dto/request/register.request.dto';
 import { User } from '@database/entities/user.entity';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+import { UserRepository } from '@database/repositories/user.repository';
 import { JwtService } from '@nestjs/jwt';
 import * as twoFactor from 'node-2fa';
 import { plainToInstance } from 'class-transformer';
@@ -28,13 +27,9 @@ export class AuthService {
   constructor(
     private readonly i18n: I18nService,
     private readonly jwt: JwtService,
-
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-
     private readonly configService: ConfigService<AllConfigType>,
-
     private readonly userService: UserService,
+    private readonly userRepository: UserRepository,
   ) {}
   async register(data: RegisterRequestDTO) {
     const existedUser = await this.userService.getUserByEmail(data.email);
@@ -48,6 +43,7 @@ export class AuthService {
 
     const { secret } = twoFactor.generateSecret();
 
+    // Tạo user entity trực tiếp
     const user = this.userRepository.create({
       email: data.email,
       fullname: data.fullname,
@@ -59,6 +55,7 @@ export class AuthService {
       role: USER_ROLE_ENUM.USER,
     });
 
+    // Save user to database
     const savedUser = await this.userRepository.save(user);
 
     const response = plainToInstance(RegisterResponseDTO, savedUser, {
@@ -72,7 +69,7 @@ export class AuthService {
   }
 
   async login(data: LoginRequestDto) {
-    const existedUser = await this.userService.getUserByEmail(data.email);
+    const existedUser = await this.userRepository.findByEmail(data.email);
     if (!existedUser) {
       throw new BusinessException(
         await this.i18n.translate(I18nErrorKeys.EMAIL_OR_PASSWORD_INVALID),
@@ -115,7 +112,7 @@ export class AuthService {
       expiresIn: authConfig?.refreshExpires,
     });
 
-    await this.userRepository.update({ id: existedUser.id }, { refreshToken });
+    await this.userRepository.update(existedUser.id, { refreshToken });
 
     const response = plainToInstance(LoginResponseDTO, existedUser, {
       excludeExtraneousValues: true,
@@ -139,7 +136,9 @@ export class AuthService {
         ? IS_2FA_ENUM.ENABLED
         : IS_2FA_ENUM.DISABLED;
 
-    await this.userRepository.update({ id: user?.id }, { isEnable2FA });
+    if (user?.id) {
+      await this.userRepository.update(user.id, { isEnable2FA });
+    }
 
     return new ResponseBuilder()
       .withCode(ResponseCodeEnum.SUCCESS)
@@ -178,12 +177,11 @@ export class AuthService {
 
     await this.verifyOtp2Fa(user?.twoFactorSecret || '', data.otp);
 
-    await this.userRepository.update(
-      {
-        id: user?.id,
-      },
-      { twoFactorSecret: data.newTwoFactorSecret },
-    );
+    if (user?.id) {
+      await this.userRepository.update(user.id, {
+        twoFactorSecret: data.newTwoFactorSecret,
+      });
+    }
     const response = plainToInstance(Change2faResponseDto, {
       twoFactorSecret: data.newTwoFactorSecret,
     });

@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Put,
-  Delete,
   Param,
   Body,
   Query,
@@ -38,13 +37,6 @@ export class UserController {
 
     const userData = request;
     return await this.userService.createUser(userData);
-  }
-
-  @Get()
-  @ApiOperation({ summary: 'Get all users' })
-  @ApiResponse({ status: 200, description: 'Users retrieved successfully' })
-  async getAllUsers() {
-    return await this.userService.findAll();
   }
 
   @Get('list')
@@ -87,13 +79,5 @@ export class UserController {
     @Body() updateUserDto: UpdateUserRequestDto,
   ) {
     return await this.userService.updateUser(id, updateUserDto);
-  }
-
-  @Delete(':id')
-  @ApiOperation({ summary: 'Delete user by ID' })
-  @ApiResponse({ status: 200, description: 'User deleted successfully' })
-  async deleteUser(@Param('id') id: string) {
-    await this.userService.remove(id);
-    return { message: 'User deleted successfully' };
   }
 }
