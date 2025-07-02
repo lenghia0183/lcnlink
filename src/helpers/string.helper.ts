@@ -7,12 +7,6 @@ export const isJson = (str: string): boolean => {
   return true;
 };
 
-/**
- * Tạo một chuỗi ngẫu nhiên với độ dài xác định
- * @param length Độ dài của chuỗi cần tạo
- * @returns Chuỗi ngẫu nhiên
- * @throws Error nếu độ dài không hợp lệ
- */
 export function generateRandomString(length: number): string {
   const characters: string =
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -30,11 +24,6 @@ export function generateRandomString(length: number): string {
   return result;
 }
 
-/**
- * Định dạng số tiền thành chuỗi với dấu chấm
- * @param input Số tiền cần định dạng
- * @returns Chuỗi định dạng số tiền
- */
 export function formatCurrency(input: number | string): string {
   if (
     input === null ||
