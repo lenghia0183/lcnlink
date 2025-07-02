@@ -83,9 +83,6 @@ export abstract class BaseRepository<T extends BaseModel>
     await this.repository.softDelete(criteria);
   }
 
-  /**
-   * Soft delete nhiều records theo conditions
-   */
   async softDeleteMany(criteria: Partial<T>): Promise<void> {
     await this.repository.softDelete(
       criteria as Parameters<Repository<T>['softDelete']>[0],

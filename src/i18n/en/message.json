@@ -17,5 +17,12 @@
   "NON_AUTHORITATIVE_INFORMATION": "Non-Authoritative Information",
   "NO_CONTENT": "No Content",
   "TOO_MANY_REQUESTS": "Too Many Requests",
-  "UNKNOWN_ERROR": "Unknown Error"
+  "UNKNOWN_ERROR": "Unknown Error",
+  "ENABLE_2FA_SUCCESS": "2FA enabled successfully",
+  "DISABLE_2FA_SUCCESS": "2FA disabled successfully",
+  "GENERATE_2FA_SECRET_SUCCESS": "2FA secret generated successfully",
+  "CHANGE_2FA_SECRET_SUCCESS": "2FA secret changed successfully",
+  "OTP_REQUIRED": "Please provide your 2FA code to complete login",
+  "UPLOAD_SUCCESS": "File uploaded successfully",
+  "CHANGE_PASSWORD_SUCCESS": "Password changed successfully"
 }

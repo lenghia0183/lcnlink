@@ -16,6 +16,7 @@ import bcrypt from 'bcrypt';
 import { AllConfigType, AppConfig } from '@config/config.type';
 import { ConfigService } from '@nestjs/config';
 import { LoginResponseDTO } from './dto/response/login.response.dto';
+import { Login2FARequiredResponseDTO } from './dto/response/login-2fa-required.response.dto';
 import { IS_2FA_ENUM, USER_ROLE_ENUM } from '@components/user/user.constant';
 import { Toggle2faRequestDto } from './dto/request/toggle-2fa.request.dto';
 import { Change2FaDto } from './dto/request/change-2fa.request.dto';
@@ -93,6 +94,25 @@ export class AuthService {
       );
     }
 
+    if (existedUser.isEnable2FA === IS_2FA_ENUM.ENABLED) {
+      if (!data.otp) {
+        const message = this.i18n.translate(I18nMessageKeys.OTP_REQUIRED);
+        const response = plainToInstance(Login2FARequiredResponseDTO, {
+          requires2FA: true,
+          email: existedUser.email,
+          message: message,
+        });
+
+        return new ResponseBuilder(response)
+          .withCode(ResponseCodeEnum.UNAUTHORIZED)
+          .withMessage(await this.i18n.translate(I18nMessageKeys.OTP_REQUIRED))
+          .build();
+      }
+
+      await this.verifyOtp2Fa(existedUser.twoFactorSecret || '', data.otp);
+    }
+
+    // Generate tokens after successful authentication (and 2FA if required)
     const authConfig = this.configService.get('auth', { infer: true });
 
     const payload = {
@@ -129,7 +149,15 @@ export class AuthService {
   async toggle2fa(data: Toggle2faRequestDto) {
     const { user } = data;
 
-    await this.verifyOtp2Fa(user?.twoFactorSecret || '', data.otp);
+    if (!user?.twoFactorSecret) {
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.TWO_FA_SECRET_NOT_SET),
+        ResponseCodeEnum.BAD_REQUEST,
+      );
+    }
+
+    // Verify OTP with current secret
+    await this.verifyOtp2Fa(user.twoFactorSecret, data.otp);
 
     const isEnable2FA =
       user?.isEnable2FA === IS_2FA_ENUM.DISABLED

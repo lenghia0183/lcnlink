@@ -35,8 +35,7 @@ export class UserController {
       return responseError;
     }
 
-    const userData = request;
-    return await this.userService.createUser(userData);
+    return await this.userService.createUser(request);
   }
 
   @Get('list')

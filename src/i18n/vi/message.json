@@ -15,6 +15,7 @@
   "UPLOAD_SUCCESS": "Tải lên thành công",
   "NEW_PASSWORD_SENT_TO_EMAIL": "Mật khẩu mới đã được gửi đến email của bạn",
   "DISABLE_2FA_SUCCESS": "Tắt xác thực 2 yếu tố thành công",
+  "OTP_REQUIRED": "Vui lòng nhập mã 2FA để hoàn tất đăng nhập",
   "CONTINUE": "Tiếp tục",
   "SWITCHING_PROTOCOLS": "Chuyển đổi giao thức",
   "PROCESSING": "Đang xử lý",
