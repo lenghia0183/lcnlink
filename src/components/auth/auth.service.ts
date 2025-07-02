@@ -22,6 +22,9 @@ import { Toggle2faRequestDto } from './dto/request/toggle-2fa.request.dto';
 import { Change2FaDto } from './dto/request/change-2fa.request.dto';
 import { Change2faResponseDto } from './dto/response/change-2fa.response.dto';
 import { I18nErrorKeys, I18nMessageKeys } from '@constant/i18n-keys.enum';
+import { Login2FaRequestDto } from './dto/request/verify-otp.request.dto';
+import { OtpTokenPayload } from '@components/types/otp-token-payload.interface';
+import { JwtPayload } from '@core/types/jwt-payload.type';
 
 @Injectable()
 export class AuthService {
@@ -95,27 +98,36 @@ export class AuthService {
     }
 
     if (existedUser.isEnable2FA === IS_2FA_ENUM.ENABLED) {
-      if (!data.otp) {
-        const message = this.i18n.translate(I18nMessageKeys.OTP_REQUIRED);
-        const response = plainToInstance(Login2FARequiredResponseDTO, {
-          requires2FA: true,
-          email: existedUser.email,
-          message: message,
-        });
+      const authConfig = this.configService.get('auth', { infer: true });
 
-        return new ResponseBuilder(response)
-          .withCode(ResponseCodeEnum.UNAUTHORIZED)
-          .withMessage(await this.i18n.translate(I18nMessageKeys.OTP_REQUIRED))
-          .build();
-      }
+      const otpPayload = {
+        userId: existedUser.id,
+        email: existedUser.email,
+        timestamp: Date.now(),
+      };
 
-      await this.verifyOtp2Fa(existedUser.twoFactorSecret || '', data.otp);
+      const otpToken = await this.jwt.signAsync(otpPayload, {
+        secret: authConfig?.otpTokenSecret,
+        expiresIn: authConfig?.otpTokenExpires,
+      });
+
+      const message = this.i18n.translate(I18nMessageKeys.OTP_REQUIRED);
+      const response = plainToInstance(Login2FARequiredResponseDTO, {
+        requires2FA: true,
+        email: existedUser.email,
+        otpToken: otpToken,
+        message: message,
+      });
+
+      return new ResponseBuilder(response)
+        .withCode(ResponseCodeEnum.UNAUTHORIZED)
+        .withMessage(message)
+        .build();
     }
 
-    // Generate tokens after successful authentication (and 2FA if required)
     const authConfig = this.configService.get('auth', { infer: true });
 
-    const payload = {
+    const payload: JwtPayload = {
       email: existedUser.email,
       fullname: existedUser.fullname,
       role: existedUser.role,
@@ -156,7 +168,6 @@ export class AuthService {
       );
     }
 
-    // Verify OTP with current secret
     await this.verifyOtp2Fa(user.twoFactorSecret, data.otp);
 
     const isEnable2FA =
@@ -219,6 +230,87 @@ export class AuthService {
       .withMessage(
         await this.i18n.translate(I18nMessageKeys.CHANGE_2FA_SECRET_SUCCESS),
       );
+  }
+
+  async login2fa(data: Login2FaRequestDto) {
+    const authConfig = this.configService.get('auth', { infer: true });
+
+    try {
+      const otpPayload = await this.jwt.verifyAsync<OtpTokenPayload>(
+        data.otpToken,
+        {
+          secret: authConfig?.otpTokenSecret,
+        },
+      );
+
+      const existedUser = await this.userRepository.findOne({
+        where: { id: otpPayload.userId },
+      });
+
+      if (!existedUser) {
+        throw new BusinessException(
+          await this.i18n.translate(I18nErrorKeys.NOT_FOUND),
+          ResponseCodeEnum.NOT_FOUND,
+        );
+      }
+
+      if (existedUser.isEnable2FA !== IS_2FA_ENUM.ENABLED) {
+        throw new BusinessException(
+          await this.i18n.translate(I18nErrorKeys.TWO_FA_SECRET_NOT_SET),
+          ResponseCodeEnum.BAD_REQUEST,
+        );
+      }
+
+      await this.verifyOtp2Fa(existedUser.twoFactorSecret || '', data.otp);
+
+      const payload: JwtPayload = {
+        email: existedUser.email,
+        fullname: existedUser.fullname,
+        role: existedUser.role,
+        id: existedUser.id,
+      };
+
+      const accessToken = await this.jwt.signAsync(payload, {
+        secret: authConfig?.accessSecret,
+        expiresIn: authConfig?.accessExpires,
+      });
+
+      const refreshToken = await this.jwt.signAsync(payload, {
+        secret: authConfig?.refreshSecret,
+        expiresIn: authConfig?.refreshExpires,
+      });
+
+      await this.userRepository.update(existedUser.id, { refreshToken });
+
+      const response = plainToInstance(LoginResponseDTO, existedUser, {
+        excludeExtraneousValues: true,
+      });
+      response.refreshToken = refreshToken;
+      response.accessToken = accessToken;
+
+      return new ResponseBuilder(response)
+        .withCode(ResponseCodeEnum.SUCCESS)
+        .withMessage(
+          await this.i18n.translate(I18nMessageKeys.OTP_VERIFICATION_SUCCESS),
+        )
+        .build();
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.name === 'JsonWebTokenError') {
+          throw new BusinessException(
+            await this.i18n.translate(I18nErrorKeys.OTP_TOKEN_INVALID),
+            ResponseCodeEnum.BAD_REQUEST,
+          );
+        }
+        if (error.name === 'TokenExpiredError') {
+          throw new BusinessException(
+            await this.i18n.translate(I18nErrorKeys.OTP_TOKEN_EXPIRED),
+            ResponseCodeEnum.BAD_REQUEST,
+          );
+        }
+      }
+      throw error;
+    }
   }
 
   private async verifyOtp2Fa(

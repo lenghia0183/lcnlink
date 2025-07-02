@@ -18,6 +18,13 @@ export class Login2FARequiredResponseDTO extends BaseDto<Login2FARequiredRespons
   email: string;
 
   @ApiProperty({
+    description: 'OTP token for verification',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  })
+  @Expose()
+  otpToken: string;
+
+  @ApiProperty({
     description: 'Message indicating user needs to provide OTP',
     example: 'Please provide your 2FA code to complete login',
   })

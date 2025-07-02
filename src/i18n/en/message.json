@@ -23,6 +23,7 @@
   "GENERATE_2FA_SECRET_SUCCESS": "2FA secret generated successfully",
   "CHANGE_2FA_SECRET_SUCCESS": "2FA secret changed successfully",
   "OTP_REQUIRED": "Please provide your 2FA code to complete login",
+  "OTP_VERIFICATION_SUCCESS": "OTP verification successful",
   "UPLOAD_SUCCESS": "File uploaded successfully",
   "CHANGE_PASSWORD_SUCCESS": "Password changed successfully"
 }

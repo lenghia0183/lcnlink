@@ -10,6 +10,8 @@
   "OLD_PASSWORD_INVALID": "Mật khẩu cũ không chính xác",
   "OTP_INVALID": "Mã OTP không chính xác",
   "OTP_EXPIRED": "Mã OTP đã hết hạn",
+  "OTP_TOKEN_INVALID": "Token OTP không hợp lệ",
+  "OTP_TOKEN_EXPIRED": "Token OTP đã hết hạn",
   "UPLOAD_FAILED": "Tải lên thất bại",
   "FILE_TYPE_INVALID": "Định dạng file không hợp lệ",
   "FILE_SIZE_INVALID": "Kích thước file không được vượt quá {size}MB",

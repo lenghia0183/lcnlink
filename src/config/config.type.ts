@@ -25,6 +25,8 @@ export type AuthConfig = {
   accessExpires?: string;
   refreshSecret?: string;
   refreshExpires?: string;
+  otpTokenSecret?: string;
+  otpTokenExpires?: string;
 };
 
 export type AllConfigType = {

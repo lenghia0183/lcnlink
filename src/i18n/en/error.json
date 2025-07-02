@@ -10,6 +10,8 @@
   "NOT_ACCEPTABLE": "Not acceptable",
   "OTP_INVALID": "Invalid OTP code",
   "OTP_EXPIRED": "OTP code has expired",
+  "OTP_TOKEN_INVALID": "Invalid OTP token",
+  "OTP_TOKEN_EXPIRED": "OTP token has expired",
   "TWO_FA_ALREADY_SET": "2FA is already set up",
   "TWO_FA_SECRET_NOT_SET": "Please generate 2FA secret first before enabling 2FA",
   "UNAUTHORIZED": "Unauthorized access",
