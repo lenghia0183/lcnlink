@@ -29,8 +29,15 @@ export type AuthConfig = {
   otpTokenExpires?: string;
 };
 
+export type AdminConfig = {
+  name: string;
+  email: string;
+  password: string;
+};
+
 export type AllConfigType = {
   app: AppConfig;
   database: DatabaseConfig;
   auth: AuthConfig;
+  admin: AdminConfig;
 };

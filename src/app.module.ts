@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import authConfig from '@config/auth.config';
 import appConfig from '@config/app.config';
 import databaseConfig from '@config/database.config';
+import adminConfig from '@config/admin.config';
 import DatabaseConnectModule from '@database/database.connect.module';
 import { RequestLoggingMiddleware } from '@core/middlewares/request-logging.middleware';
 import { JwtModule } from '@nestjs/jwt';
@@ -22,6 +23,7 @@ import {
 } from 'nestjs-i18n';
 import { AllConfigType } from '@config/config.type';
 import * as path from 'path';
+import { AdminInitService } from 'src/services/admin-init.service';
 import { ValidationPipe } from '@core/pipe/validation.pipe';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthenticateGuard } from '@core/guards/authenticate.guard';
@@ -31,7 +33,7 @@ import { AuthModule } from '@components/auth/auth.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, authConfig],
+      load: [appConfig, databaseConfig, authConfig, adminConfig],
       envFilePath: ['.env'],
     }),
     JwtModule.register({}),
@@ -79,6 +81,7 @@ import { AuthModule } from '@components/auth/auth.module';
       useClass: AuthenticateGuard,
     },
     AppService,
+    AdminInitService,
   ],
 })
 export class AppModule implements NestModule {
