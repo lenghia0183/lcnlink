@@ -34,6 +34,14 @@ export class BaseResponseDto {
   @ApiProperty()
   @Expose({ name: 'updatedAt' })
   updatedAt: Date;
+
+  @ApiProperty()
+  @Expose({ name: 'deletedAt' })
+  deletedAt: Date;
+
+  @ApiProperty()
+  @Expose({ name: 'createdBy' })
+  createdBy: string;
 }
 
 export class BaseSqlResponseDto {

@@ -87,7 +87,9 @@ export class UserService {
 
     await this.userRepository.save(user);
 
-    const response = plainToInstance(UpdateUserResponseDto, user);
+    const response = plainToInstance(UpdateUserResponseDto, user, {
+      excludeExtraneousValues: true,
+    });
 
     return (
       await new ResponseBuilder(response).withCodeI18n(
@@ -98,9 +100,11 @@ export class UserService {
   }
 
   async getDetail(id: string) {
-    const user = this.getUserById(id);
+    const user = await this.getUserById(id);
 
-    const response = plainToInstance(GetUserDetailResponseDto, user);
+    const response = plainToInstance(GetUserDetailResponseDto, user, {
+      excludeExtraneousValues: true,
+    });
 
     return (
       await new ResponseBuilder(response).withCodeI18n(

@@ -18,6 +18,7 @@ import { isEmpty } from 'lodash';
 import { RoleGuard } from '@core/guards/role.guard';
 import { Roles } from '@core/decorators/role.decorator';
 import { USER_ROLE_ENUM } from './user.constant';
+import { IdParamDto } from '@core/dto/params-id.request.dto';
 
 @ApiTags('Users')
 @UseGuards(RoleGuard)
@@ -65,8 +66,12 @@ export class UserController {
   @ApiOperation({ summary: 'Get user by ID' })
   @ApiResponse({ status: 200, description: 'User retrieved successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async getUserById(@Param('id') id: string) {
-    return await this.userService.getDetail(id);
+  async getUserById(@Param() params: IdParamDto) {
+    const { request, responseError } = params;
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+    return await this.userService.getDetail(request.id);
   }
 
   @Put(':id')
