@@ -43,11 +43,14 @@ export const mergePayload = <
 
 export const getPayloadFromRequest = <T extends object>(
   input: T,
-): Omit<T, 'userId' | 'user' | 'lang' | 'request'> => {
-  return omit(input, ['userId', 'user', 'lang', 'request']) as Omit<
-    T,
-    'userId' | 'user' | 'lang' | 'request'
-  >;
+): Omit<T, 'userId' | 'user' | 'lang' | 'request' | 'responseError'> => {
+  return omit(input, [
+    'userId',
+    'user',
+    'lang',
+    'request',
+    'responseError',
+  ]) as Omit<T, 'userId' | 'user' | 'lang' | 'request' | 'responseError'>;
 };
 
 export const getValueOrDefault = <T>(value: any, defaultValue: T): T => {

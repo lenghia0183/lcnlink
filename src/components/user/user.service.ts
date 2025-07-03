@@ -80,8 +80,6 @@ export class UserService {
   }
 
   async updateUser(id: string, request: UpdateUserRequestDto) {
-    const user = await this.getUserById(id);
-
     const payload = getPayloadFromRequest(request);
 
     if (payload.email) {
@@ -94,14 +92,17 @@ export class UserService {
           .withMessage(await this.i18n.translate(I18nErrorKeys.EMAIL_EXIST));
       }
     }
+    const user = await this.getUserById(id);
 
     Object.assign(user, {
       ...payload,
     });
 
-    await this.userRepository.update(id, user);
+    console.log('user', user);
 
-    const response = plainToInstance(UpdateUserResponseDto, user, {
+    const updatedUser = await this.userRepository.save(user);
+
+    const response = plainToInstance(UpdateUserResponseDto, updatedUser, {
       excludeExtraneousValues: true,
     });
 
