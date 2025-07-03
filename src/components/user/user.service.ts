@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { isEmpty } from 'lodash';
 import * as twoFactor from 'node-2fa';
 
 import { User } from '@database/entities/user.entity';
-import { UserRepository } from '@database/repositories/user/user.repository';
+import { UserRepository } from '@database/repositories';
 import { CreateUserRequestDto } from './dto/request/create-user.request.dto';
 import { UpdateUserRequestDto } from './dto/request/update-user.request.dto';
 import { GetListUserRequestDto } from './dto/request/get-list-user.request.dto';
@@ -98,8 +97,6 @@ export class UserService {
       ...payload,
     });
 
-    console.log('user', user);
-
     const updatedUser = await this.userRepository.save(user);
 
     const response = plainToInstance(UpdateUserResponseDto, updatedUser, {
@@ -129,32 +126,31 @@ export class UserService {
     ).build();
   }
 
-  async list(
-    request: GetListUserRequestDto,
-    isExport = false,
-  ): Promise<{ data: User[]; total: number }> {
-    const { keyword, page, limit } = request;
+  async list(request: GetListUserRequestDto, isExport = false) {
+    const { keyword, sort, filter, page, limit } = request;
 
-    if (isEmpty(keyword)) {
-      const users = await this.userRepository.findAll();
-      const total = await this.userRepository.count();
+    const { data, total } = await this.userRepository.findUsersWithFilters({
+      keyword,
+      filter,
+      sort,
+      page,
+      limit,
+      isExport,
+    });
 
-      if (!isExport && page && limit) {
-        const skip = (page - 1) * limit;
-        const paginatedUsers = users.slice(skip, skip + limit);
-        return { data: paginatedUsers, total };
-      }
+    const response = plainToInstance(GetUserDetailResponseDto, data, {
+      excludeExtraneousValues: true,
+    });
 
-      return { data: users, total };
-    }
-
-    // Sử dụng method findWithKeyword từ repository
-    const paginationParams =
-      !isExport && page && limit ? { page, limit } : undefined;
-    return this.userRepository.findWithKeyword(
-      keyword || '',
-      paginationParams?.page,
-      paginationParams?.limit,
-    );
+    return (
+      await new ResponseBuilder({
+        items: response,
+        meta: {
+          total,
+          page,
+          limit,
+        },
+      }).withCodeI18n(ResponseCodeEnum.SUCCESS, this.i18n)
+    ).build();
   }
 }

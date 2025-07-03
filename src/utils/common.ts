@@ -85,3 +85,19 @@ export const getRegexByValue = (value: string) => {
     $options: 'i',
   };
 };
+
+/**
+ * Tạo pattern cho PostgreSQL ILIKE search
+ * Escape các ký tự đặc biệt và thêm wildcard
+ */
+export const getPostgresLikePattern = (value: string): string => {
+  if (!value) return '%';
+
+  // Escape các ký tự đặc biệt của PostgreSQL LIKE/ILIKE
+  const escaped = value
+    .replace(/\\/g, '\\\\') // Escape backslash
+    .replace(/%/g, '\\%') // Escape percent
+    .replace(/_/g, '\\_'); // Escape underscore
+
+  return `%${escaped}%`;
+};

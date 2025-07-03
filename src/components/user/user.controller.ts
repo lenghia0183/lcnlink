@@ -45,6 +45,7 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'User list retrieved successfully' })
   async getUserList(@Query() query: GetListUserRequestDto) {
     const { request, responseError } = query;
+    console.log('request', request);
 
     if (!isEmpty(responseError)) {
       return responseError;

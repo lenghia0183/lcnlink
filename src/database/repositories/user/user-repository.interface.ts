@@ -15,4 +15,16 @@ export interface UserRepositoryInterface extends BaseRepositoryInterface<User> {
     page?: number,
     limit?: number,
   ): Promise<{ data: User[]; total: number }>;
+
+  /**
+   * Tìm users với filter, sort và pagination phức tạp
+   */
+  findUsersWithFilters(params: {
+    keyword?: string;
+    filter?: Array<{ column: string; text: string }>;
+    sort?: Array<{ column: string; order: string }>;
+    page?: number;
+    limit?: number;
+    isExport?: boolean;
+  }): Promise<{ data: User[]; total: number }>;
 }
