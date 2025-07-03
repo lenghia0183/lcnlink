@@ -2,22 +2,52 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { replace } from 'lodash';
+import { omit, replace } from 'lodash';
 
 export const REGEX_FOR_FILTER =
   /[^a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂẾưăạảấầẩẫậắằẳẵặẹẻẽềềểếỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵýỷỹ 0-9]/gi;
 
-export const mergePayload = (param: any, body: any): any => {
+export const mergePayload = <
+  T extends Record<string, any>,
+  U extends Record<string, any>,
+>(
+  param: T,
+  body: U,
+): T & U => {
   const keys = [...new Set([...Object.keys(param), ...Object.keys(body)])];
-  const payload: any = {};
+  const payload = {} as T & U;
+
   keys.forEach((key) => {
-    payload[key] = {
-      ...param[key],
-      ...body[key],
-    };
+    if (
+      typeof param[key] === 'object' &&
+      typeof body[key] === 'object' &&
+      param[key] !== null &&
+      body[key] !== null &&
+      !Array.isArray(param[key]) &&
+      !Array.isArray(body[key])
+    ) {
+      // Merge objects
+      payload[key as keyof (T & U)] = {
+        ...param[key],
+        ...body[key],
+      } as (T & U)[keyof (T & U)];
+    } else {
+      // For non-objects, body takes precedence
+      payload[key as keyof (T & U)] = (body[key] ?? param[key]) as (T &
+        U)[keyof (T & U)];
+    }
   });
 
   return payload;
+};
+
+export const getPayloadFromRequest = <T extends object>(
+  input: T,
+): Omit<T, 'userId' | 'user' | 'lang' | 'request'> => {
+  return omit(input, ['userId', 'user', 'lang', 'request']) as Omit<
+    T,
+    'userId' | 'user' | 'lang' | 'request'
+  >;
 };
 
 export const getValueOrDefault = <T>(value: any, defaultValue: T): T => {

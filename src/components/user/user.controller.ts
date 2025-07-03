@@ -19,6 +19,7 @@ import { RoleGuard } from '@core/guards/role.guard';
 import { Roles } from '@core/decorators/role.decorator';
 import { USER_ROLE_ENUM } from './user.constant';
 import { IdParamDto } from '@core/dto/params-id.request.dto';
+import { mergePayload } from '@utils/common';
 
 @ApiTags('Users')
 @UseGuards(RoleGuard)
@@ -52,22 +53,13 @@ export class UserController {
     return await this.userService.list(request);
   }
 
-  @Get('summary')
-  @ApiOperation({ summary: 'Get user summary by role' })
-  @ApiResponse({
-    status: 200,
-    description: 'User summary retrieved successfully',
-  })
-  async getUserSummary() {
-    return await this.userService.getSummaryUsers();
-  }
-
   @Get(':id')
   @ApiOperation({ summary: 'Get user by ID' })
   @ApiResponse({ status: 200, description: 'User retrieved successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
   async getUserById(@Param() params: IdParamDto) {
     const { request, responseError } = params;
+
     if (!isEmpty(responseError)) {
       return responseError;
     }
@@ -79,9 +71,15 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'User updated successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
   async updateUser(
-    @Param('id') id: string,
+    @Param() params: IdParamDto,
     @Body() updateUserDto: UpdateUserRequestDto,
   ) {
-    return await this.userService.updateUser(id, updateUserDto);
+    const mergedData = mergePayload(params, updateUserDto);
+    const { request, responseError } = mergedData;
+
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+    return await this.userService.updateUser(request.id, request);
   }
 }

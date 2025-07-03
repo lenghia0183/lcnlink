@@ -17,6 +17,7 @@ import { BusinessException } from '@core/exception-filters/business-exception.fi
 import { UpdateUserResponseDto } from './dto/response/update-user.response.dto';
 import { I18nErrorKeys } from '@constant/i18n-keys.enum';
 import { GetUserDetailResponseDto } from './dto/response/get-user-detail.response.dto';
+import { getPayloadFromRequest } from '@utils/common';
 
 @Injectable()
 export class UserService {
@@ -78,14 +79,27 @@ export class UserService {
     ).build();
   }
 
-  async updateUser(id: string, data: UpdateUserRequestDto) {
+  async updateUser(id: string, request: UpdateUserRequestDto) {
     const user = await this.getUserById(id);
 
+    const payload = getPayloadFromRequest(request);
+
+    if (payload.email) {
+      const isEmailExists = await this.userRepository.isEmailExists(
+        payload.email,
+      );
+      if (isEmailExists) {
+        return new ResponseBuilder()
+          .withCode(ResponseCodeEnum.BAD_REQUEST)
+          .withMessage(await this.i18n.translate(I18nErrorKeys.EMAIL_EXIST));
+      }
+    }
+
     Object.assign(user, {
-      ...data,
+      ...payload,
     });
 
-    await this.userRepository.save(user);
+    await this.userRepository.update(id, user);
 
     const response = plainToInstance(UpdateUserResponseDto, user, {
       excludeExtraneousValues: true,
@@ -141,9 +155,5 @@ export class UserService {
       paginationParams?.page,
       paginationParams?.limit,
     );
-  }
-
-  async getSummaryUsers(): Promise<{ role: number; count: number }[]> {
-    return this.userRepository.getUserSummaryByRole();
   }
 }
