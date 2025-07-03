@@ -86,10 +86,6 @@ export const getRegexByValue = (value: string) => {
   };
 };
 
-/**
- * Tạo pattern cho PostgreSQL ILIKE search
- * Escape các ký tự đặc biệt và thêm wildcard
- */
 export const getPostgresLikePattern = (value: string): string => {
   if (!value) return '%';
 

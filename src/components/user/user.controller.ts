@@ -40,20 +40,6 @@ export class UserController {
     return await this.userService.createUser(request);
   }
 
-  @Get('list')
-  @ApiOperation({ summary: 'Get users with pagination and filters' })
-  @ApiResponse({ status: 200, description: 'User list retrieved successfully' })
-  async getUserList(@Query() query: GetListUserRequestDto) {
-    const { request, responseError } = query;
-    console.log('request', request);
-
-    if (!isEmpty(responseError)) {
-      return responseError;
-    }
-
-    return await this.userService.list(request);
-  }
-
   @Get(':id')
   @ApiOperation({ summary: 'Get user by ID' })
   @ApiResponse({ status: 200, description: 'User retrieved successfully' })
@@ -82,5 +68,19 @@ export class UserController {
       return responseError;
     }
     return await this.userService.updateUser(request.id, request);
+  }
+
+  @Get('list')
+  @ApiOperation({ summary: 'Get users with pagination and filters' })
+  @ApiResponse({ status: 200, description: 'User list retrieved successfully' })
+  async getUserList(@Query() query: GetListUserRequestDto) {
+    const { request, responseError } = query;
+    console.log('request', request);
+
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+
+    return await this.userService.list(request);
   }
 }
