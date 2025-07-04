@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Delete,
   Param,
   Body,
   Query,
@@ -40,6 +41,19 @@ export class UserController {
     return await this.userService.createUser(request);
   }
 
+  @Get('/list')
+  @ApiOperation({ summary: 'Get users with pagination and filters' })
+  @ApiResponse({ status: 200, description: 'User list retrieved successfully' })
+  async getUserList(@Query() query: GetListUserRequestDto) {
+    const { request, responseError } = query;
+
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+
+    return await this.userService.list(request);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get user by ID' })
   @ApiResponse({ status: 200, description: 'User retrieved successfully' })
@@ -70,16 +84,34 @@ export class UserController {
     return await this.userService.updateUser(request.id, request);
   }
 
-  @Get('list')
-  @ApiOperation({ summary: 'Get users with pagination and filters' })
-  @ApiResponse({ status: 200, description: 'User list retrieved successfully' })
-  async getUserList(@Query() query: GetListUserRequestDto) {
-    const { request, responseError } = query;
+  @Delete(':id')
+  @ApiOperation({ summary: 'Soft delete user by ID' })
+  @ApiResponse({ status: 200, description: 'User deleted successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async deleteUser(@Param() params: IdParamDto) {
+    const { request, responseError } = params;
 
     if (!isEmpty(responseError)) {
       return responseError;
     }
 
-    return await this.userService.list(request);
+    return await this.userService.deleteUser(request.id);
+  }
+
+  @Put(':id/toggle-lock')
+  @ApiOperation({ summary: 'Toggle user lock status' })
+  @ApiResponse({
+    status: 200,
+    description: 'User lock status updated successfully',
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async toggleUserLockStatus(@Param() params: IdParamDto) {
+    const { request, responseError } = params;
+
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+
+    return await this.userService.toggleUserLockStatus(request.id);
   }
 }

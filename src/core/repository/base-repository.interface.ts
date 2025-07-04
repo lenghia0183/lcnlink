@@ -1,10 +1,16 @@
-import { FindManyOptions, FindOneOptions, DeepPartial } from 'typeorm';
+import {
+  FindManyOptions,
+  FindOneOptions,
+  DeepPartial,
+  SelectQueryBuilder,
+  ObjectLiteral,
+} from 'typeorm';
 
 /**
  * Base repository interface với các method CRUD cơ bản
  * Sử dụng generic type T để có thể tái sử dụng cho mọi entity
  */
-export interface BaseRepositoryInterface<T> {
+export interface BaseRepositoryInterface<T extends ObjectLiteral> {
   /**
    * Tìm tất cả records với options
    */
@@ -79,4 +85,9 @@ export interface BaseRepositoryInterface<T> {
    * Kiểm tra record có tồn tại không
    */
   exists(options: FindOneOptions<T>): Promise<boolean>;
+
+  /**
+   * Tạo QueryBuilder để thực hiện complex queries
+   */
+  createQueryBuilder(alias: string): SelectQueryBuilder<T>;
 }

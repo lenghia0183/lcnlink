@@ -35,13 +35,6 @@ export class UserRepository
     await this.update(userId, { isActive });
   }
 
-  /**
-   * Tạo QueryBuilder để sử dụng trong service
-   */
-  createQueryBuilder(alias: string): SelectQueryBuilder<User> {
-    return this.userRepository.createQueryBuilder(alias);
-  }
-
   async findWithKeyword(
     keyword: string,
     page?: number,
@@ -74,9 +67,6 @@ export class UserRepository
     return { data: users, total };
   }
 
-  /**
-   * Tìm users với filter, sort và pagination phức tạp
-   */
   async findUsersWithFilters(params: {
     keyword?: string;
     filter?: Array<{ column: string; text: string }>;
@@ -193,8 +183,10 @@ export class UserRepository
 
     if (!isEmpty(sort)) {
       sort!.forEach((item, index) => {
-        const order: 'ASC' | 'DESC' =
-          item.order?.toUpperCase() === 'ASC' ? EnumSort.ASC : EnumSort.DESC;
+        const orderValue = item.order?.toUpperCase() as EnumSort;
+        const order: EnumSort = Object.values(EnumSort).includes(orderValue)
+          ? orderValue
+          : EnumSort.DESC;
         if (index === 0) {
           queryBuilder.orderBy(`user.${item.column}`, order);
         } else {

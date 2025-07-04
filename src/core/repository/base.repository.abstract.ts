@@ -4,11 +4,13 @@ import {
   FindOneOptions,
   DeepPartial,
   IsNull,
+  SelectQueryBuilder,
+  ObjectLiteral,
 } from 'typeorm';
 import { BaseRepositoryInterface } from './base-repository.interface';
 import { BaseModel } from '@core/schema/base.model';
 
-export abstract class BaseRepository<T extends BaseModel>
+export abstract class BaseRepository<T extends BaseModel & ObjectLiteral>
   implements BaseRepositoryInterface<T>
 {
   protected constructor(protected readonly repository: Repository<T>) {}
@@ -100,6 +102,10 @@ export abstract class BaseRepository<T extends BaseModel>
     return count > 0;
   }
 
+  createQueryBuilder(alias: string): SelectQueryBuilder<T> {
+    return this.repository.createQueryBuilder(alias);
+  }
+
   private mergeWithSoftDeleteFilter<
     O extends FindOneOptions<T> | FindManyOptions<T>,
   >(options?: O): O {
@@ -111,7 +117,6 @@ export abstract class BaseRepository<T extends BaseModel>
       return { ...options, where: { deletedAt: IsNull() } } as O;
     }
 
-    // Nếu where là array (cho OR conditions)
     if (Array.isArray(options.where)) {
       return {
         ...options,
@@ -122,7 +127,6 @@ export abstract class BaseRepository<T extends BaseModel>
       } as O;
     }
 
-    // Nếu where là object
     return {
       ...options,
       where: {

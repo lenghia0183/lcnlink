@@ -48,6 +48,37 @@ export class UserService {
     return user;
   }
 
+  async deleteUser(id: string) {
+    await this.getUserById(id);
+
+    await this.userRepository.softDelete(id);
+
+    return (
+      await new ResponseBuilder().withCodeI18n(
+        ResponseCodeEnum.SUCCESS,
+        this.i18n,
+      )
+    ).build();
+  }
+
+  async toggleUserLockStatus(id: string) {
+    const user = await this.getUserById(id);
+
+    user.isLocked = !user.isLocked;
+    const updatedUser = await this.userRepository.save(user);
+
+    const response = plainToInstance(GetUserDetailResponseDto, updatedUser, {
+      excludeExtraneousValues: true,
+    });
+
+    return (
+      await new ResponseBuilder(response).withCodeI18n(
+        ResponseCodeEnum.SUCCESS,
+        this.i18n,
+      )
+    ).build();
+  }
+
   async createUser(data: CreateUserRequestDto) {
     const { secret } = twoFactor.generateSecret();
 
@@ -63,7 +94,6 @@ export class UserService {
       twoFactorSecret: secret,
     });
 
-    // Save user to database
     const savedUser = await this.userRepository.save(user);
 
     const response = plainToInstance(CreateUserResponseDTo, savedUser, {
