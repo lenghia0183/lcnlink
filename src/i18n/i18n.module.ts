@@ -1,4 +1,3 @@
-// src/i18n/i18n.module.ts
 import { Module } from '@nestjs/common';
 import {
   I18nModule as NestI18nModule,

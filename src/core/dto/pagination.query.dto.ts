@@ -7,12 +7,19 @@ import { BaseDto } from './base.request.dto';
 import { ValidationHelper } from '@core/helpers/validation.helper';
 
 export class Sort {
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Tên cột để sắp xếp',
+    example: 'name',
+  })
   @IsString()
   @IsNotEmpty()
   column: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Thứ tự sắp xếp (ASC hoặc DESC)',
+    example: 'ASC',
+    enum: EnumSort,
+  })
   @IsString()
   @IsNotEmpty()
   @IsEnum(EnumSort)
@@ -20,31 +27,55 @@ export class Sort {
 }
 
 export class Filter {
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Tên cột để lọc',
+    example: 'name',
+  })
   @IsString()
   @IsNotEmpty()
   column: string;
 
+  @ApiProperty({
+    description: 'Giá trị để lọc',
+    example: 'john',
+  })
   @IsString()
-  @ApiProperty()
   @IsNotEmpty()
   text: string;
 }
 
 export class PaginationQuery extends BaseDto<PaginationQuery> {
+  @ApiProperty({
+    description: 'Số trang (bắt đầu từ 1)',
+    example: 1,
+    default: 1,
+    minimum: 1,
+  })
   @Allow()
   @Transform(({ value }) => (value ? Number(value) : 1))
   page: number = 1;
 
+  @ApiProperty({
+    description: 'Số lượng bản ghi trên mỗi trang',
+    example: 10,
+    default: 10,
+    minimum: 1,
+    maximum: 100,
+  })
   @Allow()
   @Transform(({ value }) => (value ? Number(value) : 10))
   limit: number = 10;
 
+  @ApiProperty({
+    description: 'Từ khóa tìm kiếm',
+    example: 'john doe',
+    required: false,
+  })
   @Allow()
   keyword?: string;
 
   @ApiProperty({
-    description: 'Filter array in JSON format',
+    description: 'Mảng bộ lọc dưới dạng JSON',
     example: '[{"column":"name","text":"john"}]',
     required: false,
   })
@@ -60,7 +91,7 @@ export class PaginationQuery extends BaseDto<PaginationQuery> {
   filter?: Filter[];
 
   @ApiProperty({
-    description: 'Sort array in JSON format',
+    description: 'Mảng sắp xếp dưới dạng JSON',
     example: '[{"column":"name","order":"ASC"}]',
     required: false,
   })

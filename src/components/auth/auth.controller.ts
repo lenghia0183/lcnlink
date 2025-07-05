@@ -1,6 +1,21 @@
 import { Public } from '@core/decorators/public.decorator';
 import { Body, Controller, Get, Post, Put, Request } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiUnauthorizedResponse,
+  ApiBadRequestResponse,
+} from '@nestjs/swagger';
 import { RegisterRequestDTO } from './dto/request/register.request.dto';
+import { RegisterResponseDTO } from './dto/response/register.response.dto';
+import { LoginResponseDTO } from './dto/response/login.response.dto';
+import { Login2FARequiredResponseDTO } from './dto/response/login-2fa-required.response.dto';
+import { ForgotPasswordResponseDto } from './dto/response/forgot-password.response.dto';
+import { ResetPasswordResponseDto } from './dto/response/reset-password.response.dto';
+import { Generate2FAResponseDto } from './dto/response/generate-2fa.response.dto';
 import { isEmpty } from 'lodash';
 import { AuthService } from './auth.service';
 import { LoginRequestDto } from './dto/request/login.request.dto';
@@ -14,11 +29,26 @@ import { Login2FaRequestDto } from './dto/request/verify-otp.request.dto';
 import { ForgotPasswordRequestDto } from './dto/request/forgot-password.request.dto';
 import { ResetPasswordRequestDto } from './dto/request/reset-password.request.dto';
 
+@ApiTags('Xác thực')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
   @Public()
   @Post('/register')
+  @ApiOperation({
+    summary: 'Đăng ký tài khoản mới',
+    description:
+      'Tạo tài khoản người dùng mới với thông tin cá nhân và xác thực',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Đăng ký thành công',
+    type: RegisterResponseDTO,
+  })
+  @ApiBadRequestResponse({
+    description: 'Dữ liệu đầu vào không hợp lệ hoặc email đã tồn tại',
+  })
+  @ApiBody({ type: RegisterRequestDTO })
   async register(@Body() payload: RegisterRequestDTO) {
     const { request, responseError } = payload;
     if (!isEmpty(responseError)) {
@@ -28,6 +58,25 @@ export class AuthController {
   }
   @Public()
   @Post('/login')
+  @ApiOperation({
+    summary: 'Đăng nhập hệ thống',
+    description:
+      'Xác thực người dùng và trả về access token. Nếu bật 2FA sẽ yêu cầu OTP',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Đăng nhập thành công',
+    type: LoginResponseDTO,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Yêu cầu xác thực 2FA',
+    type: Login2FARequiredResponseDTO,
+  })
+  @ApiBadRequestResponse({
+    description: 'Email hoặc mật khẩu không chính xác',
+  })
+  @ApiBody({ type: LoginRequestDto })
   async login(@Body() payload: LoginRequestDto) {
     const { request, responseError } = payload;
     if (!isEmpty(responseError)) {
@@ -38,6 +87,20 @@ export class AuthController {
 
   @Public()
   @Post('/login-2fa')
+  @ApiOperation({
+    summary: 'Xác thực 2FA để hoàn tất đăng nhập',
+    description:
+      'Xác minh mã OTP từ ứng dụng authenticator để hoàn tất quá trình đăng nhập',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Xác thực 2FA thành công',
+    type: LoginResponseDTO,
+  })
+  @ApiBadRequestResponse({
+    description: 'Mã OTP không hợp lệ hoặc đã hết hạn',
+  })
+  @ApiBody({ type: Login2FaRequestDto })
   async login2fa(@Body() payload: Login2FaRequestDto) {
     const { request, responseError } = payload;
     if (!isEmpty(responseError)) {
@@ -47,6 +110,23 @@ export class AuthController {
   }
 
   @Put('/toggle-2fa')
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Bật/tắt xác thực 2FA',
+    description:
+      'Kích hoạt hoặc vô hiệu hóa xác thực hai yếu tố cho tài khoản người dùng',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Cập nhật trạng thái 2FA thành công',
+  })
+  @ApiBadRequestResponse({
+    description: 'Mã OTP không hợp lệ',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Chưa đăng nhập hoặc token không hợp lệ',
+  })
+  @ApiBody({ type: Toggle2faRequestDto })
   async toggle2fa(@Body() payload: Toggle2faRequestDto) {
     const { request, responseError } = payload;
 
@@ -58,6 +138,19 @@ export class AuthController {
   }
 
   @Get('/generate-2fa')
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Tạo mã QR cho 2FA',
+    description: 'Tạo mã QR và secret key để thiết lập xác thực hai yếu tố',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Tạo mã 2FA thành công',
+    type: Generate2FAResponseDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Chưa đăng nhập hoặc token không hợp lệ',
+  })
   async generate2fa(@Request() loggedInRequest: LoggedInRequest) {
     const user = loggedInRequest.user;
 
@@ -71,6 +164,22 @@ export class AuthController {
   }
 
   @Put('/change-2fa')
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Thay đổi secret key 2FA',
+    description: 'Cập nhật secret key mới cho xác thực hai yếu tố',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Thay đổi secret key 2FA thành công',
+  })
+  @ApiBadRequestResponse({
+    description: 'Mã OTP không hợp lệ hoặc secret key không đúng',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Chưa đăng nhập hoặc token không hợp lệ',
+  })
+  @ApiBody({ type: Change2FaDto })
   async change2fa(@Body() payload: Change2FaDto) {
     const { request, responseError } = payload;
 
@@ -82,6 +191,20 @@ export class AuthController {
 
   @Public()
   @Post('/forgot-password')
+  @ApiOperation({
+    summary: 'Quên mật khẩu',
+    description:
+      'Gửi email chứa link reset mật khẩu đến địa chỉ email đã đăng ký',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Email reset mật khẩu đã được gửi thành công',
+    type: ForgotPasswordResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Email không tồn tại trong hệ thống',
+  })
+  @ApiBody({ type: ForgotPasswordRequestDto })
   async forgotPassword(@Body() payload: ForgotPasswordRequestDto) {
     const { request, responseError } = payload;
     if (!isEmpty(responseError)) {
@@ -92,6 +215,19 @@ export class AuthController {
 
   @Public()
   @Post('/reset-password')
+  @ApiOperation({
+    summary: 'Đặt lại mật khẩu',
+    description: 'Đặt lại mật khẩu mới bằng token được gửi qua email',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Đặt lại mật khẩu thành công',
+    type: ResetPasswordResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Token không hợp lệ hoặc đã hết hạn',
+  })
+  @ApiBody({ type: ResetPasswordRequestDto })
   async resetPassword(@Body() payload: ResetPasswordRequestDto) {
     const { request, responseError } = payload;
     if (!isEmpty(responseError)) {

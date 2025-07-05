@@ -9,7 +9,12 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
 import { UserService } from './user.service';
 import { CreateUserRequestDto } from './dto/request/create-user.request.dto';
@@ -22,7 +27,8 @@ import { USER_ROLE_ENUM } from './user.constant';
 import { IdParamDto } from '@core/dto/params-id.request.dto';
 import { mergePayload } from '@utils/common';
 
-@ApiTags('Users')
+@ApiTags('Người dùng')
+@ApiBearerAuth('JWT-auth')
 @UseGuards(RoleGuard)
 @Roles(USER_ROLE_ENUM.ADMIN)
 @Controller('users')
@@ -30,8 +36,8 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a new user' })
-  @ApiResponse({ status: 201, description: 'User created successfully' })
+  @ApiOperation({ summary: 'Tạo người dùng mới' })
+  @ApiResponse({ status: 201, description: 'Tạo người dùng thành công' })
   async createUser(@Body() payload: CreateUserRequestDto) {
     const { request, responseError } = payload;
     if (!isEmpty(responseError)) {
@@ -42,8 +48,13 @@ export class UserController {
   }
 
   @Get('/list')
-  @ApiOperation({ summary: 'Get users with pagination and filters' })
-  @ApiResponse({ status: 200, description: 'User list retrieved successfully' })
+  @ApiOperation({
+    summary: 'Lấy danh sách người dùng với phân trang và bộ lọc',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lấy danh sách người dùng thành công',
+  })
   async getUserList(@Query() query: GetListUserRequestDto) {
     const { request, responseError } = query;
 
@@ -55,9 +66,12 @@ export class UserController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get user by ID' })
-  @ApiResponse({ status: 200, description: 'User retrieved successfully' })
-  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiOperation({ summary: 'Lấy thông tin người dùng theo ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lấy thông tin người dùng thành công',
+  })
+  @ApiResponse({ status: 404, description: 'Không tìm thấy người dùng' })
   async getUserById(@Param() params: IdParamDto) {
     const { request, responseError } = params;
 
@@ -68,9 +82,9 @@ export class UserController {
   }
 
   @Put(':id')
-  @ApiOperation({ summary: 'Update user by ID' })
-  @ApiResponse({ status: 200, description: 'User updated successfully' })
-  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiOperation({ summary: 'Cập nhật thông tin người dùng theo ID' })
+  @ApiResponse({ status: 200, description: 'Cập nhật người dùng thành công' })
+  @ApiResponse({ status: 404, description: 'Không tìm thấy người dùng' })
   async updateUser(
     @Param() params: IdParamDto,
     @Body() updateUserDto: UpdateUserRequestDto,
@@ -85,9 +99,9 @@ export class UserController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Soft delete user by ID' })
-  @ApiResponse({ status: 200, description: 'User deleted successfully' })
-  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiOperation({ summary: 'Xóa mềm người dùng theo ID' })
+  @ApiResponse({ status: 200, description: 'Xóa người dùng thành công' })
+  @ApiResponse({ status: 404, description: 'Không tìm thấy người dùng' })
   async deleteUser(@Param() params: IdParamDto) {
     const { request, responseError } = params;
 
@@ -99,10 +113,10 @@ export class UserController {
   }
 
   @Put(':id/toggle-lock')
-  @ApiOperation({ summary: 'Toggle user lock status' })
+  @ApiOperation({ summary: 'Chuyển đổi trạng thái khóa người dùng' })
   @ApiResponse({
     status: 200,
-    description: 'User lock status updated successfully',
+    description: 'Cập nhật trạng thái khóa người dùng thành công',
   })
   @ApiResponse({ status: 404, description: 'User not found' })
   async toggleUserLockStatus(@Param() params: IdParamDto) {
