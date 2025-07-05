@@ -84,6 +84,14 @@ export class UserService {
   }
 
   async createUser(data: CreateUserRequestDto) {
+    const isEmailExists = await this.userRepository.isEmailExists(data.email);
+
+    if (isEmailExists) {
+      return new ResponseBuilder()
+        .withCode(ResponseCodeEnum.BAD_REQUEST)
+        .withMessage(this.i18n.translate(I18nErrorKeys.EMAIL_EXIST));
+    }
+
     const { secret } = twoFactor.generateSecret();
 
     const user = this.userRepository.create({

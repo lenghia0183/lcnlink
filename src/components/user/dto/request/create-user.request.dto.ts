@@ -6,6 +6,7 @@ import {
   MaxLength,
   IsNotEmpty,
   IsOptional,
+  IsDate,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -40,9 +41,10 @@ export class CreateUserRequestDto extends BaseDto<CreateUserRequestDto> {
   @ApiProperty({ description: 'gender', example: 1 })
   @IsEnum(USER_GENDER_ENUM)
   @IsOptional()
-  gender?: USER_GENDER_ENUM;
+  gender: USER_GENDER_ENUM;
 
   @ApiProperty({ description: 'date of birth', example: '01-08-2003' })
+  @IsDate()
   dateOfBirth: Date;
 
   @ApiProperty({ description: 'avatar', example: 'https://...' })
