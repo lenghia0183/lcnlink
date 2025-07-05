@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
-import { AllConfigType } from '@config/config.type';
+import { AllConfigType, AppConfig } from '@config/config.type';
 import { I18nService } from 'nestjs-i18n';
+import { I18nMailKeys } from '@constant/i18n-keys.enum';
 
 @Injectable()
 export class MailService {
@@ -18,36 +19,28 @@ export class MailService {
     resetToken: string,
     lang?: string,
   ): Promise<void> {
-    const appConfig = this.configService.get('app', { infer: true });
-    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+    const appConfig = this.configService.get<AppConfig>('app');
 
-    // Get localized subject and content
-    const subject = this.i18n.translate('mail.RESET_PASSWORD_SUBJECT', {
-      lang,
-    });
+    const resetUrl = `${appConfig?.frontendUrl}/reset-password?token=${resetToken}`;
+
+    const subject = this.i18n.translate(I18nMailKeys.RESET_PASSWORD_SUBJECT);
     const expirationTime = this.i18n.translate(
-      'mail.RESET_PASSWORD_EXPIRATION',
-      { lang },
+      I18nMailKeys.RESET_PASSWORD_EXPIRATION,
     );
     const resetPasswordGreeting = this.i18n.translate(
-      'mail.RESET_PASSWORD_GREETING',
-      { lang },
+      I18nMailKeys.RESET_PASSWORD_GREETING,
     );
     const resetPasswordMessage = this.i18n.translate(
-      'mail.RESET_PASSWORD_MESSAGE',
-      { lang },
+      I18nMailKeys.RESET_PASSWORD_MESSAGE,
     );
     const resetPasswordButton = this.i18n.translate(
-      'mail.RESET_PASSWORD_BUTTON',
-      { lang },
+      I18nMailKeys.RESET_PASSWORD_BUTTON,
     );
     const resetPasswordExpiryNote = this.i18n.translate(
-      'mail.RESET_PASSWORD_EXPIRY_NOTE',
-      { lang },
+      I18nMailKeys.RESET_PASSWORD_EXPIRY_NOTE,
     );
     const resetPasswordIgnore = this.i18n.translate(
-      'mail.RESET_PASSWORD_IGNORE',
-      { lang },
+      I18nMailKeys.RESET_PASSWORD_IGNORE,
     );
 
     await this.mailerService.sendMail({
@@ -57,9 +50,9 @@ export class MailService {
       context: {
         fullname,
         resetUrl,
-        appName: appConfig?.appName || 'Your App',
+        appName: appConfig?.appName,
         expirationTime,
-        lang: lang || 'vi',
+        lang: lang || appConfig?.fallbackLanguage,
         resetPasswordSubject: subject,
         resetPasswordGreeting,
         resetPasswordMessage,
@@ -77,25 +70,20 @@ export class MailService {
   ): Promise<void> {
     const appConfig = this.configService.get('app', { infer: true });
 
-    // Get localized subject and content
-    const subject = this.i18n.translate('mail.RESET_PASSWORD_SUCCESS_SUBJECT', {
-      lang,
-    });
+    const subject = this.i18n.translate(
+      I18nMailKeys.RESET_PASSWORD_SUCCESS_SUBJECT,
+    );
     const resetPasswordGreeting = this.i18n.translate(
-      'mail.RESET_PASSWORD_GREETING',
-      { lang },
+      I18nMailKeys.RESET_PASSWORD_GREETING,
     );
     const resetPasswordSuccessMessage = this.i18n.translate(
-      'mail.RESET_PASSWORD_SUCCESS_MESSAGE',
-      { lang },
+      I18nMailKeys.RESET_PASSWORD_SUCCESS_MESSAGE,
     );
     const resetPasswordSuccessLogin = this.i18n.translate(
-      'mail.RESET_PASSWORD_SUCCESS_LOGIN',
-      { lang },
+      I18nMailKeys.RESET_PASSWORD_SUCCESS_LOGIN,
     );
     const resetPasswordSuccessSecurity = this.i18n.translate(
-      'mail.RESET_PASSWORD_SUCCESS_SECURITY',
-      { lang },
+      I18nMailKeys.RESET_PASSWORD_SUCCESS_SECURITY,
     );
 
     await this.mailerService.sendMail({
@@ -104,8 +92,8 @@ export class MailService {
       template: 'reset-password-success',
       context: {
         fullname,
-        appName: appConfig?.appName || 'Your App',
-        lang: lang || 'vi',
+        appName: appConfig?.appName,
+        lang: lang || appConfig?.fallbackLanguage,
         resetPasswordSuccessSubject: subject,
         resetPasswordGreeting,
         resetPasswordSuccessMessage,

@@ -61,11 +61,19 @@ export class User extends BaseModel {
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword() {
-    console.log('HashPassword called');
-    console.log('thisPassword', this.password);
     if (this.password && !this.password.startsWith('$2b$')) {
       const salt = await bcrypt.genSalt(10);
       this.password = await bcrypt.hash(this.password, salt);
+    }
+  }
+
+  // Method to manually hash password when lifecycle hooks don't work
+  async setAndHashPassword(plainPassword: string): Promise<void> {
+    if (plainPassword && !plainPassword.startsWith('$2b$')) {
+      const salt = await bcrypt.genSalt(10);
+      this.password = await bcrypt.hash(plainPassword, salt);
+    } else {
+      this.password = plainPassword;
     }
   }
 }

@@ -423,8 +423,6 @@ export class AuthService {
       where: { id: tokenPayload?.userId },
     });
 
-    console.log('user', user);
-
     if (!user) {
       throw new BusinessException(
         this.i18n.translate(I18nErrorKeys.RESET_TOKEN_INVALID),
@@ -432,14 +430,13 @@ export class AuthService {
       );
     }
 
-    user.password = data.newPassword;
+    await user.setAndHashPassword(data.newPassword);
     await this.userRepository.save(user);
 
     try {
       await this.mailService.sendPasswordResetSuccessEmail(
         user.email,
         user.fullname || 'User',
-        'vi',
       );
     } catch (error) {
       console.error('Error sending password reset success email:', error);

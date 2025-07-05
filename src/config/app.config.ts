@@ -1,4 +1,12 @@
-import { Min, Max, IsInt, IsEnum, IsString, IsOptional } from 'class-validator';
+import {
+  Min,
+  Max,
+  IsInt,
+  IsEnum,
+  IsString,
+  IsOptional,
+  IsNotEmpty,
+} from 'class-validator';
 
 import validateConfig from 'src/utils/validate-config';
 import { AppConfig } from './config.type';
@@ -31,6 +39,10 @@ class EnvironmentVariablesValidator {
 
   @IsString()
   APP_NAME: string;
+
+  @IsString()
+  @IsNotEmpty()
+  FRONTEND_URL: string;
 }
 export default registerAs<AppConfig>('app', () => {
   validateConfig(process.env, EnvironmentVariablesValidator);
@@ -41,5 +53,6 @@ export default registerAs<AppConfig>('app', () => {
     apiPrefix: process.env.API_PREFIX || 'api/v1',
     fallbackLanguage: process.env.FALLBACK_LANGUAGE || 'vi',
     appName: process.env.APP_NAME || 'lcnlink',
+    frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
   };
 });
