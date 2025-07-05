@@ -35,8 +35,7 @@ export class CreateUserRequestDto extends BaseDto<CreateUserRequestDto> {
 
   @ApiProperty({ description: 'role', example: 1 })
   @IsEnum(USER_ROLE_ENUM)
-  @IsOptional()
-  role?: USER_ROLE_ENUM;
+  role: USER_ROLE_ENUM;
 
   @ApiProperty({ description: 'gender', example: 1 })
   @IsEnum(USER_GENDER_ENUM)
@@ -44,8 +43,7 @@ export class CreateUserRequestDto extends BaseDto<CreateUserRequestDto> {
   gender?: USER_GENDER_ENUM;
 
   @ApiProperty({ description: 'date of birth', example: '01-08-2003' })
-  @IsOptional()
-  dateOfBirth?: Date;
+  dateOfBirth: Date;
 
   @ApiProperty({ description: 'avatar', example: 'https://...' })
   @IsOptional()
@@ -56,6 +54,5 @@ export class CreateUserRequestDto extends BaseDto<CreateUserRequestDto> {
   @ApiProperty({ description: 'phone', example: '0123456789' })
   @Length(10)
   @IsString()
-  @IsOptional()
-  phone?: string;
+  phone: string;
 }

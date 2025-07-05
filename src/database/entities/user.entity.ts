@@ -17,10 +17,10 @@ export class User extends BaseModel {
   @Column({ nullable: true })
   phone: string;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'int' })
   role: number;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'int' })
   gender: number;
 
   @Column({ type: 'date', nullable: true })
@@ -39,7 +39,6 @@ export class User extends BaseModel {
     type: 'int',
     enum: IS_2FA_ENUM,
     default: IS_2FA_ENUM.DISABLED,
-    nullable: true,
   })
   isEnable2FA: IS_2FA_ENUM;
 

@@ -362,24 +362,11 @@ export class AuthService {
       },
     );
 
-    // const resetToken = this.jwt.sign(resetTokenPayload, {
-    //   expiresIn: '15m',
-    // });
-    // const resetTokenExpires = new Date(Date.now() + 15 * 60 * 1000);
-
-    // // Lưu token vào database
-    // await this.userRepository.update(user.id, {
-    //   resetPasswordToken: resetToken,
-    //   resetPasswordExpires: resetTokenExpires,
-    // });
-
-    // Send password reset email
     try {
       await this.mailService.sendPasswordResetEmail(
         user.email,
         user.fullname || 'User',
         forgotPasswordToken,
-        'vi',
       );
     } catch (error) {
       console.error('Error sending password reset email:', error);
