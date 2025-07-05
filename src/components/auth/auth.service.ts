@@ -25,17 +25,14 @@ import { I18nErrorKeys, I18nMessageKeys } from '@constant/i18n-keys.enum';
 import { Login2FaRequestDto } from './dto/request/verify-otp.request.dto';
 import { OtpTokenPayload } from '@components/types/otp-token-payload.interface';
 import { JwtPayload } from '@core/types/jwt-payload.type';
-import {
-  ForgotPasswordRequestDto,
-  ForgotPasswordResponseDto,
-} from './dto/request/forgot-password.request.dto';
-import {
-  ResetPasswordRequestDto,
-  ResetPasswordResponseDto,
-} from './dto/request/reset-password.request.dto';
+import { ForgotPasswordRequestDto } from './dto/request/forgot-password.request.dto';
+import { ResetPasswordRequestDto } from './dto/request/reset-password.request.dto';
+
+import { ForgotPasswordResponseDto } from './dto/response/forgot-password.response.dto';
 import { MailService } from '@components/mail/mail.service';
 
 import { ForgotPasswordTokenPayload } from '@components/types/forgot-password-token-payload.interface';
+import { ResetPasswordResponseDto } from './dto/response/reset-password.response.dto';
 
 @Injectable()
 export class AuthService {
