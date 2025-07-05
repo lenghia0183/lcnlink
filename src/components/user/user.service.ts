@@ -92,7 +92,7 @@ export class UserService {
         .withMessage(this.i18n.translate(I18nErrorKeys.EMAIL_EXIST));
     }
 
-    const { secret } = twoFactor.generateSecret();
+    const { secret, uri, qr } = twoFactor.generateSecret();
 
     const user = this.userRepository.create({
       email: data.email,
@@ -104,6 +104,8 @@ export class UserService {
       avatar: data.avatar,
       createdBy: data.userId,
       twoFactorSecret: secret,
+      twoFactorQr: qr,
+      twoFactorUri: uri,
     });
 
     const savedUser = await this.userRepository.save(user);

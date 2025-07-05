@@ -44,6 +44,12 @@ export class User extends BaseModel {
   @Column({ nullable: true })
   twoFactorSecret: string;
 
+  @Column({ nullable: true })
+  twoFactorQr: string;
+
+  @Column({ nullable: true })
+  twoFactorUri: string;
+
   @Column({
     type: 'int',
     enum: IS_2FA_ENUM,

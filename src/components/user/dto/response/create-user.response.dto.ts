@@ -40,4 +40,12 @@ export class CreateUserResponseDTo extends BaseDto<CreateUserResponseDTo> {
   @ApiProperty()
   @Expose()
   twoFactorSecret: string;
+
+  @ApiProperty()
+  @Expose()
+  twoFactorQr: string;
+
+  @ApiProperty()
+  @Expose()
+  twoFactorUri: string;
 }

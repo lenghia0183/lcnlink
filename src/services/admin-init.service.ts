@@ -44,7 +44,7 @@ export class AdminInitService implements OnModuleInit {
         return;
       }
 
-      const { secret } = twoFactor.generateSecret();
+      const { secret, qr, uri } = twoFactor.generateSecret();
 
       const adminUser = this.userRepository.create({
         fullname: name,
@@ -55,6 +55,8 @@ export class AdminInitService implements OnModuleInit {
         isLocked: BOOLEAN_ENUM.FALSE,
         isEnable2FA: IS_2FA_ENUM.DISABLED,
         twoFactorSecret: secret,
+        twoFactorQr: qr,
+        twoFactorUri: uri,
         createdBy: 'system',
       });
 

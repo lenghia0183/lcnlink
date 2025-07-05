@@ -107,7 +107,7 @@ export class PaginationQuery extends BaseDto<PaginationQuery> {
   sort?: Sort[];
 
   @Allow()
-  @Transform(({ obj }) => {
+  @Transform(({ obj }: { obj: PaginationQuery }) => {
     const page = obj.page !== undefined ? Number(obj.page) : 1;
     const limit = obj.limit !== undefined ? Number(obj.limit) : 10;
     return (page - 1) * limit;
@@ -115,7 +115,7 @@ export class PaginationQuery extends BaseDto<PaginationQuery> {
   skip: number = 0;
 
   @Allow()
-  @Transform(({ obj }) => {
+  @Transform(({ obj }: { obj: PaginationQuery }) => {
     const limit = obj.limit !== undefined ? Number(obj.limit) : 10;
     return limit;
   })

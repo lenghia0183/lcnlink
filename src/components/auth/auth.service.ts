@@ -54,9 +54,8 @@ export class AuthService {
       );
     }
 
-    const { secret } = twoFactor.generateSecret();
+    const { secret, uri, qr } = twoFactor.generateSecret();
 
-    // Tạo user entity trực tiếp
     const user = this.userRepository.create({
       email: data.email,
       fullname: data.fullname,
@@ -65,10 +64,11 @@ export class AuthService {
       phone: data.phone,
       createdBy: data.userId,
       twoFactorSecret: secret,
+      twoFactorQr: qr,
+      twoFactorUri: uri,
       role: USER_ROLE_ENUM.USER,
     });
 
-    // Save user to database
     const savedUser = await this.userRepository.save(user);
 
     const response = plainToInstance(RegisterResponseDTO, savedUser, {
