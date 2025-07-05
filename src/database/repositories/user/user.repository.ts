@@ -27,11 +27,11 @@ export class UserRepository
     return this.exists({ where: { email } });
   }
 
-  async updateLockStatus(userId: string, isLocked: boolean): Promise<void> {
+  async updateLockStatus(userId: string, isLocked: number): Promise<void> {
     await this.update(userId, { isLocked });
   }
 
-  async updateActiveStatus(userId: string, isActive: boolean): Promise<void> {
+  async updateActiveStatus(userId: string, isActive: number): Promise<void> {
     await this.update(userId, { isActive });
   }
 

@@ -17,6 +17,7 @@ import { UpdateUserResponseDto } from './dto/response/update-user.response.dto';
 import { I18nErrorKeys } from '@constant/i18n-keys.enum';
 import { GetUserDetailResponseDto } from './dto/response/get-user-detail.response.dto';
 import { getPayloadFromRequest } from '@utils/common';
+import { BOOLEAN_ENUM } from '@constant/app.enum';
 
 @Injectable()
 export class UserService {
@@ -64,7 +65,10 @@ export class UserService {
   async toggleUserLockStatus(id: string) {
     const user = await this.getUserById(id);
 
-    user.isLocked = !user.isLocked;
+    user.isLocked =
+      user.isLocked === BOOLEAN_ENUM.TRUE
+        ? BOOLEAN_ENUM.TRUE
+        : BOOLEAN_ENUM.FALSE;
     const updatedUser = await this.userRepository.save(user);
 
     const response = plainToInstance(GetUserDetailResponseDto, updatedUser, {

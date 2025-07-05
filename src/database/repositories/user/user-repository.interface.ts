@@ -6,9 +6,9 @@ export interface UserRepositoryInterface extends BaseRepositoryInterface<User> {
 
   isEmailExists(email: string): Promise<boolean>;
 
-  updateLockStatus(userId: string, isLocked: boolean): Promise<void>;
+  updateLockStatus(userId: string, isLocked: number): Promise<void>;
 
-  updateActiveStatus(userId: string, isActive: boolean): Promise<void>;
+  updateActiveStatus(userId: string, isActive: number): Promise<void>;
 
   findWithKeyword(
     keyword: string,
