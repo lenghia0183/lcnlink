@@ -43,6 +43,12 @@ export class User extends BaseModel {
   })
   isEnable2FA: IS_2FA_ENUM;
 
+  @Column({ nullable: true })
+  resetPasswordToken: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  resetPasswordExpires: Date;
+
   @Column({ default: true })
   isActive: boolean;
 
@@ -55,6 +61,8 @@ export class User extends BaseModel {
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword() {
+    console.log('HashPassword called');
+    console.log('thisPassword', this.password);
     if (this.password && !this.password.startsWith('$2b$')) {
       const salt = await bcrypt.genSalt(10);
       this.password = await bcrypt.hash(this.password, salt);

@@ -25,5 +25,7 @@
   "OTP_REQUIRED": "Please provide your 2FA code to complete login",
   "OTP_VERIFICATION_SUCCESS": "OTP verification successful",
   "UPLOAD_SUCCESS": "File uploaded successfully",
-  "CHANGE_PASSWORD_SUCCESS": "Password changed successfully"
+  "CHANGE_PASSWORD_SUCCESS": "Password changed successfully",
+  "FORGOT_PASSWORD_EMAIL_SENT": "If the email exists in our system, you will receive password reset instructions",
+  "RESET_PASSWORD_SUCCESS": "Password has been reset successfully"
 }

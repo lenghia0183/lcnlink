@@ -13,7 +13,7 @@ import { UserService } from '@components/user/user.service';
 import { BusinessException } from '@core/exception-filters/business-exception.filter';
 import { LoginRequestDto } from './dto/request/login.request.dto';
 import bcrypt from 'bcrypt';
-import { AllConfigType, AppConfig } from '@config/config.type';
+import { AllConfigType, AppConfig, AuthConfig } from '@config/config.type';
 import { ConfigService } from '@nestjs/config';
 import { LoginResponseDTO } from './dto/response/login.response.dto';
 import { Login2FARequiredResponseDTO } from './dto/response/login-2fa-required.response.dto';
@@ -25,18 +25,30 @@ import { I18nErrorKeys, I18nMessageKeys } from '@constant/i18n-keys.enum';
 import { Login2FaRequestDto } from './dto/request/verify-otp.request.dto';
 import { OtpTokenPayload } from '@components/types/otp-token-payload.interface';
 import { JwtPayload } from '@core/types/jwt-payload.type';
+import {
+  ForgotPasswordRequestDto,
+  ForgotPasswordResponseDto,
+} from './dto/request/forgot-password.request.dto';
+import {
+  ResetPasswordRequestDto,
+  ResetPasswordResponseDto,
+} from './dto/request/reset-password.request.dto';
+import { MailService } from '@components/mail/mail.service';
+
+import { ForgotPasswordTokenPayload } from '@components/types/forgot-password-token-payload.interface';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly i18n: I18nService,
-    private readonly jwt: JwtService,
+    private readonly JwtService: JwtService,
     private readonly configService: ConfigService<AllConfigType>,
     private readonly userService: UserService,
     private readonly userRepository: UserRepository,
+    private readonly mailService: MailService,
   ) {}
   async register(data: RegisterRequestDTO) {
-    const existedUser = await this.userService.getUserByEmail(data.email);
+    const existedUser = await this.userRepository.findByEmail(data.email);
 
     if (existedUser) {
       throw new BusinessException(
@@ -106,7 +118,7 @@ export class AuthService {
         timestamp: Date.now(),
       };
 
-      const otpToken = await this.jwt.signAsync(otpPayload, {
+      const otpToken = await this.JwtService.signAsync(otpPayload, {
         secret: authConfig?.otpTokenSecret,
         expiresIn: authConfig?.otpTokenExpires,
       });
@@ -134,12 +146,12 @@ export class AuthService {
       id: existedUser.id,
     };
 
-    const accessToken = await this.jwt.signAsync(payload, {
+    const accessToken = await this.JwtService.signAsync(payload, {
       secret: authConfig?.accessSecret,
       expiresIn: authConfig?.accessExpires,
     });
 
-    const refreshToken = await this.jwt.signAsync(payload, {
+    const refreshToken = await this.JwtService.signAsync(payload, {
       secret: authConfig?.refreshSecret,
       expiresIn: authConfig?.refreshExpires,
     });
@@ -236,7 +248,7 @@ export class AuthService {
     const authConfig = this.configService.get('auth', { infer: true });
 
     try {
-      const otpPayload = await this.jwt.verifyAsync<OtpTokenPayload>(
+      const otpPayload = await this.JwtService.verifyAsync<OtpTokenPayload>(
         data.otpToken,
         {
           secret: authConfig?.otpTokenSecret,
@@ -270,12 +282,12 @@ export class AuthService {
         id: existedUser.id,
       };
 
-      const accessToken = await this.jwt.signAsync(payload, {
+      const accessToken = await this.JwtService.signAsync(payload, {
         secret: authConfig?.accessSecret,
         expiresIn: authConfig?.accessExpires,
       });
 
-      const refreshToken = await this.jwt.signAsync(payload, {
+      const refreshToken = await this.JwtService.signAsync(payload, {
         secret: authConfig?.refreshSecret,
         expiresIn: authConfig?.refreshExpires,
       });
@@ -325,5 +337,127 @@ export class AuthService {
       );
     }
     return true;
+  }
+
+  async forgotPassword(data: ForgotPasswordRequestDto) {
+    const user = await this.userRepository.findByEmail(data.email);
+    const authConfig = this.configService.get<AuthConfig>('auth');
+    if (!user) {
+      throw new BusinessException(
+        this.i18n.translate(I18nErrorKeys.EMAIL_NOT_EXIST),
+        ResponseCodeEnum.NOT_FOUND,
+      );
+    }
+
+    const forgotPasswordTokenPayload: ForgotPasswordTokenPayload = {
+      userId: user.id,
+      email: user.email,
+    };
+
+    const forgotPasswordToken = await this.JwtService.signAsync(
+      forgotPasswordTokenPayload,
+      {
+        secret: authConfig?.forgotPasswordSecret,
+        expiresIn: authConfig?.forgotPasswordExpires,
+      },
+    );
+
+    // const resetToken = this.jwt.sign(resetTokenPayload, {
+    //   expiresIn: '15m',
+    // });
+    // const resetTokenExpires = new Date(Date.now() + 15 * 60 * 1000);
+
+    // // Lưu token vào database
+    // await this.userRepository.update(user.id, {
+    //   resetPasswordToken: resetToken,
+    //   resetPasswordExpires: resetTokenExpires,
+    // });
+
+    // Send password reset email
+    try {
+      await this.mailService.sendPasswordResetEmail(
+        user.email,
+        user.fullname || 'User',
+        forgotPasswordToken,
+        'vi',
+      );
+    } catch (error) {
+      console.error('Error sending password reset email:', error);
+    }
+
+    const message: string = this.i18n.translate(
+      I18nMessageKeys.FORGOT_PASSWORD_EMAIL_SENT,
+    );
+    const response = plainToInstance(ForgotPasswordResponseDto, {
+      message,
+      email: data.email,
+    });
+
+    return (
+      await new ResponseBuilder(response).withCodeI18n(
+        ResponseCodeEnum.SUCCESS,
+        this.i18n,
+      )
+    ).build();
+  }
+
+  async resetPassword(data: ResetPasswordRequestDto) {
+    const authConfig = this.configService.get<AuthConfig>('auth');
+
+    let tokenPayload: ForgotPasswordTokenPayload | null = null;
+    try {
+      tokenPayload = this.JwtService.verify<ForgotPasswordTokenPayload>(
+        data?.token,
+        {
+          secret: authConfig?.forgotPasswordSecret,
+        },
+      );
+    } catch {
+      throw new BusinessException(
+        this.i18n.translate(I18nErrorKeys.RESET_TOKEN_INVALID),
+        ResponseCodeEnum.BAD_REQUEST,
+      );
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { id: tokenPayload?.userId },
+    });
+
+    console.log('user', user);
+
+    if (!user) {
+      throw new BusinessException(
+        this.i18n.translate(I18nErrorKeys.RESET_TOKEN_INVALID),
+        ResponseCodeEnum.BAD_REQUEST,
+      );
+    }
+
+    user.password = data.newPassword;
+    await this.userRepository.save(user);
+
+    // try {
+    //   await this.mailService.sendPasswordResetSuccessEmail(
+    //     user.email,
+    //     user.fullname || 'User',
+    //     'vi',
+    //   );
+    // } catch (error) {
+    //   console.error('Error sending password reset success email:', error);
+    // }
+
+    const message: string = this.i18n.translate(
+      I18nMessageKeys.RESET_PASSWORD_SUCCESS,
+    );
+    const response = plainToInstance(ResetPasswordResponseDto, {
+      message,
+      success: true,
+    });
+
+    return (
+      await new ResponseBuilder(response).withCodeI18n(
+        ResponseCodeEnum.SUCCESS,
+        this.i18n,
+      )
+    ).build();
   }
 }

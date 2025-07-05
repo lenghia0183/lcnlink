@@ -1,0 +1,13 @@
+{
+  "RESET_PASSWORD_SUBJECT": "Đặt lại mật khẩu",
+  "RESET_PASSWORD_SUCCESS_SUBJECT": "Mật khẩu đã được đặt lại thành công",
+  "RESET_PASSWORD_EXPIRATION": "15 phút",
+  "RESET_PASSWORD_GREETING": "Xin chào",
+  "RESET_PASSWORD_MESSAGE": "Bạn đã yêu cầu đặt lại mật khẩu. Vui lòng nhấp vào liên kết bên dưới để đặt lại mật khẩu của bạn:",
+  "RESET_PASSWORD_BUTTON": "Đặt lại mật khẩu",
+  "RESET_PASSWORD_EXPIRY_NOTE": "Liên kết này sẽ hết hạn sau",
+  "RESET_PASSWORD_IGNORE": "Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.",
+  "RESET_PASSWORD_SUCCESS_MESSAGE": "Mật khẩu của bạn đã được đặt lại thành công.",
+  "RESET_PASSWORD_SUCCESS_LOGIN": "Bây giờ bạn có thể đăng nhập bằng mật khẩu mới.",
+  "RESET_PASSWORD_SUCCESS_SECURITY": "Nếu bạn không thực hiện thay đổi này, vui lòng liên hệ với chúng tôi ngay lập tức."
+}

@@ -11,6 +11,8 @@ import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { Change2FaDto } from './dto/request/change-2fa.request.dto';
 import { LoggedInRequest } from '@core/types/logged-in-request.type';
 import { Login2FaRequestDto } from './dto/request/verify-otp.request.dto';
+import { ForgotPasswordRequestDto } from './dto/request/forgot-password.request.dto';
+import { ResetPasswordRequestDto } from './dto/request/reset-password.request.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -77,5 +79,25 @@ export class AuthController {
       return responseError;
     }
     return await this.authService.change2fa(request);
+  }
+
+  @Public()
+  @Post('/forgot-password')
+  async forgotPassword(@Body() payload: ForgotPasswordRequestDto) {
+    const { request, responseError } = payload;
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+    return await this.authService.forgotPassword(request);
+  }
+
+  @Public()
+  @Post('/reset-password')
+  async resetPassword(@Body() payload: ResetPasswordRequestDto) {
+    const { request, responseError } = payload;
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+    return await this.authService.resetPassword(request);
   }
 }

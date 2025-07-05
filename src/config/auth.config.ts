@@ -28,6 +28,14 @@ class EnvironmentVariablesValidator {
   @IsString()
   @IsNotEmpty()
   OTP_TOKEN_EXPIRES_IN: string;
+
+  @IsString()
+  @IsNotEmpty()
+  FORGOT_PASSWORD_TOKEN_SECRET: string;
+
+  @IsString()
+  @IsNotEmpty()
+  FORGOT_PASSWORD_TOKEN_EXPIRES_IN: string;
 }
 
 export default registerAs<AuthConfig>('auth', () => {
@@ -40,5 +48,7 @@ export default registerAs<AuthConfig>('auth', () => {
     refreshExpires: process.env.AUTH_REFRESH_TOKEN_EXPIRES_IN,
     otpTokenSecret: process.env.OTP_TOKEN_SECRET,
     otpTokenExpires: process.env.OTP_TOKEN_EXPIRES_IN,
+    forgotPasswordSecret: process.env.FORGOT_PASSWORD_TOKEN_SECRET,
+    forgotPasswordExpires: process.env.FORGOT_PASSWORD_TOKEN_EXPIRES_IN,
   };
 });

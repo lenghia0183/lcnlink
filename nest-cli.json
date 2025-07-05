@@ -8,6 +8,10 @@
         "include": "i18n/**/*.json"
       },
       {
+        "include": "src/mail/templates/**/*",
+        "outDir": "dist/mail/templates"
+      },
+      {
         "include": "static/**/*"
       }
     ],

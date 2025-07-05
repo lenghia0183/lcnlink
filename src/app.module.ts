@@ -7,6 +7,7 @@ import authConfig from '@config/auth.config';
 import appConfig from '@config/app.config';
 import databaseConfig from '@config/database.config';
 import adminConfig from '@config/admin.config';
+import mailConfig from '@config/mail.config';
 import DatabaseConnectModule from '@database/database.connect.module';
 import { RequestLoggingMiddleware } from '@core/middlewares/request-logging.middleware';
 import { JwtModule } from '@nestjs/jwt';
@@ -33,7 +34,7 @@ import { AuthModule } from '@components/auth/auth.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, authConfig, adminConfig],
+      load: [appConfig, databaseConfig, authConfig, adminConfig, mailConfig],
       envFilePath: ['.env'],
     }),
     JwtModule.register({}),

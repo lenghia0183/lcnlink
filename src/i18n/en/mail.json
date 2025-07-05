@@ -1,0 +1,13 @@
+{
+  "RESET_PASSWORD_SUBJECT": "Reset Your Password",
+  "RESET_PASSWORD_SUCCESS_SUBJECT": "Password Reset Successfully",
+  "RESET_PASSWORD_EXPIRATION": "15 minutes",
+  "RESET_PASSWORD_GREETING": "Hello",
+  "RESET_PASSWORD_MESSAGE": "You have requested to reset your password. Please click the link below to reset your password:",
+  "RESET_PASSWORD_BUTTON": "Reset Password",
+  "RESET_PASSWORD_EXPIRY_NOTE": "This link will expire in",
+  "RESET_PASSWORD_IGNORE": "If you did not request a password reset, please ignore this email.",
+  "RESET_PASSWORD_SUCCESS_MESSAGE": "Your password has been reset successfully.",
+  "RESET_PASSWORD_SUCCESS_LOGIN": "You can now log in with your new password.",
+  "RESET_PASSWORD_SUCCESS_SECURITY": "If you did not make this change, please contact us immediately."
+}

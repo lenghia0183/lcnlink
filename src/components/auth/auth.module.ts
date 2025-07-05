@@ -6,9 +6,10 @@ import { UserModule } from '@components/user/user.module';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { RepositoryModule } from '@database/repositories/repository.module';
+import { MailModule } from '@components/mail/mail.module';
 
 @Module({
-  imports: [RepositoryModule, UserModule, ConfigModule, JwtModule],
+  imports: [RepositoryModule, UserModule, ConfigModule, JwtModule, MailModule],
   controllers: [AuthController],
   providers: [AuthService],
   exports: [AuthService],

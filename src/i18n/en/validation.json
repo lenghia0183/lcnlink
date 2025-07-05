@@ -103,5 +103,7 @@
   "PROPERTY_IS_NOT_BLANK": "{property} invalid",
   "INVALID_FILTER_FORMAT": "Invalid filter format",
   "INVALID_SORT_FORMAT": "Invalid sort format",
-  "INVALID_DATA_FORMAT": "Invalid data format"
+  "INVALID_DATA_FORMAT": "Invalid data format",
+  "PASSWORD_MIN_LENGTH": "Password must be at least 8 characters long",
+  "PASSWORD_MATCHES": "Password must contain at least one uppercase letter, one lowercase letter, one number and one special character"
 }

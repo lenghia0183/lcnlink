@@ -1,4 +1,5 @@
 import { DatabaseType } from 'typeorm';
+import { MailConfig } from './mail.config';
 
 export type AppConfig = {
   nodeEnv: string;
@@ -27,6 +28,8 @@ export type AuthConfig = {
   refreshExpires?: string;
   otpTokenSecret?: string;
   otpTokenExpires?: string;
+  forgotPasswordSecret?: string;
+  forgotPasswordExpires?: string;
 };
 
 export type AdminConfig = {
@@ -40,4 +43,5 @@ export type AllConfigType = {
   database: DatabaseConfig;
   auth: AuthConfig;
   admin: AdminConfig;
+  mail: MailConfig;
 };

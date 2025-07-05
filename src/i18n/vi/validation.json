@@ -110,5 +110,7 @@
   "PROPERTY_SHOULD_NOT_EXIST": "Trường {property} không nên tồn tại",
   "INVALID_FILTER_FORMAT": "Định dạng filter không hợp lệ",
   "INVALID_SORT_FORMAT": "Định dạng sort không hợp lệ",
-  "INVALID_DATA_FORMAT": "Định dạng dữ liệu không hợp lệ"
+  "INVALID_DATA_FORMAT": "Định dạng dữ liệu không hợp lệ",
+  "PASSWORD_MIN_LENGTH": "Mật khẩu phải có ít nhất 8 ký tự",
+  "PASSWORD_MATCHES": "Mật khẩu phải chứa ít nhất một chữ hoa, một chữ thường, một số và một ký tự đặc biệt"
 }

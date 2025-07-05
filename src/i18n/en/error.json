@@ -30,5 +30,8 @@
   "VALIDATE_CAPTCHA_FAILED": "Captcha validation failed",
   "CAPTCHA_INVALID": "Invalid captcha",
   "EMAIL_NOT_EXIST": "Email does not exist",
+  "RESET_TOKEN_INVALID": "Invalid or expired reset token",
+  "RESET_TOKEN_EXPIRED": "Reset token has expired",
+  "PASSWORD_CONFIRM_NOT_MATCH": "Password confirmation does not match",
   "NO_DATA_RECORDS": "No data records found"
 }

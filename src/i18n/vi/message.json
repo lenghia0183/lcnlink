@@ -26,5 +26,7 @@
   "NON_AUTHORITATIVE_INFORMATION": "Thông tin không có thẩm quyền",
   "NO_CONTENT": "Không có nội dung",
   "TOO_MANY_REQUESTS": "Quá nhiều yêu cầu",
-  "UNKNOWN_ERROR": "Lỗi không xác định"
+  "UNKNOWN_ERROR": "Lỗi không xác định",
+  "FORGOT_PASSWORD_EMAIL_SENT": "Nếu email tồn tại trong hệ thống, bạn sẽ nhận được email hướng dẫn đặt lại mật khẩu",
+  "RESET_PASSWORD_SUCCESS": "Mật khẩu đã được đặt lại thành công"
 }

@@ -30,5 +30,8 @@
   "TWO_FA_SECRET_NOT_SET": "Vui lòng tạo mã bí mật 2FA trước khi bật tính năng này",
   "INTERNAL_SERVER_ERROR": "Lỗi máy chủ nội bộ",
   "CODE_EXIST": "Mã đã tồn tại",
-  "NOT_ACCEPTABLE": "Không thể chấp nhận"
+  "NOT_ACCEPTABLE": "Không thể chấp nhận",
+  "RESET_TOKEN_INVALID": "Token không hợp lệ hoặc đã hết hạn",
+  "RESET_TOKEN_EXPIRED": "Token đã hết hạn",
+  "PASSWORD_CONFIRM_NOT_MATCH": "Mật khẩu xác nhận không khớp"
 }

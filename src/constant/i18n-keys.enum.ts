@@ -42,6 +42,11 @@ export enum I18nErrorKeys {
   // Email
   EMAIL_NOT_EXIST = 'error.EMAIL_NOT_EXIST',
 
+  // Password Reset
+  RESET_TOKEN_INVALID = 'error.RESET_TOKEN_INVALID',
+  RESET_TOKEN_EXPIRED = 'error.RESET_TOKEN_EXPIRED',
+  PASSWORD_CONFIRM_NOT_MATCH = 'error.PASSWORD_CONFIRM_NOT_MATCH',
+
   // Data Export
   NO_DATA_RECORDS = 'error.NO_DATA_RECORDS',
 }
@@ -60,6 +65,10 @@ export enum I18nMessageKeys {
   REGISTER_SUCCESS = 'message.REGISTER_SUCCESS',
   LOGIN_SUCCESS = 'message.LOGIN_SUCCESS',
   CHANGE_PASSWORD_SUCCESS = 'message.CHANGE_PASSWORD_SUCCESS',
+
+  // Password Reset
+  FORGOT_PASSWORD_EMAIL_SENT = 'message.FORGOT_PASSWORD_EMAIL_SENT',
+  RESET_PASSWORD_SUCCESS = 'message.RESET_PASSWORD_SUCCESS',
 
   // Account Status
   UNLOCK_SUCCESS = 'message.UNLOCK_SUCCESS',
@@ -103,4 +112,8 @@ export enum I18nValidationKeys {
   IS_NOT_EMPTY = 'validation.IS_NOT_EMPTY',
   IS_STRING = 'validation.IS_STRING',
   IS_NUMBER = 'validation.IS_NUMBER',
+
+  // Password validation
+  PASSWORD_MIN_LENGTH = 'validation.PASSWORD_MIN_LENGTH',
+  PASSWORD_MATCHES = 'validation.PASSWORD_MATCHES',
 }
