@@ -29,7 +29,6 @@ export class AuthController {
   @Public()
   @Post('/login')
   async login(@Body() payload: LoginRequestDto) {
-    console.log('payload', payload);
     const { request, responseError } = payload;
     if (!isEmpty(responseError)) {
       return responseError;
