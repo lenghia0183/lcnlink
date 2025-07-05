@@ -435,15 +435,15 @@ export class AuthService {
     user.password = data.newPassword;
     await this.userRepository.save(user);
 
-    // try {
-    //   await this.mailService.sendPasswordResetSuccessEmail(
-    //     user.email,
-    //     user.fullname || 'User',
-    //     'vi',
-    //   );
-    // } catch (error) {
-    //   console.error('Error sending password reset success email:', error);
-    // }
+    try {
+      await this.mailService.sendPasswordResetSuccessEmail(
+        user.email,
+        user.fullname || 'User',
+        'vi',
+      );
+    } catch (error) {
+      console.error('Error sending password reset success email:', error);
+    }
 
     const message: string = this.i18n.translate(
       I18nMessageKeys.RESET_PASSWORD_SUCCESS,
