@@ -39,10 +39,18 @@ export type AdminConfig = {
   password: string;
 };
 
+export type RedisConfig = {
+  host: string;
+  port: number;
+  password?: string;
+  db: number;
+};
+
 export type AllConfigType = {
   app: AppConfig;
   database: DatabaseConfig;
   auth: AuthConfig;
   admin: AdminConfig;
   mail: MailConfig;
+  redis: RedisConfig;
 };

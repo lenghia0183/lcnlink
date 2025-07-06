@@ -8,6 +8,7 @@ import appConfig from '@config/app.config';
 import databaseConfig from '@config/database.config';
 import adminConfig from '@config/admin.config';
 import mailConfig from '@config/mail.config';
+import redisConfig from '@config/redis.config';
 import DatabaseConnectModule from '@database/database.connect.module';
 import { RequestLoggingMiddleware } from '@core/middlewares/request-logging.middleware';
 import { JwtModule } from '@nestjs/jwt';
@@ -18,14 +19,24 @@ import { AdminInitService } from 'src/services/admin-init.service';
 import { ValidationPipe } from '@core/pipe/validation.pipe';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthenticateGuard } from '@core/guards/authenticate.guard';
+import { CustomThrottlerGuard } from '@core/guards/custom-throttler.guard';
 import { AuthModule } from '@components/auth/auth.module';
 import { I18nModule } from './i18n/i18n.module';
 import { I18nService } from 'nestjs-i18n';
+import { CustomThrottlerModule } from 'src/modules/throttler/throttler.module';
+import { RedisModule } from 'src/modules/redis/redis.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, authConfig, adminConfig, mailConfig],
+      load: [
+        appConfig,
+        databaseConfig,
+        authConfig,
+        adminConfig,
+        mailConfig,
+        redisConfig,
+      ],
       envFilePath: ['.env'],
     }),
     JwtModule.register({}),
@@ -34,6 +45,8 @@ import { I18nService } from 'nestjs-i18n';
     UserModule,
     AuthModule,
     I18nModule,
+    RedisModule,
+    CustomThrottlerModule,
   ],
   controllers: [AppController],
   providers: [
@@ -51,6 +64,10 @@ import { I18nService } from 'nestjs-i18n';
         });
       },
       inject: [I18nService],
+    },
+    {
+      provide: APP_GUARD,
+      useClass: CustomThrottlerGuard,
     },
     {
       provide: APP_GUARD,
