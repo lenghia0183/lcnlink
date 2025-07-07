@@ -15,7 +15,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from '@components/user/user.module';
 import { RepositoryModule } from '@database/repositories/repository.module';
 
-import { AdminInitService } from 'src/services/admin-init.service';
+import { AdminInitService } from '@core/services/admin-init.service';
 import { ValidationPipe } from '@core/pipe/validation.pipe';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthenticateGuard } from '@core/guards/authenticate.guard';
@@ -23,8 +23,9 @@ import { CustomThrottlerGuard } from '@core/guards/custom-throttler.guard';
 import { AuthModule } from '@components/auth/auth.module';
 import { I18nModule } from './i18n/i18n.module';
 import { I18nService } from 'nestjs-i18n';
-import { CustomThrottlerModule } from 'src/modules/throttler/throttler.module';
-import { RedisModule } from 'src/modules/redis/redis.module';
+import { RedisModule } from '@core/modules/redis/redis.module';
+import { CustomThrottlerModule } from '@core/modules/throttler/throttler.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({

@@ -1,16 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { ThrottlerStorage } from '@nestjs/throttler';
-import { RedisService } from 'src/services/redis.service';
-
-interface ThrottlerStorageRecord {
-  totalHits: number;
-  timeToExpire: number;
-  isBlocked: boolean;
-  timeToBlockExpire: number;
-}
+import { RedisService } from '@core/services/redis.service';
+import { ThrottlerStorageRecord } from '@nestjs/throttler/dist/throttler-storage-record.interface';
 
 @Injectable()
 export class RedisThrottlerStorage implements ThrottlerStorage {
+  private fallbackStorage = new Map<
+    string,
+    { hits: number; resetTime: number }
+  >();
+
   constructor(private readonly redisService: RedisService) {}
 
   async increment(
@@ -22,36 +21,84 @@ export class RedisThrottlerStorage implements ThrottlerStorage {
   ): Promise<ThrottlerStorageRecord> {
     const redisKey = `throttler:${throttlerName}:${key}`;
 
-    // Get current value
-    const current = await this.redisService.get(redisKey);
-    console.log('current', current);
+    // Check if Redis is available
+    if (!this.redisService.isAvailable()) {
+      return this.incrementInMemory(redisKey, ttl, limit, blockDuration);
+    }
 
-    if (current === null) {
-      // First request - set initial value
-      await this.redisService.set(redisKey, '1', ttl);
+    try {
+      // Get current value
+      const current = await this.redisService.get(redisKey);
+
+      if (current === null) {
+        // First request - set initial value
+        await this.redisService.set(redisKey, '1', ttl);
+        return {
+          totalHits: 1,
+          timeToExpire: ttl * 1000, // Convert to milliseconds
+          isBlocked: false,
+          timeToBlockExpire: 0,
+        };
+      } else {
+        // Increment existing value
+        const totalHits = await this.redisService.incr(redisKey);
+
+        // Get TTL for the key
+        const client = this.redisService.getClient();
+        const timeToExpire = await client.ttl(redisKey);
+
+        // Check if blocked
+        const isBlocked = totalHits > limit;
+        const timeToBlockExpire = isBlocked ? blockDuration * 1000 : 0;
+
+        return {
+          totalHits,
+          timeToExpire: timeToExpire > 0 ? timeToExpire * 1000 : 0, // Convert to milliseconds
+          isBlocked,
+          timeToBlockExpire,
+        };
+      }
+    } catch {
+      return this.incrementInMemory(redisKey, ttl, limit, blockDuration);
+    }
+  }
+
+  private incrementInMemory(
+    key: string,
+    ttl: number,
+    limit: number,
+    blockDuration: number,
+  ): ThrottlerStorageRecord {
+    const now = Date.now();
+    const resetTime = now + ttl * 1000;
+
+    const existing = this.fallbackStorage.get(key);
+
+    if (!existing || existing.resetTime <= now) {
+      // First hit or expired
+      this.fallbackStorage.set(key, { hits: 1, resetTime });
+
+      // Clean up expired entries
+      setTimeout(() => {
+        this.fallbackStorage.delete(key);
+      }, ttl * 1000);
+
       return {
         totalHits: 1,
-        timeToExpire: ttl * 1000, // Convert to milliseconds
+        timeToExpire: ttl * 1000,
         isBlocked: false,
         timeToBlockExpire: 0,
       };
     } else {
-      // Increment existing value
-      const totalHits = await this.redisService.incr(redisKey);
-
-      // Get TTL for the key
-      const client = this.redisService.getClient();
-      const timeToExpire = await client.ttl(redisKey);
-
-      // Check if blocked
-      const isBlocked = totalHits > limit;
-      const timeToBlockExpire = isBlocked ? blockDuration * 1000 : 0;
+      // Increment existing
+      existing.hits++;
+      const isBlocked = existing.hits > limit;
 
       return {
-        totalHits,
-        timeToExpire: timeToExpire > 0 ? timeToExpire * 1000 : 0, // Convert to milliseconds
+        totalHits: existing.hits,
+        timeToExpire: existing.resetTime - now,
         isBlocked,
-        timeToBlockExpire,
+        timeToBlockExpire: isBlocked ? blockDuration * 1000 : 0,
       };
     }
   }

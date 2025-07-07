@@ -6,24 +6,11 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AllConfigType } from '@config/config.type';
-
-interface RedisClient {
-  on(event: string, callback: (error?: Error) => void): void;
-  ping(): Promise<string>;
-  quit(): Promise<string>;
-  get(key: string): Promise<string | null>;
-  set(key: string, value: string): Promise<string>;
-  setex(key: string, ttl: number, value: string): Promise<string>;
-  del(key: string): Promise<number>;
-  incr(key: string): Promise<number>;
-  expire(key: string, ttl: number): Promise<number>;
-  exists(key: string): Promise<number>;
-  ttl(key: string): Promise<number>;
-}
+import { createClient, type RedisClientType } from 'redis';
 
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
-  private client: RedisClient | null = null;
+  private client: RedisClientType | null = null;
   private readonly logger = new Logger(RedisService.name);
   private isRedisAvailable = false;
 
@@ -32,45 +19,56 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   async onModuleInit(): Promise<void> {
     const redisConfig = this.configService.get('redis', { infer: true });
 
-    try {
-      // Dynamic import to avoid TypeScript issues
-      const { default: IORedis } = await import('ioredis');
+    this.logger.log(
+      `Attempting to connect to Redis at ${redisConfig?.host}:${redisConfig?.port}`,
+    );
 
-      this.client = new IORedis({
-        host: redisConfig?.host || 'localhost',
-        port: redisConfig?.port || 6379,
+    try {
+      const clientConfig = {
+        username: 'default',
         password: redisConfig?.password,
-        db: redisConfig?.db || 0,
-        connectTimeout: 5000, // 5 second timeout
-        lazyConnect: true,
-      }) as RedisClient;
+        socket: {
+          host: redisConfig?.host || 'localhost',
+          port: redisConfig?.port || 6379,
+          connectTimeout: 10000, // 10 second timeout
+        },
+        database: redisConfig?.db || 0,
+      };
+
+      this.client = createClient(clientConfig);
 
       this.client.on('connect', () => {
         this.logger.log('Redis connected successfully');
         this.isRedisAvailable = true;
       });
 
-      this.client.on('error', (error?: Error) => {
-        this.logger.warn('Redis connection error:', error?.message);
+      this.client.on('error', (error: Error) => {
+        this.logger.warn('Redis connection error:', error.message);
         this.isRedisAvailable = false;
       });
 
-      // Test connection
-      try {
-        await this.client.ping();
-        this.logger.log('Redis connection established');
+      this.client.on('ready', () => {
+        this.logger.log('Redis client ready');
         this.isRedisAvailable = true;
-      } catch (error) {
-        this.logger.warn(
-          'Redis not available, throttling will use in-memory fallback:',
-          (error as Error)?.message,
-        );
-        this.isRedisAvailable = false;
-        this.client = null;
-      }
+      });
+
+      await this.client.connect();
+      this.logger.log('✅ Redis connection established');
+
+      // Test connection
+      this.logger.log('🏓 Testing Redis connection with ping...');
+      const pingResult = await this.client.ping();
+      this.logger.log(`✅ Redis ping successful: ${pingResult}`);
+      this.isRedisAvailable = true;
     } catch (error) {
+      this.logger.error('❌ Failed to connect to Redis:', error);
+      this.logger.error('Error details:', {
+        message: (error as Error)?.message,
+        stack: (error as Error)?.stack,
+        name: (error as Error)?.name,
+      });
       this.logger.warn(
-        'Failed to initialize Redis, throttling will use in-memory fallback:',
+        'Failed to connect to Redis, throttling will use in-memory fallback:',
         (error as Error)?.message,
       );
       this.isRedisAvailable = false;
@@ -91,7 +89,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  getClient(): RedisClient {
+  getClient(): RedisClientType {
     if (!this.client || !this.isRedisAvailable) {
       throw new Error('Redis client not available');
     }
@@ -102,7 +100,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     return this.isRedisAvailable && this.client !== null;
   }
 
-  private ensureClient(): RedisClient {
+  private ensureClient(): RedisClientType {
     if (!this.client || !this.isRedisAvailable) {
       throw new Error('Redis client not available');
     }
@@ -134,7 +132,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     try {
       const client = this.ensureClient();
       if (ttl) {
-        await client.setex(key, ttl, value);
+        await client.setEx(key, ttl, value);
       } else {
         await client.set(key, value);
       }
