@@ -21,39 +21,33 @@ export class RedisThrottlerStorage implements ThrottlerStorage {
   ): Promise<ThrottlerStorageRecord> {
     const redisKey = `throttler:${throttlerName}:${key}`;
 
-    // Check if Redis is available
     if (!this.redisService.isAvailable()) {
       return this.incrementInMemory(redisKey, ttl, limit, blockDuration);
     }
 
     try {
-      // Get current value
       const current = await this.redisService.get(redisKey);
 
       if (current === null) {
-        // First request - set initial value
         await this.redisService.set(redisKey, '1', ttl);
         return {
           totalHits: 1,
-          timeToExpire: ttl * 1000, // Convert to milliseconds
+          timeToExpire: ttl * 1000,
           isBlocked: false,
           timeToBlockExpire: 0,
         };
       } else {
-        // Increment existing value
         const totalHits = await this.redisService.incr(redisKey);
 
-        // Get TTL for the key
         const client = this.redisService.getClient();
         const timeToExpire = await client.ttl(redisKey);
 
-        // Check if blocked
         const isBlocked = totalHits > limit;
         const timeToBlockExpire = isBlocked ? blockDuration * 1000 : 0;
 
         return {
           totalHits,
-          timeToExpire: timeToExpire > 0 ? timeToExpire * 1000 : 0, // Convert to milliseconds
+          timeToExpire: timeToExpire > 0 ? timeToExpire * 1000 : 0,
           isBlocked,
           timeToBlockExpire,
         };
@@ -75,10 +69,8 @@ export class RedisThrottlerStorage implements ThrottlerStorage {
     const existing = this.fallbackStorage.get(key);
 
     if (!existing || existing.resetTime <= now) {
-      // First hit or expired
       this.fallbackStorage.set(key, { hits: 1, resetTime });
 
-      // Clean up expired entries
       setTimeout(() => {
         this.fallbackStorage.delete(key);
       }, ttl * 1000);
@@ -90,7 +82,6 @@ export class RedisThrottlerStorage implements ThrottlerStorage {
         timeToBlockExpire: 0,
       };
     } else {
-      // Increment existing
       existing.hits++;
       const isBlocked = existing.hits > limit;
 

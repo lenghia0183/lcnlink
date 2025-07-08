@@ -11,6 +11,7 @@ import { Injectable, ExecutionContext } from '@nestjs/common';
 import { REQUEST_USER_KEY } from '@constant/app.enum';
 import { User } from '@database/entities/user.entity';
 import { USER_ROLE_ENUM } from '@components/user/user.constant';
+import { LoggedInRequest } from '@core/types/logged-in-request.type';
 
 // Throttler metadata key (from @nestjs/throttler source)
 const THROTTLER_LIMIT = 'THROTTLER:LIMIT';
@@ -40,9 +41,9 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
   }
 
   // Override the default tracking logic
-  protected getTracker(req: RequestWithUser): Promise<string> {
+  protected getTracker(req: LoggedInRequest): Promise<string> {
     // Use the user's ID for tracking if authenticated, else use the IP
-    return Promise.resolve(req.user?.id || req.ip);
+    return Promise.resolve(req?.userId || req?.ip || '');
   }
 
   // Override the main canActivate method to handle both decorators and default behavior
@@ -75,7 +76,7 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
   private async applyRoleBasedThrottling(
     context: ExecutionContext,
   ): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<RequestWithUser>();
+    const request = context.switchToHttp().getRequest<LoggedInRequest>();
     const user = request[REQUEST_USER_KEY];
 
     // Determine limits based on user role
