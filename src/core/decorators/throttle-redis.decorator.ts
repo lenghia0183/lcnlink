@@ -1,29 +1,12 @@
-import { applyDecorators, UseGuards, SetMetadata } from '@nestjs/common';
-import { Throttle } from '@nestjs/throttler';
-import { CustomThrottlerGuard } from '@core/guards/custom-throttler.guard';
+import { applyDecorators, SetMetadata } from '@nestjs/common';
 import { USER_ROLE_ENUM } from '@components/user/user.constant';
 import { THROTTLE_PRESETS } from '@core/constants/throttle.constant';
 import { ThrottleByRoleOptions } from '@core/types/throttle.type';
 
-interface ThrottleRedisOptions {
-  ttl: number;
-  limit: number;
-}
-
 export const THROTTLE_BY_ROLE_KEY = 'THROTTLE_BY_ROLE';
 
-export function ThrottleRedis(options: ThrottleRedisOptions) {
-  return applyDecorators(
-    Throttle({ default: options }),
-    UseGuards(CustomThrottlerGuard),
-  );
-}
-
 export function ThrottleByRole(options: ThrottleByRoleOptions) {
-  return applyDecorators(
-    SetMetadata(THROTTLE_BY_ROLE_KEY, options),
-    UseGuards(CustomThrottlerGuard),
-  );
+  return applyDecorators(SetMetadata(THROTTLE_BY_ROLE_KEY, options));
 }
 
 export const ThrottleForAuth = () =>

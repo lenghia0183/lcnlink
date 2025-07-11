@@ -68,11 +68,11 @@ import { CustomThrottlerModule } from '@core/modules/throttler/throttler.module'
     },
     {
       provide: APP_GUARD,
-      useClass: CustomThrottlerGuard,
+      useClass: AuthenticateGuard,
     },
     {
       provide: APP_GUARD,
-      useClass: AuthenticateGuard,
+      useClass: CustomThrottlerGuard,
     },
     AppService,
     AdminInitService,

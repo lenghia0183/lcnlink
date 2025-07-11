@@ -6,7 +6,7 @@ import {
 } from '@nestjs/throttler';
 import { Reflector } from '@nestjs/core';
 import { I18nService } from 'nestjs-i18n';
-import { Injectable, ExecutionContext } from '@nestjs/common';
+import { Injectable, ExecutionContext, Scope } from '@nestjs/common';
 
 import { REQUEST_USER_KEY } from '@constant/app.enum';
 import { User } from '@database/entities/user.entity';
@@ -20,7 +20,7 @@ import {
   ThrottleTtlByRole,
 } from '@core/types/throttle.type';
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class CustomThrottlerGuard extends ThrottlerGuard {
   constructor(
     options: ThrottlerModuleOptions,
@@ -41,7 +41,7 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
         THROTTLE_BY_ROLE_KEY,
         [context.getHandler(), context.getClass()],
       );
-
+    console.log('roleBasedOptions', roleBasedOptions);
     if (roleBasedOptions) {
       return this.applyDefaultRoleBasedThrottlingWithOptions(
         context,
@@ -60,6 +60,9 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
     const user = request[REQUEST_USER_KEY];
 
     const { limit, ttl } = this.getRoleLimitsFromOptions(user, options);
+
+    console.log('🚀 ~ CustomThrottlerGuard ~ ttl:', ttl);
+    console.log('🚀 ~ CustomThrottlerGuard ~ limit:', limit);
 
     if (limit === -1) {
       return true;
