@@ -1,22 +1,17 @@
-import { applyDecorators, UseGuards } from '@nestjs/common';
+import { applyDecorators, UseGuards, SetMetadata } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { CustomThrottlerGuard } from '@core/guards/custom-throttler.guard';
+import { USER_ROLE_ENUM } from '@components/user/user.constant';
+import { THROTTLE_PRESETS } from '@core/constants/throttle.constant';
+import { ThrottleByRoleOptions } from '@core/types/throttle.type';
 
 interface ThrottleRedisOptions {
-  ttl: number; // Time to live in seconds
-  limit: number; // Number of requests allowed
-}
-
-interface ThrottleNamedOptions {
-  name?: 'default' | 'admin' | 'public';
   ttl: number;
   limit: number;
 }
 
-/**
- * Apply Redis-based throttling to a route or controller
- * @param options Throttling configuration
- */
+export const THROTTLE_BY_ROLE_KEY = 'THROTTLE_BY_ROLE';
+
 export function ThrottleRedis(options: ThrottleRedisOptions) {
   return applyDecorators(
     Throttle({ default: options }),
@@ -24,57 +19,53 @@ export function ThrottleRedis(options: ThrottleRedisOptions) {
   );
 }
 
-/**
- * Apply named throttling configuration
- * @param options Named throttling configuration
- */
-export function ThrottleNamed(options: ThrottleNamedOptions) {
-  const throttlerName = options.name || 'default';
+export function ThrottleByRole(options: ThrottleByRoleOptions) {
   return applyDecorators(
-    Throttle({ [throttlerName]: { ttl: options.ttl, limit: options.limit } }),
+    SetMetadata(THROTTLE_BY_ROLE_KEY, options),
     UseGuards(CustomThrottlerGuard),
   );
 }
 
-/**
- * Predefined throttling for different user types
- * These will use the configured throttlers from CustomThrottlerModule
- */
-export const ThrottleForUser = () =>
-  ThrottleNamed({
-    name: 'default',
-    ttl: 60,
-    limit: 5,
+export const ThrottleForAuth = () =>
+  ThrottleByRole({
+    ttl: THROTTLE_PRESETS.AUTH.TTL,
+    limits: {
+      [USER_ROLE_ENUM.USER]: THROTTLE_PRESETS.AUTH.LIMITS[USER_ROLE_ENUM.USER],
+      [USER_ROLE_ENUM.ADMIN]:
+        THROTTLE_PRESETS.AUTH.LIMITS[USER_ROLE_ENUM.ADMIN],
+      [USER_ROLE_ENUM.GUEST]:
+        THROTTLE_PRESETS.AUTH.LIMITS[USER_ROLE_ENUM.GUEST],
+    },
   });
 
-export const ThrottleForAdmin = () =>
-  ThrottleNamed({
-    name: 'admin',
-    ttl: 60,
-    limit: 15,
+export const ThrottleForUpload = () =>
+  ThrottleByRole({
+    ttl: THROTTLE_PRESETS.UPLOAD.TTL,
+    limits: {
+      [USER_ROLE_ENUM.USER]:
+        THROTTLE_PRESETS.UPLOAD.LIMITS[USER_ROLE_ENUM.USER],
+      [USER_ROLE_ENUM.ADMIN]:
+        THROTTLE_PRESETS.UPLOAD.LIMITS[USER_ROLE_ENUM.ADMIN],
+      [USER_ROLE_ENUM.GUEST]:
+        THROTTLE_PRESETS.UPLOAD.LIMITS[USER_ROLE_ENUM.GUEST],
+    },
   });
 
-export const ThrottleForPublic = () =>
-  ThrottleNamed({
-    name: 'public',
-    ttl: 60,
-    limit: 2,
+export const ThrottleForSearch = () =>
+  ThrottleByRole({
+    ttl: THROTTLE_PRESETS.SEARCH.TTL,
+    limits: {
+      [USER_ROLE_ENUM.USER]:
+        THROTTLE_PRESETS.SEARCH.LIMITS[USER_ROLE_ENUM.USER],
+      [USER_ROLE_ENUM.ADMIN]:
+        THROTTLE_PRESETS.SEARCH.LIMITS[USER_ROLE_ENUM.ADMIN],
+      [USER_ROLE_ENUM.GUEST]:
+        THROTTLE_PRESETS.SEARCH.LIMITS[USER_ROLE_ENUM.GUEST],
+    },
   });
 
-/**
- * Specialized throttling decorators for specific use cases
- */
-export const ThrottleForAuth = () => ThrottleRedis({ ttl: 300, limit: 5 }); // 5 attempts per 5 minutes
-export const ThrottleForUpload = () => ThrottleRedis({ ttl: 60, limit: 3 }); // 3 uploads per minute
-export const ThrottleForSearch = () => ThrottleRedis({ ttl: 10, limit: 10 }); // 10 searches per 10 seconds
-export const ThrottleForAPI = () => ThrottleRedis({ ttl: 60, limit: 100 }); // 100 API calls per minute
-
-/**
- * Burst protection - very short TTL with low limit
- */
-export const ThrottleBurst = () => ThrottleRedis({ ttl: 1, limit: 2 }); // 2 requests per second
-
-/**
- * Heavy operations - long TTL with very low limit
- */
-export const ThrottleHeavy = () => ThrottleRedis({ ttl: 3600, limit: 1 }); // 1 request per hour
+export const ThrottlePublicUnlimited = () =>
+  ThrottleByRole({
+    ttl: 'unlimited',
+    limits: 'unlimited',
+  });

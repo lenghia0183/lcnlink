@@ -6,6 +6,7 @@ export enum IS_2FA_ENUM {
 export enum USER_ROLE_ENUM {
   USER,
   ADMIN,
+  GUEST,
 }
 
 export enum USER_LOCKED_ENUM {

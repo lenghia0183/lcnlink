@@ -12,22 +12,13 @@ import { REQUEST_USER_KEY } from '@constant/app.enum';
 import { User } from '@database/entities/user.entity';
 import { USER_ROLE_ENUM } from '@components/user/user.constant';
 import { LoggedInRequest } from '@core/types/logged-in-request.type';
-
-// Throttler metadata key (from @nestjs/throttler source)
-const THROTTLER_LIMIT = 'THROTTLER:LIMIT';
-
-interface ThrottlerLimits {
-  [key: string]: {
-    limit: number;
-    ttl: number;
-  };
-}
-
-interface RequestWithUser extends Request {
-  [REQUEST_USER_KEY]?: User;
-  user?: User;
-  ip: string;
-}
+import { THROTTLE_BY_ROLE_KEY } from '@core/decorators/throttle-redis.decorator';
+import { DEFAULT_THROTTLE_CONFIG } from '@core/constants/throttle.constant';
+import {
+  ThrottleByRoleOptions,
+  ThrottleLimitByRole,
+  ThrottleTtlByRole,
+} from '@core/types/throttle.type';
 
 @Injectable()
 export class CustomThrottlerGuard extends ThrottlerGuard {
@@ -40,64 +31,52 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
     super(options, storageService, reflector);
   }
 
-  // Override the default tracking logic
   protected getTracker(req: LoggedInRequest): Promise<string> {
-    // Use the user's ID for tracking if authenticated, else use the IP
     return Promise.resolve(req?.userId || req?.ip || '');
   }
 
-  // Override the main canActivate method to handle both decorators and default behavior
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // Check if there are any throttle decorators on the route
-    const throttleLimits = this.reflector.getAllAndOverride<ThrottlerLimits>(
-      THROTTLER_LIMIT,
-      [context.getHandler(), context.getClass()],
-    );
+    const roleBasedOptions =
+      this.reflector.getAllAndOverride<ThrottleByRoleOptions>(
+        THROTTLE_BY_ROLE_KEY,
+        [context.getHandler(), context.getClass()],
+      );
 
-    // If decorators are present, use the parent implementation
-    if (this.hasThrottleDecorators(throttleLimits)) {
-      return super.canActivate(context);
+    if (roleBasedOptions) {
+      return this.applyDefaultRoleBasedThrottlingWithOptions(
+        context,
+        roleBasedOptions,
+      );
     }
 
-    // Otherwise, apply our custom role-based throttling
-    return this.applyRoleBasedThrottling(context);
+    return this.applyDefaultRoleBasedThrottling(context);
   }
 
-  // Check if throttle decorators are present
-  private hasThrottleDecorators(
-    throttleLimits: ThrottlerLimits | undefined,
-  ): boolean {
-    return (
-      throttleLimits !== undefined && Object.keys(throttleLimits).length > 0
-    );
-  }
-
-  // Apply role-based throttling when no decorators are present
-  private async applyRoleBasedThrottling(
+  private async applyDefaultRoleBasedThrottlingWithOptions(
     context: ExecutionContext,
+    options: ThrottleByRoleOptions,
   ): Promise<boolean> {
     const request = context.switchToHttp().getRequest<LoggedInRequest>();
     const user = request[REQUEST_USER_KEY];
 
-    // Determine limits based on user role
-    const { limit, ttl } = this.getRoleLimits(user);
+    const { limit, ttl } = this.getRoleLimitsFromOptions(user, options);
 
-    // Get tracker (user ID or IP)
+    if (limit === -1) {
+      return true;
+    }
+
     const tracker = await this.getTracker(request);
 
-    // Generate unique key for this endpoint and tracker
     const key = this.createThrottleKey(context, tracker);
 
-    // Check and increment the counter
     const result = await this.storageService.increment(
       key,
       ttl,
       limit,
-      0, // blockDuration
-      'default', // throttlerName
+      0,
+      'role-based',
     );
 
-    // Check if limit exceeded
     if (result.totalHits > limit) {
       await this.throwThrottlingException();
     }
@@ -105,21 +84,126 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
     return true;
   }
 
-  // Get rate limits based on user role
-  private getRoleLimits(user: User | undefined): {
+  private async applyDefaultRoleBasedThrottling(
+    context: ExecutionContext,
+  ): Promise<boolean> {
+    const request = context.switchToHttp().getRequest<LoggedInRequest>();
+    const user = request[REQUEST_USER_KEY];
+
+    const { limit, ttl } = this.getDefaultRoleLimits(user);
+
+    const tracker = await this.getTracker(request);
+
+    const key = this.createThrottleKey(context, tracker);
+
+    const result = await this.storageService.increment(
+      key,
+      ttl,
+      limit,
+      0,
+      'default',
+    );
+
+    if (result.totalHits > limit) {
+      await this.throwThrottlingException();
+    }
+
+    return true;
+  }
+
+  private getRoleLimitsFromOptions(
+    user: User | undefined,
+    options: ThrottleByRoleOptions,
+  ): {
     limit: number;
     ttl: number;
   } {
-    const ttl = 60; // 60 seconds default
+    const { ttl, limits } = options;
 
-    if (user?.role === USER_ROLE_ENUM.ADMIN) {
-      return { limit: 15, ttl }; // Admin gets 15 requests per 60 seconds
+    if (user) {
+      return {
+        limit: this.getLimitForRole(user.role, limits),
+        ttl: this.getTtlForRole(user.role, ttl),
+      };
+    } else {
+      const guestLimit =
+        typeof limits === 'object' ? limits[USER_ROLE_ENUM.GUEST] : undefined;
+
+      const guestTtl =
+        typeof ttl === 'object' ? ttl[USER_ROLE_ENUM.GUEST] : undefined;
+
+      return {
+        limit:
+          guestLimit ?? DEFAULT_THROTTLE_CONFIG.LIMITS[USER_ROLE_ENUM.GUEST],
+        ttl: guestTtl ?? DEFAULT_THROTTLE_CONFIG.TTL[USER_ROLE_ENUM.GUEST],
+      };
     }
-
-    return { limit: 5, ttl }; // Regular users get 5 requests per 60 seconds
   }
 
-  // Generate a unique key for the throttling
+  private getDefaultRoleLimits(user: User | undefined): {
+    limit: number;
+    ttl: number;
+  } {
+    if (user) {
+      switch (user.role) {
+        case USER_ROLE_ENUM.ADMIN:
+          return {
+            limit: DEFAULT_THROTTLE_CONFIG.LIMITS[USER_ROLE_ENUM.ADMIN],
+            ttl: DEFAULT_THROTTLE_CONFIG.TTL[USER_ROLE_ENUM.ADMIN],
+          };
+        case USER_ROLE_ENUM.USER:
+          return {
+            limit: DEFAULT_THROTTLE_CONFIG.LIMITS[USER_ROLE_ENUM.USER],
+            ttl: DEFAULT_THROTTLE_CONFIG.TTL[USER_ROLE_ENUM.USER],
+          };
+        case USER_ROLE_ENUM.GUEST:
+          return {
+            limit: DEFAULT_THROTTLE_CONFIG.LIMITS[USER_ROLE_ENUM.GUEST],
+            ttl: DEFAULT_THROTTLE_CONFIG.LIMITS[USER_ROLE_ENUM.GUEST],
+          };
+        default:
+          return {
+            limit: DEFAULT_THROTTLE_CONFIG.LIMITS.UNKNOWN_ROLE,
+            ttl: DEFAULT_THROTTLE_CONFIG.TTL.UNKNOWN_ROLE,
+          };
+      }
+    }
+
+    return {
+      limit: DEFAULT_THROTTLE_CONFIG.LIMITS[USER_ROLE_ENUM.GUEST],
+      ttl: DEFAULT_THROTTLE_CONFIG.TTL[USER_ROLE_ENUM.GUEST],
+    };
+  }
+
+  private getTtlForRole = (
+    role: USER_ROLE_ENUM,
+    ttl: ThrottleTtlByRole,
+  ): number => {
+    if (typeof ttl === 'number') {
+      return ttl;
+    }
+    if (typeof ttl === 'string') {
+      return -1;
+    }
+
+    return ttl[role] || DEFAULT_THROTTLE_CONFIG.TTL[role] || 60;
+  };
+
+  private getLimitForRole = (
+    role: USER_ROLE_ENUM,
+    limits: ThrottleLimitByRole,
+  ): number => {
+    if (typeof limits === 'number') {
+      return limits;
+    }
+
+    if (typeof limits === 'string') {
+      return -1;
+    }
+
+    return limits[role] || DEFAULT_THROTTLE_CONFIG.LIMITS[role] || 60;
+  };
+
   private createThrottleKey(
     context: ExecutionContext,
     tracker: string,
@@ -130,7 +214,6 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
     return `${className}-${methodName}-${tracker}`;
   }
 
-  // Override the throwThrottlingException method to use i18n
   protected throwThrottlingException(): Promise<void> {
     throw new ThrottlerException(this.i18n.t('error.TOO_MANY_REQUEST'));
   }

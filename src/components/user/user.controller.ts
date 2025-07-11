@@ -26,7 +26,6 @@ import { Roles } from '@core/decorators/role.decorator';
 import { USER_ROLE_ENUM } from './user.constant';
 import { IdParamDto } from '@core/dto/params-id.request.dto';
 import { mergePayload } from '@utils/common';
-import { ThrottleForAdmin } from '@core/decorators/throttle-redis.decorator';
 
 @ApiTags('Người dùng')
 @ApiBearerAuth('JWT-auth')
@@ -37,7 +36,6 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  @ThrottleForAdmin()
   @ApiOperation({ summary: 'Tạo người dùng mới' })
   @ApiResponse({ status: 201, description: 'Tạo người dùng thành công' })
   async createUser(@Body() payload: CreateUserRequestDto) {
