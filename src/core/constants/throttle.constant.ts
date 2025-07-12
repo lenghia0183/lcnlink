@@ -8,9 +8,9 @@ export const DEFAULT_THROTTLE_CONFIG = {
     UNKNOWN_ROLE: 5,
   },
   LIMITS: {
-    [USER_ROLE_ENUM.ADMIN]: 30,
-    [USER_ROLE_ENUM.USER]: 10,
-    [USER_ROLE_ENUM.GUEST]: 3,
+    [USER_ROLE_ENUM.ADMIN]: 3,
+    [USER_ROLE_ENUM.USER]: 2,
+    [USER_ROLE_ENUM.GUEST]: 1,
     UNKNOWN_ROLE: 5,
   },
 } as const;

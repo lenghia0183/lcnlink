@@ -4,7 +4,11 @@ import * as twoFactor from 'node-2fa';
 
 import { UserRepository } from '@database/repositories/user/user.repository';
 import { AllConfigType } from '@config/config.type';
-import { USER_ROLE_ENUM, IS_2FA_ENUM } from '@components/user/user.constant';
+import {
+  USER_ROLE_ENUM,
+  IS_2FA_ENUM,
+  USER_LOCKED_ENUM,
+} from '@components/user/user.constant';
 import { BOOLEAN_ENUM } from '@constant/app.enum';
 
 @Injectable()
@@ -52,7 +56,7 @@ export class AdminInitService implements OnModuleInit {
         password: password,
         role: USER_ROLE_ENUM.ADMIN,
         isActive: BOOLEAN_ENUM.TRUE,
-        isLocked: BOOLEAN_ENUM.FALSE,
+        isLocked: USER_LOCKED_ENUM.UNLOCKED,
         isEnable2FA: IS_2FA_ENUM.DISABLED,
         twoFactorSecret: secret,
         twoFactorQr: qr,

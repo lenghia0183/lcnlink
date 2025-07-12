@@ -1,5 +1,4 @@
 import {
-  Scope,
   Injectable,
   CanActivate,
   ExecutionContext,
@@ -19,8 +18,9 @@ import { BusinessException } from '@core/exception-filters/business-exception.fi
 import { LoggedInRequest } from '@core/types/logged-in-request.type';
 import { JwtPayload } from '@core/types/jwt-payload.type';
 import { UserRepository } from '@database/repositories';
+import { USER_ROLE_ENUM } from '@components/user/user.constant';
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable()
 export class AuthenticateGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
@@ -40,18 +40,21 @@ export class AuthenticateGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    if (isPublic) {
-      return true;
-    }
-
     const request = context.switchToHttp().getRequest<LoggedInRequest>();
     const token = this.extractTokenFromHeader(request);
 
-    if (!token) {
-      throw new BusinessException(
-        this.i18n.translate('error.UNAUTHORIZED'),
-        ResponseCodeEnum.UNAUTHORIZED,
-      );
+    if (isPublic) {
+      if (!token) {
+        request['userRole'] = USER_ROLE_ENUM.GUEST;
+        return true;
+      }
+    } else {
+      if (!token) {
+        throw new BusinessException(
+          this.i18n.translate('error.UNAUTHORIZED'),
+          ResponseCodeEnum.UNAUTHORIZED,
+        );
+      }
     }
 
     const authConfig = this.configService.get('auth', {
@@ -91,8 +94,10 @@ export class AuthenticateGuard implements CanActivate {
     if (!user) {
       throw new UnauthorizedException();
     }
+    console.log('user', user);
 
     request['userId'] = user.id;
+    request['userRole'] = user.role;
     request[REQUEST_USER_KEY] = user;
 
     if (request.body) {

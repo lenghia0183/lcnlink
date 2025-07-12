@@ -17,7 +17,11 @@ import { AllConfigType, AppConfig, AuthConfig } from '@config/config.type';
 import { ConfigService } from '@nestjs/config';
 import { LoginResponseDTO } from './dto/response/login.response.dto';
 import { Login2FARequiredResponseDTO } from './dto/response/login-2fa-required.response.dto';
-import { IS_2FA_ENUM, USER_ROLE_ENUM } from '@components/user/user.constant';
+import {
+  IS_2FA_ENUM,
+  USER_LOCKED_ENUM,
+  USER_ROLE_ENUM,
+} from '@components/user/user.constant';
 import { Toggle2faRequestDto } from './dto/request/toggle-2fa.request.dto';
 import { Change2FaDto } from './dto/request/change-2fa.request.dto';
 import { Change2faResponseDto } from './dto/response/change-2fa.response.dto';
@@ -66,6 +70,7 @@ export class AuthService {
       twoFactorSecret: secret,
       twoFactorQr: qr,
       twoFactorUri: uri,
+      isLocked: USER_LOCKED_ENUM.UNLOCKED,
       role: USER_ROLE_ENUM.USER,
     });
 

@@ -131,7 +131,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     }
     try {
       const client = this.ensureClient();
-      if (ttl) {
+      if (typeof ttl === 'number') {
         await client.setEx(key, ttl, value);
       } else {
         await client.set(key, value);

@@ -6,10 +6,8 @@ import {
 } from '@nestjs/throttler';
 import { Reflector } from '@nestjs/core';
 import { I18nService } from 'nestjs-i18n';
-import { Injectable, ExecutionContext, Scope } from '@nestjs/common';
+import { Injectable, ExecutionContext } from '@nestjs/common';
 
-import { REQUEST_USER_KEY } from '@constant/app.enum';
-import { User } from '@database/entities/user.entity';
 import { USER_ROLE_ENUM } from '@components/user/user.constant';
 import { LoggedInRequest } from '@core/types/logged-in-request.type';
 import { THROTTLE_BY_ROLE_KEY } from '@core/decorators/throttle-redis.decorator';
@@ -20,7 +18,7 @@ import {
   ThrottleTtlByRole,
 } from '@core/types/throttle.type';
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable()
 export class CustomThrottlerGuard extends ThrottlerGuard {
   constructor(
     options: ThrottlerModuleOptions,
@@ -32,7 +30,9 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
   }
 
   protected getTracker(req: LoggedInRequest): Promise<string> {
-    return Promise.resolve(req?.userId || req?.ip || '');
+    const role = req?.userRole || USER_ROLE_ENUM.GUEST;
+    const identifier = req?.userId || req?.ip || 'anonymous';
+    return Promise.resolve(`${role}-${identifier}`);
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -41,7 +41,7 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
         THROTTLE_BY_ROLE_KEY,
         [context.getHandler(), context.getClass()],
       );
-    console.log('roleBasedOptions', roleBasedOptions);
+
     if (roleBasedOptions) {
       return this.applyDefaultRoleBasedThrottlingWithOptions(
         context,
@@ -57,12 +57,9 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
     options: ThrottleByRoleOptions,
   ): Promise<boolean> {
     const request = context.switchToHttp().getRequest<LoggedInRequest>();
-    const user = request[REQUEST_USER_KEY];
+    const userRole = request.userRole ?? USER_ROLE_ENUM.GUEST;
 
-    const { limit, ttl } = this.getRoleLimitsFromOptions(user, options);
-
-    console.log('🚀 ~ CustomThrottlerGuard ~ ttl:', ttl);
-    console.log('🚀 ~ CustomThrottlerGuard ~ limit:', limit);
+    const { limit, ttl } = this.getRoleLimitsFromOptions(userRole, options);
 
     if (limit === -1) {
       return true;
@@ -91,9 +88,9 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
     context: ExecutionContext,
   ): Promise<boolean> {
     const request = context.switchToHttp().getRequest<LoggedInRequest>();
-    const user = request[REQUEST_USER_KEY];
+    const userRole = request.userRole ?? USER_ROLE_ENUM.GUEST;
 
-    const { limit, ttl } = this.getDefaultRoleLimits(user);
+    const { limit, ttl } = this.getDefaultRoleLimits(userRole);
 
     const tracker = await this.getTracker(request);
 
@@ -115,7 +112,7 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
   }
 
   private getRoleLimitsFromOptions(
-    user: User | undefined,
+    userRole: USER_ROLE_ENUM,
     options: ThrottleByRoleOptions,
   ): {
     limit: number;
@@ -123,59 +120,38 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
   } {
     const { ttl, limits } = options;
 
-    if (user) {
-      return {
-        limit: this.getLimitForRole(user.role, limits),
-        ttl: this.getTtlForRole(user.role, ttl),
-      };
-    } else {
-      const guestLimit =
-        typeof limits === 'object' ? limits[USER_ROLE_ENUM.GUEST] : undefined;
-
-      const guestTtl =
-        typeof ttl === 'object' ? ttl[USER_ROLE_ENUM.GUEST] : undefined;
-
-      return {
-        limit:
-          guestLimit ?? DEFAULT_THROTTLE_CONFIG.LIMITS[USER_ROLE_ENUM.GUEST],
-        ttl: guestTtl ?? DEFAULT_THROTTLE_CONFIG.TTL[USER_ROLE_ENUM.GUEST],
-      };
-    }
+    return {
+      limit: this.getLimitForRole(userRole, limits),
+      ttl: this.getTtlForRole(userRole, ttl),
+    };
   }
 
-  private getDefaultRoleLimits(user: User | undefined): {
+  private getDefaultRoleLimits(userRole: USER_ROLE_ENUM): {
     limit: number;
     ttl: number;
   } {
-    if (user) {
-      switch (user.role) {
-        case USER_ROLE_ENUM.ADMIN:
-          return {
-            limit: DEFAULT_THROTTLE_CONFIG.LIMITS[USER_ROLE_ENUM.ADMIN],
-            ttl: DEFAULT_THROTTLE_CONFIG.TTL[USER_ROLE_ENUM.ADMIN],
-          };
-        case USER_ROLE_ENUM.USER:
-          return {
-            limit: DEFAULT_THROTTLE_CONFIG.LIMITS[USER_ROLE_ENUM.USER],
-            ttl: DEFAULT_THROTTLE_CONFIG.TTL[USER_ROLE_ENUM.USER],
-          };
-        case USER_ROLE_ENUM.GUEST:
-          return {
-            limit: DEFAULT_THROTTLE_CONFIG.LIMITS[USER_ROLE_ENUM.GUEST],
-            ttl: DEFAULT_THROTTLE_CONFIG.LIMITS[USER_ROLE_ENUM.GUEST],
-          };
-        default:
-          return {
-            limit: DEFAULT_THROTTLE_CONFIG.LIMITS.UNKNOWN_ROLE,
-            ttl: DEFAULT_THROTTLE_CONFIG.TTL.UNKNOWN_ROLE,
-          };
-      }
+    switch (userRole) {
+      case USER_ROLE_ENUM.ADMIN:
+        return {
+          limit: DEFAULT_THROTTLE_CONFIG.LIMITS[USER_ROLE_ENUM.ADMIN],
+          ttl: DEFAULT_THROTTLE_CONFIG.TTL[USER_ROLE_ENUM.ADMIN],
+        };
+      case USER_ROLE_ENUM.USER:
+        return {
+          limit: DEFAULT_THROTTLE_CONFIG.LIMITS[USER_ROLE_ENUM.USER],
+          ttl: DEFAULT_THROTTLE_CONFIG.TTL[USER_ROLE_ENUM.USER],
+        };
+      case USER_ROLE_ENUM.GUEST:
+        return {
+          limit: DEFAULT_THROTTLE_CONFIG.LIMITS[USER_ROLE_ENUM.GUEST],
+          ttl: DEFAULT_THROTTLE_CONFIG.TTL[USER_ROLE_ENUM.GUEST],
+        };
+      default:
+        return {
+          limit: DEFAULT_THROTTLE_CONFIG.LIMITS[USER_ROLE_ENUM.GUEST],
+          ttl: DEFAULT_THROTTLE_CONFIG.TTL[USER_ROLE_ENUM.GUEST],
+        };
     }
-
-    return {
-      limit: DEFAULT_THROTTLE_CONFIG.LIMITS[USER_ROLE_ENUM.GUEST],
-      ttl: DEFAULT_THROTTLE_CONFIG.TTL[USER_ROLE_ENUM.GUEST],
-    };
   }
 
   private getTtlForRole = (
@@ -189,7 +165,7 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
       return -1;
     }
 
-    return ttl[role] || DEFAULT_THROTTLE_CONFIG.TTL[role] || 60;
+    return ttl[role] ?? DEFAULT_THROTTLE_CONFIG.TTL[role] ?? 60;
   };
 
   private getLimitForRole = (
@@ -204,7 +180,7 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
       return -1;
     }
 
-    return limits[role] || DEFAULT_THROTTLE_CONFIG.LIMITS[role] || 60;
+    return limits[role] ?? DEFAULT_THROTTLE_CONFIG.LIMITS[role] ?? 60;
   };
 
   private createThrottleKey(

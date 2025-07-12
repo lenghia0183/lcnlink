@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import {
   IS_2FA_ENUM,
   USER_GENDER_ENUM,
+  USER_LOCKED_ENUM,
   USER_ROLE_ENUM,
 } from '@components/user/user.constant';
 import { BOOLEAN_ENUM } from '@constant/app.enum';
@@ -60,8 +61,12 @@ export class User extends BaseModel {
   @Column({ type: 'int', enum: BOOLEAN_ENUM, default: BOOLEAN_ENUM.TRUE })
   isActive: BOOLEAN_ENUM;
 
-  @Column({ type: 'int', enum: BOOLEAN_ENUM, default: BOOLEAN_ENUM.TRUE })
-  isLocked: BOOLEAN_ENUM;
+  @Column({
+    type: 'int',
+    enum: USER_LOCKED_ENUM,
+    default: USER_LOCKED_ENUM.UNLOCKED,
+  })
+  isLocked: USER_LOCKED_ENUM;
 
   @Column({ nullable: true })
   refreshToken: string;
