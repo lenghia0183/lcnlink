@@ -28,7 +28,9 @@ import { LoggedInRequest } from '@core/types/logged-in-request.type';
 import { Login2FaRequestDto } from './dto/request/verify-otp.request.dto';
 import { ForgotPasswordRequestDto } from './dto/request/forgot-password.request.dto';
 import { ResetPasswordRequestDto } from './dto/request/reset-password.request.dto';
+import { ThrottleForAuth } from '@core/decorators/throttle-redis.decorator';
 
+@ThrottleForAuth()
 @ApiTags('Xác thực')
 @Controller('auth')
 export class AuthController {
@@ -56,6 +58,7 @@ export class AuthController {
     }
     return await this.authService.register(request);
   }
+
   @Public()
   @Post('/login')
   @ApiOperation({
