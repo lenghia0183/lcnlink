@@ -39,6 +39,13 @@ export type AdminConfig = {
   password: string;
 };
 
+export type AwsConfig = {
+  accessKeyId: string;
+  secretAccessKey: string;
+  region: string;
+  s3BucketName: string;
+};
+
 export type RedisConfig = {
   host: string;
   port: number;
@@ -53,4 +60,5 @@ export type AllConfigType = {
   admin: AdminConfig;
   mail: MailConfig;
   redis: RedisConfig;
+  aws: AwsConfig;
 };

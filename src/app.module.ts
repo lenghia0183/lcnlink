@@ -9,6 +9,7 @@ import databaseConfig from '@config/database.config';
 import adminConfig from '@config/admin.config';
 import mailConfig from '@config/mail.config';
 import redisConfig from '@config/redis.config';
+import awsConfig from '@config/aws.config';
 import DatabaseConnectModule from '@database/database.connect.module';
 import { RequestLoggingMiddleware } from '@core/middlewares/request-logging.middleware';
 import { JwtModule } from '@nestjs/jwt';
@@ -21,6 +22,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthenticateGuard } from '@core/guards/authenticate.guard';
 import { CustomThrottlerGuard } from '@core/guards/custom-throttler.guard';
 import { AuthModule } from '@components/auth/auth.module';
+import { S3Module } from '@components/s3/s3.module';
 import { I18nModule } from './i18n/i18n.module';
 import { I18nService } from 'nestjs-i18n';
 import { RedisModule } from '@core/modules/redis/redis.module';
@@ -37,6 +39,7 @@ import { CustomThrottlerModule } from '@core/modules/throttler/throttler.module'
         adminConfig,
         mailConfig,
         redisConfig,
+        awsConfig,
       ],
       envFilePath: ['.env'],
     }),
@@ -45,6 +48,7 @@ import { CustomThrottlerModule } from '@core/modules/throttler/throttler.module'
     RepositoryModule,
     UserModule,
     AuthModule,
+    S3Module,
     I18nModule,
     RedisModule,
     CustomThrottlerModule,
