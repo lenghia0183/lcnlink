@@ -33,5 +33,11 @@
   "RESET_TOKEN_INVALID": "Invalid or expired reset token",
   "RESET_TOKEN_EXPIRED": "Reset token has expired",
   "PASSWORD_CONFIRM_NOT_MATCH": "Password confirmation does not match",
-  "NO_DATA_RECORDS": "No data records found"
+  "NO_DATA_RECORDS": "No data records found",
+  "FILE_REQUIRED": "File is required",
+  "FILE_SIZE_TOO_LARGE": "File size exceeds the allowed limit ({maxSize})",
+  "FILE_TYPE_NOT_ALLOWED": "File type {fileType} is not allowed. Allowed types: {allowedTypes}",
+  "FILE_EXTENSION_NOT_ALLOWED": "File extension {extension} is not allowed. Allowed extensions: {allowedExtensions}",
+  "INVALID_FILE_NAME": "File name contains invalid characters",
+  "TOO_MANY_FILES": "Number of files exceeds the allowed limit ({maxFiles} files)"
 }

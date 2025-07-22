@@ -33,5 +33,11 @@
   "NOT_ACCEPTABLE": "Không thể chấp nhận",
   "RESET_TOKEN_INVALID": "Token không hợp lệ hoặc đã hết hạn",
   "RESET_TOKEN_EXPIRED": "Token đã hết hạn",
-  "PASSWORD_CONFIRM_NOT_MATCH": "Mật khẩu xác nhận không khớp"
+  "PASSWORD_CONFIRM_NOT_MATCH": "Mật khẩu xác nhận không khớp",
+  "FILE_REQUIRED": "File là bắt buộc",
+  "FILE_SIZE_TOO_LARGE": "Kích thước file vượt quá giới hạn cho phép ({maxSize})",
+  "FILE_TYPE_NOT_ALLOWED": "Loại file {fileType} không được phép. Các loại file được phép: {allowedTypes}",
+  "FILE_EXTENSION_NOT_ALLOWED": "Phần mở rộng {extension} không được phép. Các phần mở rộng được phép: {allowedExtensions}",
+  "INVALID_FILE_NAME": "Tên file chứa ký tự không hợp lệ",
+  "TOO_MANY_FILES": "Số lượng file vượt quá giới hạn cho phép ({maxFiles} files)"
 }

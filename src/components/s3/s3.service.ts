@@ -39,7 +39,7 @@ export class S3Service {
   }
 
   /**
-   * Upload file to S3
+   * Upload file to S3 (validation should be done by pipe before reaching this method)
    */
   async uploadFile(
     file: Express.Multer.File,
@@ -99,7 +99,7 @@ export class S3Service {
   }
 
   /**
-   * Upload multiple files to S3
+   * Upload multiple files to S3 (validation should be done by pipe before reaching this method)
    */
   async uploadMultipleFiles(
     files: Express.Multer.File[],
@@ -122,7 +122,9 @@ export class S3Service {
     }>
   > {
     try {
-      const uploadPromises = files.map((file) => this.uploadFile(file, folder));
+      const uploadPromises = files.map((file) =>
+        this.uploadFile(file, folder, undefined),
+      );
 
       const results = await Promise.all(uploadPromises);
 
