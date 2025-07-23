@@ -37,9 +37,9 @@ export const THROTTLE_PRESETS = {
       guest: 120,
     },
     LIMITS: {
-      [USER_ROLE_ENUM.ADMIN]: 30,
-      [USER_ROLE_ENUM.USER]: 20,
-      [USER_ROLE_ENUM.GUEST]: 10,
+      [USER_ROLE_ENUM.ADMIN]: 10,
+      [USER_ROLE_ENUM.USER]: 5,
+      [USER_ROLE_ENUM.GUEST]: 3,
     },
   },
 

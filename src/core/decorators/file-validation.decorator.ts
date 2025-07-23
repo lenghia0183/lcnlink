@@ -219,3 +219,29 @@ export function ValidateMultipleFiles(
   };
   return ValidateFile(config);
 }
+
+export function ValidateAllFiles(customConfig?: Partial<FileValidationConfig>) {
+  const config: FileValidationConfig = {
+    maxSize: 5 * 1024 * 1024, // 10MB
+    allowedMimeTypes: [
+      ...getImageMimeTypes(),
+      ...getDocumentMimeTypes(),
+      ...getArchiveMimeTypes(),
+      ...getSpreadsheetMimeTypes(),
+      ...getVideoMimeTypes(),
+      ...getAudioMimeTypes(),
+    ],
+    allowedExtensions: [
+      ...getImageExtensions(),
+      ...getDocumentExtensions(),
+      ...getArchiveExtensions(),
+      ...getSpreadsheetExtensions(),
+      ...getVideoExtensions(),
+      ...getAudioExtensions(),
+    ],
+    maxFiles: 5,
+    required: true,
+    ...customConfig,
+  };
+  return ValidateFile(config);
+}

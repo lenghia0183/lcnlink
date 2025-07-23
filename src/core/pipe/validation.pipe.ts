@@ -45,6 +45,7 @@ export class ValidationPipe implements PipeTransform<unknown> {
   }
 
   async transform(value: any, metadata: ArgumentMetadata) {
+    console.log('value', value);
     const validationOptions = { ...this.options };
     const { metatype } = metadata;
 

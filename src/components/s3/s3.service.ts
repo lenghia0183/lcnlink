@@ -38,23 +38,11 @@ export class S3Service {
     this.bucketName = awsConfig?.s3BucketName || '';
   }
 
-  /**
-   * Upload file to S3 (validation should be done by pipe before reaching this method)
-   */
   async uploadFile(
     file: Express.Multer.File,
     folder?: string,
     customFileName?: string,
-  ): Promise<
-    ResponsePayload<{
-      fileName: string;
-      originalName: string;
-      fileUrl: string;
-      key: string;
-      size: number;
-      mimeType: string;
-    }>
-  > {
+  ) {
     try {
       const fileExtension = file.originalname.split('.').pop();
       const fileName = customFileName || `${uuidv4()}.${fileExtension}`;
@@ -84,43 +72,14 @@ export class S3Service {
       ).build();
     } catch (error) {
       this.logger.error('Error uploading file to S3:', error);
-      return new ResponseBuilder<{
-        fileName: string;
-        originalName: string;
-        fileUrl: string;
-        key: string;
-        size: number;
-        mimeType: string;
-      }>()
+      return new ResponseBuilder()
         .withCode(ResponseCodeEnum.INTERNAL_SERVER_ERROR)
         .withMessage('Failed to upload file')
         .build();
     }
   }
 
-  /**
-   * Upload multiple files to S3 (validation should be done by pipe before reaching this method)
-   */
-  async uploadMultipleFiles(
-    files: Express.Multer.File[],
-    folder?: string,
-  ): Promise<
-    ResponsePayload<{
-      uploadedFiles: Array<
-        | {
-            fileName: string;
-            originalName: string;
-            fileUrl: string;
-            key: string;
-            size: number;
-            mimeType: string;
-          }
-        | undefined
-      >;
-      totalFiles: number;
-      successfulUploads: number;
-    }>
-  > {
+  async uploadMultipleFiles(files: Express.Multer.File[], folder?: string) {
     try {
       const uploadPromises = files.map((file) =>
         this.uploadFile(file, folder, undefined),
@@ -141,30 +100,13 @@ export class S3Service {
       ).build();
     } catch (error) {
       this.logger.error('Error uploading multiple files to S3:', error);
-      return new ResponseBuilder<{
-        uploadedFiles: Array<
-          | {
-              fileName: string;
-              originalName: string;
-              fileUrl: string;
-              key: string;
-              size: number;
-              mimeType: string;
-            }
-          | undefined
-        >;
-        totalFiles: number;
-        successfulUploads: number;
-      }>()
+      return new ResponseBuilder()
         .withCode(ResponseCodeEnum.INTERNAL_SERVER_ERROR)
         .withMessage('Failed to upload files')
         .build();
     }
   }
 
-  /**
-   * Delete file from S3
-   */
   async deleteFile(
     key: string,
   ): Promise<ResponsePayload<{ deletedKey: string }>> {

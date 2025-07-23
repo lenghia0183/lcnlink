@@ -1,7 +1,8 @@
+import { BaseDto } from '@core/dto/base.request.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString, MaxLength } from 'class-validator';
 
-export class UploadFileRequestDto {
+export class UploadFileRequestDto extends BaseDto<UploadFileRequestDto> {
   @ApiProperty({
     description: 'Thư mục để lưu file (tùy chọn)',
     example: 'avatars',

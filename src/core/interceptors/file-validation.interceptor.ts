@@ -43,12 +43,18 @@ export class FileValidationInterceptor implements NestInterceptor {
     }
 
     const request = context.switchToHttp().getRequest<RequestWithFiles>();
-    const file = request.file;
+
     const files = request.files;
 
-    // Validate single file
-    if (file) {
-      await this.validateSingleFile(file, config);
+    console.log('files', files);
+
+    if (!files || files.length === 0) {
+      if (config.required) {
+        throw new BusinessException(
+          await this.i18n.translate(I18nErrorKeys.FILE_REQUIRED),
+          ResponseCodeEnum.BAD_REQUEST,
+        );
+      }
     }
 
     // Validate multiple files
@@ -71,17 +77,6 @@ export class FileValidationInterceptor implements NestInterceptor {
     file: Express.Multer.File,
     config: FileValidationConfig,
   ): Promise<void> {
-    // Check if file exists
-    if (!file) {
-      if (config.required) {
-        throw new BusinessException(
-          await this.i18n.translate(I18nErrorKeys.FILE_REQUIRED),
-          ResponseCodeEnum.BAD_REQUEST,
-        );
-      }
-      return;
-    }
-
     await this.validateFileProperties(file, config);
   }
 
@@ -89,17 +84,6 @@ export class FileValidationInterceptor implements NestInterceptor {
     files: Express.Multer.File[],
     config: FileValidationConfig,
   ): Promise<void> {
-    // Check if files exist
-    if (!files || files.length === 0) {
-      if (config.required) {
-        throw new BusinessException(
-          await this.i18n.translate(I18nErrorKeys.FILE_REQUIRED),
-          ResponseCodeEnum.BAD_REQUEST,
-        );
-      }
-      return;
-    }
-
     // Check file count
     if (config.maxFiles && files.length > config.maxFiles) {
       throw new BusinessException(
