@@ -16,7 +16,6 @@ import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { I18nErrorKeys } from '@constant/i18n-keys.enum';
 
 interface RequestWithFiles extends Request {
-  file?: Express.Multer.File;
   files?:
     | Express.Multer.File[]
     | { [fieldname: string]: Express.Multer.File[] };

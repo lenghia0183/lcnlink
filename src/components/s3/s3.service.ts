@@ -107,9 +107,7 @@ export class S3Service {
     }
   }
 
-  async deleteFile(
-    key: string,
-  ): Promise<ResponsePayload<{ deletedKey: string }>> {
+  async deleteFile(key: string) {
     try {
       const command = new DeleteObjectCommand({
         Bucket: this.bucketName,
@@ -132,16 +130,7 @@ export class S3Service {
     }
   }
 
-  /**
-   * Delete multiple files from S3
-   */
-  async deleteMultipleFiles(keys: string[]): Promise<
-    ResponsePayload<{
-      deletedFiles: Array<{ deletedKey: string } | undefined>;
-      totalFiles: number;
-      successfulDeletes: number;
-    }>
-  > {
+  async deleteMultipleFiles(keys: string[]) {
     try {
       const deletePromises = keys.map((key) => this.deleteFile(key));
       const results = await Promise.all(deletePromises);
@@ -159,11 +148,7 @@ export class S3Service {
       ).build();
     } catch (error) {
       this.logger.error('Error deleting multiple files from S3:', error);
-      return new ResponseBuilder<{
-        deletedFiles: Array<{ deletedKey: string } | undefined>;
-        totalFiles: number;
-        successfulDeletes: number;
-      }>()
+      return new ResponseBuilder()
         .withCode(ResponseCodeEnum.INTERNAL_SERVER_ERROR)
         .withMessage('Failed to delete files')
         .build();

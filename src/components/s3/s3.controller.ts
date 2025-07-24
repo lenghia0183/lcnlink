@@ -7,8 +7,9 @@ import {
   Query,
   Get,
   UploadedFiles,
+  UploadedFile,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiOperation,
@@ -19,7 +20,7 @@ import {
 } from '@nestjs/swagger';
 import { S3Service } from './s3.service';
 import { UploadFileRequestDto } from './dto/request/upload-file.request.dto';
-import { DeleteFileRequestDto } from './dto/request/delete-file.request.dto';
+import { DeleteMultipleFilesRequestDto } from './dto/request/delete-file.request.dto';
 import { GetPresignedUrlRequestDto } from './dto/request/presigned-url.request.dto';
 
 import { USER_ROLE_ENUM } from '@components/user/user.constant';
@@ -89,8 +90,13 @@ export class S3Controller {
   @ApiResponse({ status: 400, description: 'Dữ liệu không hợp lệ' })
   @ApiResponse({ status: 500, description: 'Lỗi server' })
   @Roles(USER_ROLE_ENUM.USER, USER_ROLE_ENUM.ADMIN)
-  async deleteFile(@Body() deleteFileDto: DeleteFileRequestDto) {
-    return this.s3Service.deleteFile(deleteFileDto.key);
+  async deleteFile(@Body() payload: DeleteMultipleFilesRequestDto) {
+    const { request, responseError } = payload;
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+
+    return this.s3Service.deleteMultipleFiles(request.keys);
   }
 
   @Get('presigned-url')
