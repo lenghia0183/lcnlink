@@ -7,9 +7,8 @@ import {
   Query,
   Get,
   UploadedFiles,
-  UploadedFile,
 } from '@nestjs/common';
-import { FilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiOperation,

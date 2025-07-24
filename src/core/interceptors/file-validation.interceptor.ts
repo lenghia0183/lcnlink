@@ -45,8 +45,6 @@ export class FileValidationInterceptor implements NestInterceptor {
 
     const files = request.files;
 
-    console.log('files', files);
-
     if (!files || files.length === 0) {
       if (config.required) {
         throw new BusinessException(
