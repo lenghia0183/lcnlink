@@ -17,7 +17,7 @@ import { UserModule } from '@components/user/user.module';
 import { RepositoryModule } from '@database/repositories/repository.module';
 
 import { AdminInitService } from '@core/services/admin-init.service';
-import { ValidationPipe } from '@core/pipe/validation.pipe';
+import { ValidationPipe } from '@core/pipes/validation.pipe';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthenticateGuard } from '@core/guards/authenticate.guard';
 import { CustomThrottlerGuard } from '@core/guards/custom-throttler.guard';

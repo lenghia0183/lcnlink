@@ -11,9 +11,10 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { AllConfigType, AwsConfig } from '@config/config.type';
 import { ResponseBuilder } from '@utils/response-builder';
 import { ResponseCodeEnum } from '@constant/response-code.enum';
-import { ResponsePayload } from '@utils/response-payload';
+
 import { I18nService } from 'nestjs-i18n';
 import { v4 as uuidv4 } from 'uuid';
+import slugify from 'slugify';
 
 @Injectable()
 export class S3Service {
@@ -44,9 +45,12 @@ export class S3Service {
     customFileName?: string,
   ) {
     try {
-      const fileExtension = file.originalname.split('.').pop();
-      const fileName = customFileName || `${uuidv4()}.${fileExtension}`;
-      const key = folder ? `${folder}/${fileName}` : fileName;
+      const fileName = this.generateFileName(file.originalname, customFileName);
+      const key = this.getS3ObjectKey(
+        file.originalname,
+        folder,
+        customFileName,
+      );
 
       const command = new PutObjectCommand({
         Bucket: this.bucketName,
@@ -155,9 +159,6 @@ export class S3Service {
     }
   }
 
-  /**
-   * Check if file exists in S3
-   */
   async fileExists(key: string): Promise<boolean> {
     try {
       const command = new HeadObjectCommand({
@@ -172,19 +173,7 @@ export class S3Service {
     }
   }
 
-  /**
-   * Generate presigned URL for file access
-   */
-  async getPresignedUrl(
-    key: string,
-    expiresIn: number = 3600,
-  ): Promise<
-    ResponsePayload<{
-      presignedUrl: string;
-      key: string;
-      expiresIn: number;
-    }>
-  > {
+  async getPresignedUrl(key: string, expiresIn: number = 3600) {
     try {
       const command = new GetObjectCommand({
         Bucket: this.bucketName,
@@ -204,21 +193,50 @@ export class S3Service {
       ).build();
     } catch (error) {
       this.logger.error('Error generating presigned URL:', error);
-      return new ResponseBuilder<{
-        presignedUrl: string;
-        key: string;
-        expiresIn: number;
-      }>()
+      return new ResponseBuilder()
         .withCode(ResponseCodeEnum.INTERNAL_SERVER_ERROR)
         .withMessage('Failed to generate presigned URL')
         .build();
     }
   }
 
-  /**
-   * Get file URL (public access)
-   */
   getFileUrl(key: string): string {
     return `https://${this.bucketName}.s3.amazonaws.com/${key}`;
+  }
+
+  private generateFileName(
+    originalName: string,
+    customFileName?: string,
+  ): string {
+    if (customFileName) return customFileName;
+
+    const now = new Date();
+    const isoStringSafe = now
+      .toISOString()
+      .replace(/:/g, '-')
+      .replace(/\./g, '-');
+
+    const fileExtension = originalName.split('.').pop() || 'bin';
+    const nameWithoutExt = originalName.split('.').slice(0, -1).join('.');
+    const safeName = slugify(nameWithoutExt, { lower: true, strict: true });
+    const uuid = uuidv4();
+
+    return `${isoStringSafe}--${safeName}--${uuid}.${fileExtension}`;
+  }
+
+  private getS3ObjectKey(
+    originalName: string,
+    folder?: string,
+    customFileName?: string,
+  ): string {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+
+    const fileName = this.generateFileName(originalName, customFileName);
+    const basePath = `${folder || 'uploads'}/${yyyy}/${mm}/${dd}`;
+
+    return `${basePath}/${fileName}`;
   }
 }

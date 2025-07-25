@@ -88,7 +88,6 @@ export class S3Controller {
   @ApiResponse({ status: 200, description: 'Xóa file thành công' })
   @ApiResponse({ status: 400, description: 'Dữ liệu không hợp lệ' })
   @ApiResponse({ status: 500, description: 'Lỗi server' })
-  @Roles(USER_ROLE_ENUM.USER, USER_ROLE_ENUM.ADMIN)
   async deleteFile(@Body() payload: DeleteMultipleFilesRequestDto) {
     const { request, responseError } = payload;
     if (!isEmpty(responseError)) {
@@ -103,11 +102,11 @@ export class S3Controller {
   @ApiResponse({ status: 200, description: 'Tạo presigned URL thành công' })
   @ApiResponse({ status: 400, description: 'Dữ liệu không hợp lệ' })
   @ApiResponse({ status: 500, description: 'Lỗi server' })
-  @Roles(USER_ROLE_ENUM.USER, USER_ROLE_ENUM.ADMIN)
-  async getPresignedUrl(@Query() presignedUrlDto: GetPresignedUrlRequestDto) {
-    return this.s3Service.getPresignedUrl(
-      presignedUrlDto.key,
-      presignedUrlDto.expiresIn,
-    );
+  async getPresignedUrl(@Query() payload: GetPresignedUrlRequestDto) {
+    const { request, responseError } = payload;
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+    return this.s3Service.getPresignedUrl(request.key, request.expiresIn);
   }
 }

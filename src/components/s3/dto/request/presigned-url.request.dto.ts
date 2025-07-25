@@ -8,8 +8,9 @@ import {
   Max,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { BaseDto } from '@core/dto/base.request.dto';
 
-export class GetPresignedUrlRequestDto {
+export class GetPresignedUrlRequestDto extends BaseDto<GetPresignedUrlRequestDto> {
   @ApiProperty({
     description: 'Key của file trong S3',
     example: 'avatars/abc123.jpg',
@@ -23,7 +24,7 @@ export class GetPresignedUrlRequestDto {
     example: 3600,
     required: false,
     minimum: 1,
-    maximum: 604800, // 7 days
+    maximum: 604800,
   })
   @IsOptional()
   @Type(() => Number)
