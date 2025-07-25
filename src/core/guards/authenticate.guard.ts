@@ -19,6 +19,7 @@ import { LoggedInRequest } from '@core/types/logged-in-request.type';
 import { JwtPayload } from '@core/types/jwt-payload.type';
 import { UserRepository } from '@database/repositories';
 import { USER_ROLE_ENUM } from '@components/user/user.constant';
+import { I18nErrorKeys } from '@constant/i18n-keys.enum';
 
 @Injectable()
 export class AuthenticateGuard implements CanActivate {
@@ -51,7 +52,7 @@ export class AuthenticateGuard implements CanActivate {
     } else {
       if (!token) {
         throw new BusinessException(
-          this.i18n.translate('error.UNAUTHORIZED'),
+          this.i18n.translate(I18nErrorKeys.UNAUTHORIZED),
           ResponseCodeEnum.UNAUTHORIZED,
         );
       }
@@ -72,17 +73,17 @@ export class AuthenticateGuard implements CanActivate {
       switch (e.name) {
         case 'TokenExpiredError':
           throw new BusinessException(
-            this.i18n.translate('error.TOKEN_EXPIRED'),
+            this.i18n.translate(I18nErrorKeys.TOKEN_EXPIRED),
             ResponseCodeEnum.BAD_REQUEST,
           );
         case 'JsonWebTokenError':
           throw new BusinessException(
-            this.i18n.translate('error.TOKEN_INVALID'),
+            this.i18n.translate(I18nErrorKeys.TOKEN_INVALID),
             ResponseCodeEnum.BAD_REQUEST,
           );
         default:
           throw new BusinessException(
-            this.i18n.translate('error.TOKEN_INVALID'),
+            this.i18n.translate(I18nErrorKeys.TOKEN_INVALID),
             ResponseCodeEnum.BAD_REQUEST,
           );
       }

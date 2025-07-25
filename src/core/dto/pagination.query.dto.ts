@@ -4,7 +4,7 @@ import { IsEnum, IsString, IsNotEmpty, Allow } from 'class-validator';
 
 import { EnumSort } from '@utils/common';
 import { BaseDto } from './base.request.dto';
-import { ValidationHelper } from '@core/helpers/validation.helper';
+import { ValidationHelper } from '@helpers/validation.helper';
 
 export class Sort {
   @ApiProperty({

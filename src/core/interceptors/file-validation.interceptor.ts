@@ -7,13 +7,11 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { I18nService } from 'nestjs-i18n';
-import {
-  FILE_VALIDATION_KEY,
-  FileValidationConfig,
-} from '@core/decorators/file-validation.decorator';
+import { FileValidationConfig } from '@core/decorators/file-validation.decorator';
 import { BusinessException } from '@core/exception-filters/business-exception.filter';
 import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { I18nErrorKeys } from '@constant/i18n-keys.enum';
+import { FILE_VALIDATION_KEY } from '@constant/app.enum';
 
 interface RequestWithFiles extends Request {
   files?:

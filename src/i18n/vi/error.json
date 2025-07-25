@@ -39,5 +39,6 @@
   "FILE_TYPE_NOT_ALLOWED": "Loại file {fileType} không được phép. Các loại file được phép: {allowedTypes}",
   "FILE_EXTENSION_NOT_ALLOWED": "Phần mở rộng {extension} không được phép. Các phần mở rộng được phép: {allowedExtensions}",
   "INVALID_FILE_NAME": "Tên file chứa ký tự không hợp lệ",
-  "TOO_MANY_FILES": "Số lượng file vượt quá giới hạn cho phép ({maxFiles} files)"
+  "TOO_MANY_FILES": "Số lượng file vượt quá giới hạn cho phép ({maxFiles} files)",
+  "GET_PRE_URL_FAILED": "Lấy url thất bại"
 }

@@ -10,13 +10,15 @@ import { Injectable, ExecutionContext } from '@nestjs/common';
 
 import { USER_ROLE_ENUM } from '@components/user/user.constant';
 import { LoggedInRequest } from '@core/types/logged-in-request.type';
-import { THROTTLE_BY_ROLE_KEY } from '@core/decorators/throttle-redis.decorator';
-import { DEFAULT_THROTTLE_CONFIG } from '@core/constants/throttle.constant';
+
+import { DEFAULT_THROTTLE_CONFIG } from '@constant/throttle.constant';
 import {
   ThrottleByRoleOptions,
   ThrottleLimitByRole,
   ThrottleTtlByRole,
 } from '@core/types/throttle.type';
+import { THROTTLE_BY_ROLE_KEY } from '@constant/app.enum';
+import { I18nErrorKeys } from '@constant/i18n-keys.enum';
 
 @Injectable()
 export class CustomThrottlerGuard extends ThrottlerGuard {
@@ -194,6 +196,6 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
   }
 
   protected throwThrottlingException(): Promise<void> {
-    throw new ThrottlerException(this.i18n.t('error.TOO_MANY_REQUEST'));
+    throw new ThrottlerException(this.i18n.t(I18nErrorKeys.TOO_MANY_REQUEST));
   }
 }

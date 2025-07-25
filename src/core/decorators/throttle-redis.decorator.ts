@@ -1,8 +1,7 @@
 import { applyDecorators, SetMetadata } from '@nestjs/common';
-import { THROTTLE_PRESETS } from '@core/constants/throttle.constant';
+import { THROTTLE_PRESETS } from '@constant/throttle.constant';
 import { ThrottleByRoleOptions } from '@core/types/throttle.type';
-
-export const THROTTLE_BY_ROLE_KEY = 'THROTTLE_BY_ROLE';
+import { THROTTLE_BY_ROLE_KEY } from '@constant/app.enum';
 
 export function ThrottleByRole(options: ThrottleByRoleOptions) {
   return applyDecorators(SetMetadata(THROTTLE_BY_ROLE_KEY, options));

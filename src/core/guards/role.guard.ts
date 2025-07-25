@@ -11,6 +11,7 @@ import { I18nService } from 'nestjs-i18n';
 import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { BusinessException } from '@core/exception-filters/business-exception.filter';
 import { LoggedInRequest } from '@core/types/logged-in-request.type';
+import { I18nErrorKeys } from '@constant/i18n-keys.enum';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
@@ -34,7 +35,7 @@ export class RoleGuard implements CanActivate {
 
     if (!user) {
       throw new BusinessException(
-        this.i18n.translate('error.FORBIDDEN'),
+        this.i18n.translate(I18nErrorKeys.FORBIDDEN),
         ResponseCodeEnum.FORBIDDEN,
       );
     }
@@ -42,7 +43,7 @@ export class RoleGuard implements CanActivate {
       return true;
     } else {
       throw new BusinessException(
-        this.i18n.translate('error.FORBIDDEN'),
+        this.i18n.translate(I18nErrorKeys.FORBIDDEN),
         ResponseCodeEnum.FORBIDDEN,
       );
     }

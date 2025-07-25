@@ -15,6 +15,7 @@ import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { I18nService } from 'nestjs-i18n';
 import { v4 as uuidv4 } from 'uuid';
 import slugify from 'slugify';
+import { I18nErrorKeys } from '@constant/i18n-keys.enum';
 
 @Injectable()
 export class S3Service {
@@ -78,7 +79,7 @@ export class S3Service {
       this.logger.error('Error uploading file to S3:', error);
       return new ResponseBuilder()
         .withCode(ResponseCodeEnum.INTERNAL_SERVER_ERROR)
-        .withMessage('Failed to upload file')
+        .withMessage(I18nErrorKeys.UPLOAD_FAILED)
         .build();
     }
   }
@@ -106,7 +107,7 @@ export class S3Service {
       this.logger.error('Error uploading multiple files to S3:', error);
       return new ResponseBuilder()
         .withCode(ResponseCodeEnum.INTERNAL_SERVER_ERROR)
-        .withMessage('Failed to upload files')
+        .withMessage(I18nErrorKeys.UPLOAD_FAILED)
         .build();
     }
   }
@@ -129,7 +130,7 @@ export class S3Service {
       this.logger.error('Error deleting file from S3:', error);
       return new ResponseBuilder<{ deletedKey: string }>()
         .withCode(ResponseCodeEnum.INTERNAL_SERVER_ERROR)
-        .withMessage('Failed to delete file')
+        .withMessage(I18nErrorKeys.DELETE_FAILED)
         .build();
     }
   }
@@ -154,7 +155,7 @@ export class S3Service {
       this.logger.error('Error deleting multiple files from S3:', error);
       return new ResponseBuilder()
         .withCode(ResponseCodeEnum.INTERNAL_SERVER_ERROR)
-        .withMessage('Failed to delete files')
+        .withMessage(I18nErrorKeys.DELETE_FAILED)
         .build();
     }
   }
@@ -195,7 +196,7 @@ export class S3Service {
       this.logger.error('Error generating presigned URL:', error);
       return new ResponseBuilder()
         .withCode(ResponseCodeEnum.INTERNAL_SERVER_ERROR)
-        .withMessage('Failed to generate presigned URL')
+        .withMessage(I18nErrorKeys.GET_PRE_URL_FAILED)
         .build();
     }
   }
