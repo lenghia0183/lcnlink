@@ -29,12 +29,17 @@ import { Login2FaRequestDto } from './dto/request/verify-otp.request.dto';
 import { ForgotPasswordRequestDto } from './dto/request/forgot-password.request.dto';
 import { ResetPasswordRequestDto } from './dto/request/reset-password.request.dto';
 import { ThrottleForAuth } from '@core/decorators/throttle-redis.decorator';
+import { UserService } from '@components/user/user.service';
+import { GetUserDetailResponseDto } from '@components/user/dto/response/get-user-detail.response.dto';
 
 @ThrottleForAuth()
 @ApiTags('Xác thực')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private userService: UserService,
+  ) {}
   @Public()
   @Post('/register')
   @ApiOperation({
@@ -164,6 +169,32 @@ export class AuthController {
     }
 
     return await this.authService.generate2fa(user);
+  }
+
+  @Get('/me')
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Lấy thông tin người dùng hiện tại',
+    description: 'Trả về chi tiết user đang đăng nhập',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lấy thông tin user thành công',
+    type: GetUserDetailResponseDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Chưa đăng nhập hoặc token không hợp lệ',
+  })
+  async getMe(@Request() loggedInRequest: LoggedInRequest) {
+    const user = loggedInRequest.user;
+
+    if (!user) {
+      return new ResponseBuilder()
+        .withCode(ResponseCodeEnum.BAD_REQUEST, true)
+        .build();
+    }
+
+    return await this.userService.getDetail(user.id);
   }
 
   @Put('/change-2fa')

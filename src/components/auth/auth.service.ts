@@ -159,13 +159,17 @@ export class AuthService {
     });
 
     await this.userRepository.update(existedUser.id, { refreshToken });
+    console.log('existedUser', existedUser);
 
-    const response = plainToInstance(LoginResponseDTO, existedUser, {
-      excludeExtraneousValues: true,
-    });
-    response.refreshToken = refreshToken;
-    response.accessToken = accessToken;
-
+    const response = plainToInstance(
+      LoginResponseDTO,
+      {
+        userData: existedUser,
+        refreshToken,
+        accessToken,
+      },
+      { excludeExtraneousValues: true },
+    );
     return new ResponseBuilder(response)
       .withCode(ResponseCodeEnum.SUCCESS)
       .withMessage(await this.i18n.translate(I18nMessageKeys.LOGIN_SUCCESS))
