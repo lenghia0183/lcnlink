@@ -13,6 +13,12 @@ async function bootstrap() {
   const appConfig = configService.get('app', { infer: true });
   const { port, appName, apiPrefix } = appConfig!;
 
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
+
   app.setGlobalPrefix(apiPrefix);
 
   const swaggerConfig = new DocumentBuilder()

@@ -28,10 +28,10 @@ import { AllConfigType } from '../config/config.type';
         },
       }),
       resolvers: [
+        { use: QueryResolver, options: ['lang', 'locale', 'l'] },
+        new HeaderResolver(['x-lang']),
         new CookieResolver(),
         AcceptLanguageResolver,
-        new HeaderResolver(['x-lang']),
-        { use: QueryResolver, options: ['lang', 'locale', 'l'] },
       ],
     }),
   ],
