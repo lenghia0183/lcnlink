@@ -85,6 +85,93 @@ export class AuthService {
       .withMessage(await this.i18n.translate(I18nMessageKeys.REGISTER_SUCCESS))
       .build();
   }
+  async refreshToken(data: { refreshToken: string }) {
+    const authConfig = this.configService.get('auth', { infer: true });
+    console.log('refreshToken', data.refreshToken);
+
+    let payload: JwtPayload | null = null;
+    try {
+      payload = await this.JwtService.verifyAsync<JwtPayload>(
+        data.refreshToken,
+        { secret: authConfig?.refreshSecret },
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.name === 'JsonWebTokenError') {
+          throw new BusinessException(
+            await this.i18n.translate(I18nErrorKeys.TOKEN_INVALID),
+            ResponseCodeEnum.UNAUTHORIZED,
+          );
+        }
+        if (error.name === 'TokenExpiredError') {
+          throw new BusinessException(
+            await this.i18n.translate(I18nErrorKeys.TOKEN_EXPIRED),
+            ResponseCodeEnum.UNAUTHORIZED,
+          );
+        }
+      }
+      throw error;
+    }
+
+    console.log('payload', payload);
+
+    if (!payload?.id) {
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.TOKEN_INVALID),
+        ResponseCodeEnum.UNAUTHORIZED,
+      );
+    }
+
+    const existedUser = await this.userRepository.findOne({
+      where: { id: payload.id },
+    });
+
+    if (!existedUser) {
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.NOT_FOUND),
+        ResponseCodeEnum.NOT_FOUND,
+      );
+    }
+
+    // ensure provided refresh token matches the one stored for user
+    if (
+      !existedUser.refreshToken ||
+      existedUser.refreshToken !== data.refreshToken
+    ) {
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.TOKEN_INVALID),
+        ResponseCodeEnum.BAD_REQUEST,
+      );
+    }
+
+    const newPayload: JwtPayload = {
+      email: existedUser.email,
+      fullname: existedUser.fullname,
+      role: existedUser.role,
+      id: existedUser.id,
+    };
+
+    const accessToken = await this.JwtService.signAsync(newPayload, {
+      secret: authConfig?.accessSecret,
+      expiresIn: authConfig?.accessExpires,
+    });
+
+    const refreshToken = await this.JwtService.signAsync(newPayload, {
+      secret: authConfig?.refreshSecret,
+      expiresIn: authConfig?.refreshExpires,
+    });
+
+    const response = plainToInstance(LoginResponseDTO, existedUser, {
+      excludeExtraneousValues: true,
+    });
+    response.refreshToken = refreshToken;
+    response.accessToken = accessToken;
+
+    return new ResponseBuilder(response)
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .withMessage(await this.i18n.translate(I18nMessageKeys.SUCCESS))
+      .build();
+  }
 
   async login(data: LoginRequestDto) {
     const existedUser = await this.userRepository.findByEmail(data.email);
@@ -159,7 +246,6 @@ export class AuthService {
     });
 
     await this.userRepository.update(existedUser.id, { refreshToken });
-    console.log('existedUser', existedUser);
 
     const response = plainToInstance(
       LoginResponseDTO,

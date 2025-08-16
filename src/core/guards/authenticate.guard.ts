@@ -74,17 +74,17 @@ export class AuthenticateGuard implements CanActivate {
         case 'TokenExpiredError':
           throw new BusinessException(
             this.i18n.translate(I18nErrorKeys.TOKEN_EXPIRED),
-            ResponseCodeEnum.BAD_REQUEST,
+            ResponseCodeEnum.UNAUTHORIZED,
           );
         case 'JsonWebTokenError':
           throw new BusinessException(
             this.i18n.translate(I18nErrorKeys.TOKEN_INVALID),
-            ResponseCodeEnum.BAD_REQUEST,
+            ResponseCodeEnum.UNAUTHORIZED,
           );
         default:
           throw new BusinessException(
             this.i18n.translate(I18nErrorKeys.TOKEN_INVALID),
-            ResponseCodeEnum.BAD_REQUEST,
+            ResponseCodeEnum.UNAUTHORIZED,
           );
       }
     }

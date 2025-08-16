@@ -28,6 +28,7 @@ import { LoggedInRequest } from '@core/types/logged-in-request.type';
 import { Login2FaRequestDto } from './dto/request/verify-otp.request.dto';
 import { ForgotPasswordRequestDto } from './dto/request/forgot-password.request.dto';
 import { ResetPasswordRequestDto } from './dto/request/reset-password.request.dto';
+import { RefreshTokenRequestDto } from './dto/request/refresh-token.request.dto';
 import { ThrottleForAuth } from '@core/decorators/throttle-redis.decorator';
 import { UserService } from '@components/user/user.service';
 import { GetUserDetailResponseDto } from '@components/user/dto/response/get-user-detail.response.dto';
@@ -268,5 +269,30 @@ export class AuthController {
       return responseError;
     }
     return await this.authService.resetPassword(request);
+  }
+
+  @Public()
+  @Post('/refresh-token')
+  @ApiOperation({
+    summary: 'Làm mới access token bằng refresh token',
+    description:
+      'Trả access token mới và refresh token mới khi refresh token hợp lệ',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Làm mới token thành công',
+    type: LoginResponseDTO,
+  })
+  @ApiBadRequestResponse({
+    description: 'Refresh token không hợp lệ hoặc đã hết hạn',
+  })
+  @ApiBody({ type: RefreshTokenRequestDto })
+  async refreshToken(@Body() payload: RefreshTokenRequestDto) {
+    const { request, responseError } = payload;
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+
+    return await this.authService.refreshToken(request);
   }
 }

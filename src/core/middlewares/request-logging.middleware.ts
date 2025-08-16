@@ -45,6 +45,7 @@ export class RequestLoggingMiddleware implements NestMiddleware {
     const ip = Array.isArray(ipRaw) ? ipRaw.join(', ') : ipRaw;
 
     const authHeader = req.headers.authorization;
+
     const hasBearer = authHeader?.startsWith('Bearer ');
 
     const logInfo: RequestLoggingType = {
