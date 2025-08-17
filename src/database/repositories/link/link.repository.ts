@@ -53,6 +53,17 @@ export class LinkRepository
     );
   }
 
+  async incrementSuccessfulAccessCount(
+    linkId: string,
+    increment = 1,
+  ): Promise<void> {
+    await this.linkRepository.increment(
+      { id: linkId },
+      'successfulAccessCount',
+      increment,
+    );
+  }
+
   async createLink(data: DeepPartial<Link>): Promise<Link> {
     const entity = this.create(data);
     return this.save(entity);

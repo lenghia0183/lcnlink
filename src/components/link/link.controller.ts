@@ -7,8 +7,6 @@ import {
   Param,
   Body,
   Query,
-  Res,
-  HttpCode,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { LinkService } from './link.service';
@@ -17,9 +15,7 @@ import { UpdateLinkRequestDto } from './dto/request/update-link.request.dto';
 import { GetListLinkRequestDto } from './dto/request/get-list-link.request.dto';
 import { IdParamDto } from '@core/dto/params-id.request.dto';
 import { mergePayload } from '@utils/common';
-import { Response } from 'express';
 import { isEmpty } from 'lodash';
-import { Public } from '@core/decorators/public.decorator';
 
 @ApiTags('Links')
 @ApiBearerAuth('JWT-auth')
@@ -90,17 +86,5 @@ export class LinkController {
       request.id,
       request?.userId || '',
     );
-  }
-
-  // public redirect by alias
-  @Public()
-  @Get('/r/:alias')
-  @HttpCode(302)
-  @ApiOperation({ summary: 'Redirect by alias (public)' })
-  async redirect(@Param('alias') alias: string, @Res() res: Response) {
-    const link = await this.linkService.handleRedirect(alias);
-    if (!link) return res.status(404).send('Not found');
-
-    return res.redirect(link.originalUrl);
   }
 }

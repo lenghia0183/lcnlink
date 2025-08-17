@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { LinkRepository } from '@database/repositories';
+import { LinkRepository, ClickRepository } from '@database/repositories';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateLinkRequestDto } from './dto/request/create-link.request.dto';
 import { UpdateLinkRequestDto } from './dto/request/update-link.request.dto';
 import { GetListLinkRequestDto } from './dto/request/get-list-link.request.dto';
+import { VerifyPasswordRequestDto } from './dto/request/verify-password.request.dto';
 import { ResponseBuilder } from '@utils/response-builder';
 import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { I18nService } from 'nestjs-i18n';
@@ -14,17 +15,65 @@ import { BusinessException } from '@core/exception-filters/business-exception.fi
 import { I18nErrorKeys } from '@constant/i18n-keys.enum';
 import { AppConfig } from '@config/config.type';
 import { getPayloadFromRequest } from '@utils/common';
+import { Request } from 'express';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class LinkService {
   constructor(
     private readonly i18n: I18nService,
     private readonly linkRepository: LinkRepository,
+    private readonly clickRepository: ClickRepository,
     private readonly configService: ConfigService,
   ) {}
 
   private generateAlias(length = 10) {
     return uuidv4().replace(/-/g, '').slice(0, length);
+  }
+
+  private getClientInfo(req: Request) {
+    const ipRaw =
+      req.headers['x-forwarded-for'] ||
+      req.connection.remoteAddress ||
+      req.socket.remoteAddress ||
+      'unknown';
+
+    const ip = Array.isArray(ipRaw) ? ipRaw[0] : ipRaw;
+    const userAgent = req.get('user-agent') || '';
+    const referrer = req.get('referer') || '';
+
+    // Simple device/browser detection from user-agent
+    let device = 'Unknown';
+    let browser = 'Unknown';
+
+    if (userAgent) {
+      if (userAgent.includes('Mobile')) {
+        device = 'Mobile';
+      } else if (userAgent.includes('Tablet')) {
+        device = 'Tablet';
+      } else {
+        device = 'Desktop';
+      }
+
+      if (userAgent.includes('Chrome')) {
+        browser = 'Chrome';
+      } else if (userAgent.includes('Firefox')) {
+        browser = 'Firefox';
+      } else if (userAgent.includes('Safari')) {
+        browser = 'Safari';
+      } else if (userAgent.includes('Edge')) {
+        browser = 'Edge';
+      } else if (userAgent.includes('Opera')) {
+        browser = 'Opera';
+      }
+    }
+
+    return {
+      ipAddress: ip,
+      device,
+      browser,
+      referrer,
+    };
   }
 
   async createLink(data: CreateLinkRequestDto) {
@@ -46,11 +95,18 @@ export class LinkService {
       (appConfig && appConfig.frontendUrl) || 'http://localhost:3000';
     const shortedUrl = `${frontendUrl.replace(/\/$/, '')}/r/${alias}`;
 
+    // Hash password if provided
+    let hashedPassword: string | undefined = undefined;
+    if (data.password) {
+      const salt = await bcrypt.genSalt(10);
+      hashedPassword = await bcrypt.hash(data.password, salt);
+    }
+
     const saved = await this.linkRepository.createLink({
       originalUrl: data.originalUrl,
       alias,
       shortedUrl,
-      password: data.password,
+      password: hashedPassword,
       userId: data.userId,
       maxClicks: data.maxClicks,
       expireAt: data.expireAt ? new Date(String(data.expireAt)) : undefined,
@@ -100,6 +156,12 @@ export class LinkService {
 
       const newShortedUrl = `${frontendUrl.replace(/\/$/, '')}/r/${payload.alias}`;
       link.shortedUrl = newShortedUrl;
+    }
+
+    // Hash password if provided
+    if (payload.password) {
+      const salt = await bcrypt.genSalt(10);
+      payload.password = await bcrypt.hash(payload.password, salt);
     }
 
     Object.assign(link, { ...payload });
@@ -209,7 +271,67 @@ export class LinkService {
     ).build();
   }
 
-  async handleRedirect(alias: string) {
+  async handleRedirect(alias: string, req: Request) {
+    const link = await this.getByAlias(alias);
+    console.log('link', link);
+    if (!link) {
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.NOT_FOUND),
+        ResponseCodeEnum.NOT_FOUND,
+      );
+    }
+
+    // Check if link is active
+    if (!link.isActive) {
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.FORBIDDEN),
+        ResponseCodeEnum.FORBIDDEN,
+      );
+    }
+
+    // Check if link has expired
+    if (link.expireAt && new Date() > link.expireAt) {
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.FORBIDDEN),
+        ResponseCodeEnum.FORBIDDEN,
+      );
+    }
+
+    // Check if max clicks reached
+    if (link.maxClicks && link.clicksCount >= link.maxClicks) {
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.FORBIDDEN),
+        ResponseCodeEnum.FORBIDDEN,
+      );
+    }
+
+    // Always increment clicks count
+    await this.linkRepository.incrementClicksCount(link.id, 1);
+
+    // Get client information
+    const clientInfo = this.getClientInfo(req);
+
+    // Record click
+    await this.clickRepository.createClick({
+      linkId: link.id,
+      ipAddress: clientInfo.ipAddress,
+      device: clientInfo.device,
+      browser: clientInfo.browser,
+      referrer: clientInfo.referrer,
+    });
+
+    // If link has password, return link without incrementing successful access
+    if (link.password) {
+      return { link, requiresPassword: true };
+    }
+
+    // If no password, increment successful access count
+    await this.linkRepository.incrementSuccessfulAccessCount(link.id, 1);
+
+    return { link, requiresPassword: false };
+  }
+
+  async verifyPassword(alias: string, passwordData: VerifyPasswordRequestDto) {
     const link = await this.getByAlias(alias);
     if (!link) {
       throw new BusinessException(
@@ -218,10 +340,28 @@ export class LinkService {
       );
     }
 
-    // increment clicks count
-    await this.linkRepository.incrementClicksCount(link.id, 1);
+    if (!link.password) {
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.BAD_REQUEST),
+        ResponseCodeEnum.BAD_REQUEST,
+      );
+    }
 
-    // optionally record Click entity here (omitted for brevity)
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(
+      passwordData.password,
+      link.password,
+    );
+
+    if (!isPasswordValid) {
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.LINK_PASSWORD_INVALID),
+        ResponseCodeEnum.UNAUTHORIZED,
+      );
+    }
+
+    // Password is correct, increment successful access count
+    await this.linkRepository.incrementSuccessfulAccessCount(link.id, 1);
 
     return link;
   }

@@ -33,6 +33,9 @@ export class Link extends BaseModel {
   @Column({ type: 'int', default: 0 })
   clicksCount: number;
 
+  @Column({ type: 'int', default: 0 })
+  successfulAccessCount: number;
+
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 

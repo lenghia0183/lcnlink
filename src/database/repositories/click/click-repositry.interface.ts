@@ -8,4 +8,6 @@ export interface ClickRepositoryInterface
     page?: number,
     limit?: number,
   ): Promise<{ data: Click[]; total: number }>;
+
+  createClick(data: Partial<Click>): Promise<Click>;
 }

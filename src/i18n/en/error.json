@@ -40,5 +40,6 @@
   "FILE_EXTENSION_NOT_ALLOWED": "File extension {extension} is not allowed. Allowed extensions: {allowedExtensions}",
   "INVALID_FILE_NAME": "File name contains invalid characters",
   "TOO_MANY_FILES": "Number of files exceeds the allowed limit ({maxFiles} files)",
-  "GET_PRE_URL_FAILED": "Get url failed"
+  "GET_PRE_URL_FAILED": "Get url failed",
+  "LINK_PASSWORD_INVALID": "Incorrect password"
 }

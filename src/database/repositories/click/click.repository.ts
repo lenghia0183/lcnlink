@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DeepPartial } from 'typeorm';
 import { BaseRepository } from '../../../core/repository/base.repository.abstract';
 import { ClickRepositoryInterface } from './click-repositry.interface';
 import { Click } from '@database/entities/click.entity';
@@ -37,5 +37,10 @@ export class ClickRepository
     const [clicks, total] = await queryBuilder.getManyAndCount();
 
     return { data: clicks, total };
+  }
+
+  async createClick(data: DeepPartial<Click>): Promise<Click> {
+    const entity = this.create(data);
+    return this.save(entity);
   }
 }

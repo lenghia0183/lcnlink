@@ -4,9 +4,11 @@ import { AllConfigType } from './config/config.type';
 import { ConfigService } from '@nestjs/config';
 import { BusinessExceptionFilter } from '@core/exception-filters/business-exception.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const configService = app.get(ConfigService<AllConfigType>);
 
@@ -17,6 +19,11 @@ async function bootstrap() {
     origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
+  });
+
+  // Serve static files BEFORE setting global prefix
+  app.useStaticAssets(join(__dirname, '..', 'public'), {
+    prefix: '/',
   });
 
   app.setGlobalPrefix(apiPrefix);

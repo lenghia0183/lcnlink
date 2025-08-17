@@ -17,6 +17,9 @@ export class LinkResponseDto {
   clicksCount: number;
 
   @Expose()
+  successfulAccessCount: number;
+
+  @Expose()
   maxClicks: number;
 
   @Expose()

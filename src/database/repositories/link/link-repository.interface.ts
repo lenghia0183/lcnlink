@@ -12,6 +12,11 @@ export interface LinkRepositoryInterface extends BaseRepositoryInterface<Link> {
 
   incrementClicksCount(linkId: string, increment?: number): Promise<void>;
 
+  incrementSuccessfulAccessCount(
+    linkId: string,
+    increment?: number,
+  ): Promise<void>;
+
   findWithFilters(params: {
     keyword?: string;
     filter?: Array<{ column: string; text: string }>;
