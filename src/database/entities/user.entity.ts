@@ -1,4 +1,4 @@
-import { Entity, Column, BeforeInsert, BeforeUpdate } from 'typeorm';
+import { Entity, Column, BeforeInsert, BeforeUpdate, OneToMany } from 'typeorm';
 import { BaseModel } from '@core/schema/base.model';
 import bcrypt from 'bcrypt';
 import {
@@ -8,6 +8,7 @@ import {
   USER_ROLE_ENUM,
 } from '@components/user/user.constant';
 import { BOOLEAN_ENUM } from '@constant/app.enum';
+import { Link } from './link.entity';
 
 @Entity('users')
 export class User extends BaseModel {
@@ -70,6 +71,9 @@ export class User extends BaseModel {
 
   @Column({ nullable: true })
   refreshToken: string;
+
+  @OneToMany(() => Link, (link) => link.user)
+  links: Link[];
 
   @BeforeInsert()
   @BeforeUpdate()
