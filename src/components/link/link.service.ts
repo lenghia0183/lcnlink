@@ -211,7 +211,12 @@ export class LinkService {
 
   async handleRedirect(alias: string) {
     const link = await this.getByAlias(alias);
-    if (!link) return null;
+    if (!link) {
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.NOT_FOUND),
+        ResponseCodeEnum.NOT_FOUND,
+      );
+    }
 
     // increment clicks count
     await this.linkRepository.incrementClicksCount(link.id, 1);

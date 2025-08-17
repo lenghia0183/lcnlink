@@ -19,6 +19,7 @@ import { IdParamDto } from '@core/dto/params-id.request.dto';
 import { mergePayload } from '@utils/common';
 import { Response } from 'express';
 import { isEmpty } from 'lodash';
+import { Public } from '@core/decorators/public.decorator';
 
 @ApiTags('Links')
 @ApiBearerAuth('JWT-auth')
@@ -92,6 +93,7 @@ export class LinkController {
   }
 
   // public redirect by alias
+  @Public()
   @Get('/r/:alias')
   @HttpCode(302)
   @ApiOperation({ summary: 'Redirect by alias (public)' })
