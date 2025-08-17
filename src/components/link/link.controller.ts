@@ -53,7 +53,7 @@ export class LinkController {
   async getById(@Param() params: IdParamDto) {
     const { request, responseError } = params;
     if (!isEmpty(responseError)) return responseError;
-    return await this.linkService.getById(request.id);
+    return await this.linkService.getById(request.id, request?.userId || '');
   }
 
   @Put(':id')
@@ -77,7 +77,7 @@ export class LinkController {
   async deleteLink(@Param() params: IdParamDto) {
     const { request, responseError } = params;
     if (!isEmpty(responseError)) return responseError;
-    return await this.linkService.deleteLink(request.id);
+    return await this.linkService.deleteLink(request.id, request?.userId || '');
   }
 
   @Put(':id/toggle-active')
@@ -85,7 +85,10 @@ export class LinkController {
   async toggleActive(@Param() params: IdParamDto) {
     const { request, responseError } = params;
     if (!isEmpty(responseError)) return responseError;
-    return await this.linkService.toggleActiveLink(request.id);
+    return await this.linkService.toggleActiveLink(
+      request.id,
+      request?.userId || '',
+    );
   }
 
   // public redirect by alias

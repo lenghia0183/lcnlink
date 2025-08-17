@@ -118,12 +118,19 @@ export class LinkService {
     ).build();
   }
 
-  async deleteLink(id: string) {
+  async deleteLink(id: string, userId: string) {
     const link = await this.linkRepository.findById(id);
     if (!link) {
       throw new BusinessException(
         await this.i18n.translate(I18nErrorKeys.NOT_FOUND),
         ResponseCodeEnum.NOT_FOUND,
+      );
+    }
+
+    if (link.userId !== userId) {
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.FORBIDDEN),
+        ResponseCodeEnum.FORBIDDEN,
       );
     }
 
@@ -137,12 +144,19 @@ export class LinkService {
     ).build();
   }
 
-  async getById(id: string) {
+  async getById(id: string, userId: string) {
     const link = await this.linkRepository.findById(id);
     if (!link) {
       throw new BusinessException(
         await this.i18n.translate(I18nErrorKeys.NOT_FOUND),
         ResponseCodeEnum.NOT_FOUND,
+      );
+    }
+
+    if (link.userId !== userId) {
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.FORBIDDEN),
+        ResponseCodeEnum.FORBIDDEN,
       );
     }
 
@@ -164,12 +178,19 @@ export class LinkService {
     return link;
   }
 
-  async toggleActiveLink(id: string) {
+  async toggleActiveLink(id: string, userId: string) {
     const link = await this.linkRepository.findById(id);
     if (!link) {
       throw new BusinessException(
         await this.i18n.translate(I18nErrorKeys.NOT_FOUND),
         ResponseCodeEnum.NOT_FOUND,
+      );
+    }
+
+    if (link.userId !== userId) {
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.FORBIDDEN),
+        ResponseCodeEnum.FORBIDDEN,
       );
     }
 
