@@ -20,12 +20,11 @@ export class PublicLinkController {
     @Res() res: Response,
     @Req() req: Request,
   ) {
-    console.log('alias', alias);
     const result = await this.linkService.handleRedirect(alias, req);
 
     if (result.requiresPassword) {
       // Redirect to password form page
-      return res.redirect(`/p/${alias}`);
+      return res.redirect(`/api/v1/p/${alias}`);
     }
 
     return res.redirect(result.link.originalUrl);
@@ -49,7 +48,6 @@ export class PublicLinkController {
 
     // Return JSON response with redirect URL
     return res.json({
-      success: true,
       redirectUrl: link.originalUrl,
     });
   }

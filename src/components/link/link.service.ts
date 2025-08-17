@@ -333,6 +333,7 @@ export class LinkService {
 
   async verifyPassword(alias: string, passwordData: VerifyPasswordRequestDto) {
     const link = await this.getByAlias(alias);
+    console.log('link', link);
     if (!link) {
       throw new BusinessException(
         await this.i18n.translate(I18nErrorKeys.NOT_FOUND),
