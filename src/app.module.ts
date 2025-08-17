@@ -14,6 +14,7 @@ import DatabaseConnectModule from '@database/database.connect.module';
 import { RequestLoggingMiddleware } from '@core/middlewares/request-logging.middleware';
 import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from '@components/user/user.module';
+import { LinkModule } from '@components/link/link.module';
 import { RepositoryModule } from '@database/repositories/repository.module';
 
 import { AdminInitService } from '@core/services/admin-init.service';
@@ -47,6 +48,7 @@ import { CustomThrottlerModule } from '@core/modules/throttler/throttler.module'
     DatabaseConnectModule,
     RepositoryModule,
     UserModule,
+    LinkModule,
     AuthModule,
     S3Module,
     I18nModule,

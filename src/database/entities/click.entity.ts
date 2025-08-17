@@ -1,19 +1,9 @@
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  CreateDateColumn,
-  JoinColumn,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, JoinColumn } from 'typeorm';
+import { BaseModel } from '@core/schema/base.model';
 import { Link } from './link.entity';
 
 @Entity('clicks')
-export class Click extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class Click extends BaseModel {
   @Column()
   linkId: string;
 
@@ -36,6 +26,5 @@ export class Click extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   referrer: string;
 
-  @CreateDateColumn()
-  clickedAt: Date;
+  // createdAt is provided by BaseModel (@CreateDateColumn)
 }

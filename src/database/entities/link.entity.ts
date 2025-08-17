@@ -1,22 +1,10 @@
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  CreateDateColumn,
-  UpdateDateColumn,
-  JoinColumn,
-  OneToMany,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { User } from './user.entity';
 import { Click } from './click.entity';
+import { BaseModel } from '@core/schema/base.model';
 
 @Entity('links')
-export class Link extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class Link extends BaseModel {
   @Column()
   userId: string;
 
@@ -27,7 +15,10 @@ export class Link extends BaseEntity {
   @Column({ type: 'text' })
   originalUrl: string;
 
-  @Column({ type: 'varchar', length: 50, unique: true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  shortedUrl: string;
+
+  @Column({ type: 'varchar', length: 50, unique: true, nullable: true })
   alias: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
@@ -44,12 +35,6 @@ export class Link extends BaseEntity {
 
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 
   @OneToMany(() => Click, (click) => click.link)
   clicks: Click[];
