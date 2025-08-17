@@ -26,13 +26,20 @@ export const mergePayload = <
       !Array.isArray(param[key]) &&
       !Array.isArray(body[key])
     ) {
-      // Merge objects
-      payload[key as keyof (T & U)] = {
-        ...param[key],
-        ...body[key],
-      } as (T & U)[keyof (T & U)];
+      // Merge objects but only copy defined values from body to avoid
+      // overwriting existing values with `undefined` when a field
+      // was omitted in the request.
+      const mergedObj: Record<string, any> = { ...param[key] };
+      Object.keys(body[key]).forEach((childKey) => {
+        const val = body[key][childKey];
+        if (val !== undefined) {
+          mergedObj[childKey] = val;
+        }
+      });
+
+      payload[key as keyof (T & U)] = mergedObj as (T & U)[keyof (T & U)];
     } else {
-      // For non-objects, body takes precedence
+      // For non-objects, body takes precedence (nullish coalescing)
       payload[key as keyof (T & U)] = (body[key] ?? param[key]) as (T &
         U)[keyof (T & U)];
     }

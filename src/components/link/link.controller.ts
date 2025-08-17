@@ -65,7 +65,11 @@ export class LinkController {
     const merged = mergePayload(params, payload);
     const { request, responseError } = merged;
     if (!isEmpty(responseError)) return responseError;
-    return await this.linkService.updateLink(request.id, request);
+    return await this.linkService.updateLink(
+      request.id,
+      request,
+      request?.userId || '',
+    );
   }
 
   @Delete(':id')

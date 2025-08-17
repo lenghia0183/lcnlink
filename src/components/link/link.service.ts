@@ -13,6 +13,7 @@ import { LinkResponseDto } from './dto/response/link.response.dto';
 import { BusinessException } from '@core/exception-filters/business-exception.filter';
 import { I18nErrorKeys } from '@constant/i18n-keys.enum';
 import { AppConfig } from '@config/config.type';
+import { getPayloadFromRequest } from '@utils/common';
 
 @Injectable()
 export class LinkService {
@@ -67,7 +68,9 @@ export class LinkService {
     ).build();
   }
 
-  async updateLink(id: string, data: UpdateLinkRequestDto) {
+  async updateLink(id: string, request: UpdateLinkRequestDto, userId: string) {
+    const payload = getPayloadFromRequest(request);
+
     const link = await this.linkRepository.findById(id);
     if (!link) {
       throw new BusinessException(
@@ -76,7 +79,30 @@ export class LinkService {
       );
     }
 
-    Object.assign(link, { ...data });
+    if (link.userId !== userId) {
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.FORBIDDEN),
+        ResponseCodeEnum.FORBIDDEN,
+      );
+    }
+
+    if (payload.alias && payload.alias !== link.alias) {
+      const exists = await this.linkRepository.findByAlias(payload.alias);
+      if (exists && exists.id !== link.id) {
+        return new ResponseBuilder()
+          .withCode(ResponseCodeEnum.BAD_REQUEST)
+          .withMessage('Alias already exists');
+      }
+
+      const appConfig = this.configService.get<AppConfig>('app');
+      const frontendUrl =
+        (appConfig && appConfig.frontendUrl) || 'http://localhost:3000';
+
+      const newShortedUrl = `${frontendUrl.replace(/\/$/, '')}/r/${payload.alias}`;
+      link.shortedUrl = newShortedUrl;
+    }
+
+    Object.assign(link, { ...payload });
 
     const saved = await this.linkRepository.save(link);
 
