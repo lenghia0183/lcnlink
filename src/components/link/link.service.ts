@@ -85,7 +85,8 @@ export class LinkService {
       if (exists) {
         return new ResponseBuilder()
           .withCode(ResponseCodeEnum.BAD_REQUEST)
-          .withMessage('Alias already exists');
+          .withMessage('Alias already exists')
+          .build();
       }
     } else {
       alias = this.generateAlias(10);
@@ -149,7 +150,8 @@ export class LinkService {
       if (exists && exists.id !== link.id) {
         return new ResponseBuilder()
           .withCode(ResponseCodeEnum.BAD_REQUEST)
-          .withMessage('Alias already exists');
+          .withMessage('Alias already exists')
+          .build();
       }
 
       const appConfig = this.configService.get<AppConfig>('app');
