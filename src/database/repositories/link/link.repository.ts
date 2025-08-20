@@ -127,10 +127,10 @@ export class LinkRepository
             });
             break;
 
-          case 'isActive': {
-            const boolVal = value === '1' || value.toLowerCase() === 'true';
-            queryBuilder.andWhere(`link.isActive = :${paramKey}`, {
-              [paramKey]: boolVal,
+          case 'status': {
+            const status = value.toLocaleLowerCase() as LINK_STATUS;
+            queryBuilder.andWhere(`link.status = :${paramKey}`, {
+              [paramKey]: status,
             });
             break;
           }
