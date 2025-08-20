@@ -11,6 +11,10 @@ export class CreateLinkRequestDto extends BaseDto<CreateLinkRequestDto> {
 
   @IsOptional()
   @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsString()
   password?: string;
 
   @IsOptional()

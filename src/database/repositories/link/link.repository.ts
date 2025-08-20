@@ -6,6 +6,7 @@ import { LinkRepositoryInterface } from './link-repository.interface';
 import { Link } from '@database/entities/link.entity';
 import { isEmpty } from 'lodash';
 import { getPostgresLikePattern, EnumSort } from '@utils/common';
+import { LINK_STATUS } from '@components/link/link.constant';
 
 @Injectable()
 export class LinkRepository
@@ -174,6 +175,26 @@ export class LinkRepository
     }
 
     const [links, total] = await queryBuilder.getManyAndCount();
+
+    for (const link of links) {
+      let newStatus: LINK_STATUS | null = null;
+
+      if (link.expireAt && new Date(link.expireAt) < new Date()) {
+        newStatus = LINK_STATUS.EXPIRED;
+      } else if (link.maxClicks && link.clicksCount >= link.maxClicks) {
+        newStatus = LINK_STATUS.LIMIT_REACHED;
+      }
+
+      if (newStatus && link.status !== newStatus) {
+        link.status = newStatus;
+
+        await this.createQueryBuilder('link')
+          .update(Link)
+          .set({ status: newStatus })
+          .where('id = :id', { id: link.id })
+          .execute();
+      }
+    }
 
     return { data: links, total };
   }

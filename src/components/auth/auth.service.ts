@@ -87,7 +87,6 @@ export class AuthService {
   }
   async refreshToken(data: { refreshToken: string }) {
     const authConfig = this.configService.get('auth', { infer: true });
-    console.log('refreshToken', data.refreshToken);
 
     let payload: JwtPayload | null = null;
     try {
@@ -112,8 +111,6 @@ export class AuthService {
       }
       throw error;
     }
-
-    console.log('payload', payload);
 
     if (!payload?.id) {
       throw new BusinessException(

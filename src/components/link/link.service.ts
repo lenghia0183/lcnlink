@@ -17,6 +17,7 @@ import { AppConfig } from '@config/config.type';
 import { getPayloadFromRequest } from '@utils/common';
 import { Request } from 'express';
 import * as bcrypt from 'bcrypt';
+import { LINK_STATUS } from './link.constant';
 
 @Injectable()
 export class LinkService {
@@ -80,7 +81,7 @@ export class LinkService {
     let alias = data.alias;
     if (alias) {
       const exists = await this.linkRepository.findByAlias(alias);
-      console.log('exists', exists);
+
       if (exists) {
         return new ResponseBuilder()
           .withCode(ResponseCodeEnum.BAD_REQUEST)
@@ -110,6 +111,7 @@ export class LinkService {
       userId: data.userId,
       maxClicks: data.maxClicks,
       expireAt: data.expireAt ? new Date(String(data.expireAt)) : undefined,
+      isUsePassword: !!hashedPassword,
     });
 
     const response = plainToInstance(LinkResponseDto, saved, {
@@ -164,7 +166,7 @@ export class LinkService {
       payload.password = await bcrypt.hash(payload.password, salt);
     }
 
-    Object.assign(link, { ...payload });
+    Object.assign(link, { ...payload, isUsePassword: !!payload.password });
 
     const saved = await this.linkRepository.save(link);
 
@@ -256,7 +258,17 @@ export class LinkService {
       );
     }
 
-    link.isActive = !link.isActive;
+    if (link.status === LINK_STATUS.ACTIVE) {
+      link.status = LINK_STATUS.DISABLED;
+    } else if (link.status === LINK_STATUS.DISABLED) {
+      link.status = LINK_STATUS.ACTIVE;
+    } else {
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.BAD_REQUEST),
+        ResponseCodeEnum.BAD_REQUEST,
+      );
+    }
+
     const saved = await this.linkRepository.save(link);
 
     const response = plainToInstance(LinkResponseDto, saved, {
@@ -282,7 +294,7 @@ export class LinkService {
     }
 
     // Check if link is active
-    if (!link.isActive) {
+    if (!(link.status === LINK_STATUS.ACTIVE)) {
       throw new BusinessException(
         await this.i18n.translate(I18nErrorKeys.FORBIDDEN),
         ResponseCodeEnum.FORBIDDEN,

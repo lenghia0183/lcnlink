@@ -14,6 +14,9 @@ export class LinkResponseDto {
   alias: string;
 
   @Expose()
+  description: string;
+
+  @Expose()
   clicksCount: number;
 
   @Expose()
@@ -23,11 +26,14 @@ export class LinkResponseDto {
   maxClicks: number;
 
   @Expose()
-  isActive: boolean;
-
-  @Expose()
   expireAt: Date;
 
   @Expose()
+  isUsePassword: boolean;
+
+  @Expose()
   createdAt: Date;
+
+  @Expose()
+  status: number;
 }
