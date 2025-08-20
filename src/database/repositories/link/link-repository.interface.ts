@@ -31,4 +31,8 @@ export interface LinkRepositoryInterface extends BaseRepositoryInterface<Link> {
   updateLink(id: string, data: Partial<Link>): Promise<void>;
 
   deleteLink(id: string): Promise<void>;
+
+  getTotalLinkPerStatus(
+    userId: string,
+  ): Promise<Array<{ status: string; count: number }>>;
 }

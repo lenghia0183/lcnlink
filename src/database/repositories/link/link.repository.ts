@@ -198,4 +198,27 @@ export class LinkRepository
 
     return { data: links, total };
   }
+
+  async getTotalLinkPerStatus(
+    userId: string,
+  ): Promise<Array<{ status: LINK_STATUS; count: number }>> {
+    const result = await this.createQueryBuilder('link')
+      .select('link.status, COUNT(link.id) AS count')
+      .where('link.deletedAt IS NULL')
+      .andWhere('link.userId = :userId', { userId })
+      .groupBy('link.status')
+      .getRawMany<{ status: LINK_STATUS; count: string }>();
+    const mappedResult = result.map((row) => ({
+      status: row.status,
+      count: Number(row.count),
+    }));
+
+    return Object.values(LINK_STATUS).map((status) => {
+      const found = mappedResult.find((r) => r.status === status);
+      return {
+        status,
+        count: found ? found.count : 0,
+      };
+    });
+  }
 }

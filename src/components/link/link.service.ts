@@ -18,6 +18,7 @@ import { getPayloadFromRequest } from '@utils/common';
 import { Request } from 'express';
 import * as bcrypt from 'bcrypt';
 import { LINK_STATUS } from './link.constant';
+import { GetTotalLinkPerStatusResponseDto } from './dto/response/get-total-link-per-status.response.dto';
 
 @Injectable()
 export class LinkService {
@@ -407,5 +408,17 @@ export class LinkService {
         },
       }).withCodeI18n(ResponseCodeEnum.SUCCESS, this.i18n)
     ).build();
+  }
+
+  async getTotalLinkPerStatus(userId: string) {
+    const result = await this.linkRepository.getTotalLinkPerStatus(userId);
+
+    const response = plainToInstance(GetTotalLinkPerStatusResponseDto, result, {
+      excludeExtraneousValues: true,
+    });
+
+    return new ResponseBuilder(response)
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .build();
   }
 }

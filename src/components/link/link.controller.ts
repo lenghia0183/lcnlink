@@ -7,6 +7,7 @@ import {
   Param,
   Body,
   Query,
+  Request,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { LinkService } from './link.service';
@@ -16,6 +17,8 @@ import { GetListLinkRequestDto } from './dto/request/get-list-link.request.dto';
 import { IdParamDto } from '@core/dto/params-id.request.dto';
 import { mergePayload } from '@utils/common';
 import { isEmpty } from 'lodash';
+
+import { LoggedInRequest } from '@core/types/logged-in-request.type';
 
 @ApiTags('Links')
 @ApiBearerAuth('JWT-auth')
@@ -43,6 +46,12 @@ export class LinkController {
       return responseError;
     }
     return await this.linkService.list(request);
+  }
+
+  @Get('/total-link-per-status')
+  async getTotalLinkPerStatus(@Request() req: LoggedInRequest) {
+    console.log('req', req);
+    return await this.linkService.getTotalLinkPerStatus(req?.userId || '');
   }
 
   @Get(':id')
