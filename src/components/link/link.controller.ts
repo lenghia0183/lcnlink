@@ -50,8 +50,12 @@ export class LinkController {
 
   @Get('/total-link-per-status')
   async getTotalLinkPerStatus(@Request() req: LoggedInRequest) {
-    console.log('req', req);
     return await this.linkService.getTotalLinkPerStatus(req?.userId || '');
+  }
+
+  @Get('/statistic-overview')
+  async getLinkStatisticOverview(@Request() req: LoggedInRequest) {
+    return await this.linkService.getLinkStatisticOverview(req?.userId || '');
   }
 
   @Get(':id')

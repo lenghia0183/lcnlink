@@ -221,4 +221,34 @@ export class LinkRepository
       };
     });
   }
+
+  async getLinkStatisticOverview(userId: string): Promise<{
+    totalLink: number;
+    totalClicks: number;
+    totalProtectedLink: number;
+    totalLimitedLink: number;
+  }> {
+    const result = await this.createQueryBuilder('link')
+      .select([
+        'COUNT(link.id) AS "totalLink"',
+        'SUM(link.clicksCount) AS "totalClicks"',
+        'COUNT(CASE WHEN link.isUsePassword = true THEN 1 END) AS "totalProtectedLink"',
+        'COUNT(CASE WHEN link.maxClicks > 0 THEN 1 END) AS "totalLimitedLink"',
+      ])
+      .where('link.deletedAt IS NULL')
+      .andWhere('link.userId = :userId', { userId })
+      .getRawOne<{
+        totalLink: number;
+        totalClicks: number;
+        totalProtectedLink: number;
+        totalLimitedLink: number;
+      }>();
+
+    return {
+      totalLink: Number(result?.totalLink) || 0,
+      totalClicks: Number(result?.totalClicks) || 0,
+      totalProtectedLink: Number(result?.totalProtectedLink) || 0,
+      totalLimitedLink: Number(result?.totalLimitedLink) || 0,
+    };
+  }
 }
