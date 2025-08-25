@@ -19,6 +19,7 @@ import { mergePayload } from '@utils/common';
 import { isEmpty } from 'lodash';
 
 import { LoggedInRequest } from '@core/types/logged-in-request.type';
+import { AnalyticsQueryDto } from './dto/request/analytics.query.dto';
 
 @ApiTags('Links')
 @ApiBearerAuth('JWT-auth')
@@ -56,6 +57,38 @@ export class LinkController {
   @Get('/statistic-overview')
   async getLinkStatisticOverview(@Request() req: LoggedInRequest) {
     return await this.linkService.getLinkStatisticOverview(req?.userId || '');
+  }
+
+  @Get('/analytics/trend')
+  async getClicksTrend(
+    @Request() req: LoggedInRequest,
+    @Query() query: AnalyticsQueryDto,
+  ) {
+    return await this.linkService.getClicksTrend(req?.userId || '', query);
+  }
+
+  @Get('/analytics/countries')
+  async getTopCountries(
+    @Request() req: LoggedInRequest,
+    @Query() query: AnalyticsQueryDto,
+  ) {
+    return await this.linkService.getTopCountries(req?.userId || '', query);
+  }
+
+  @Get('/analytics/devices')
+  async getDeviceBreakdown(
+    @Request() req: LoggedInRequest,
+    @Query() query: AnalyticsQueryDto,
+  ) {
+    return await this.linkService.getDeviceBreakdown(req?.userId || '', query);
+  }
+
+  @Get('/analytics/browsers')
+  async getBrowserBreakdown(
+    @Request() req: LoggedInRequest,
+    @Query() query: AnalyticsQueryDto,
+  ) {
+    return await this.linkService.getBrowserBreakdown(req?.userId || '', query);
   }
 
   @Get(':id')

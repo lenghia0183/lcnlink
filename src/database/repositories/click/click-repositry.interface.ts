@@ -10,4 +10,34 @@ export interface ClickRepositoryInterface
   ): Promise<{ data: Click[]; total: number }>;
 
   createClick(data: Partial<Click>): Promise<Click>;
+
+  getClicksTrend(params: {
+    userId: string;
+    from?: Date;
+    to?: Date;
+    interval?: 'day' | 'week' | 'month';
+    filter?: Array<{ column: string; text: string }>;
+  }): Promise<Array<{ period: string; count: number }>>;
+
+  getTopCountries(params: {
+    userId: string;
+    from?: Date;
+    to?: Date;
+    limit?: number;
+    filter?: Array<{ column: string; text: string }>;
+  }): Promise<Array<{ country: string; count: number }>>;
+
+  getDeviceBreakdown(params: {
+    userId: string;
+    from?: Date;
+    to?: Date;
+    filter?: Array<{ column: string; text: string }>;
+  }): Promise<Array<{ device: string; count: number }>>;
+
+  getBrowserBreakdown(params: {
+    userId: string;
+    from?: Date;
+    to?: Date;
+    filter?: Array<{ column: string; text: string }>;
+  }): Promise<Array<{ browser: string; count: number }>>;
 }

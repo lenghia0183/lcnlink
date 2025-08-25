@@ -19,7 +19,14 @@ import { Request } from 'express';
 import * as bcrypt from 'bcrypt';
 import { LINK_STATUS } from './link.constant';
 import { GetTotalLinkPerStatusResponseDto } from './dto/response/get-total-link-per-status.response.dto';
-import { GetLinkStatisticOverviewResponseDto } from './dto/response/get-link-statistic-overview.response.dto';
+import {
+  GetLinkStatisticOverviewResponseDto,
+  TrendPointDto,
+  CountryCountDto,
+  DeviceCountDto,
+  BrowserCountDto,
+} from './dto/response/get-link-statistic-overview.response.dto';
+import { AnalyticsQueryDto } from './dto/request/analytics.query.dto';
 
 @Injectable()
 export class LinkService {
@@ -427,6 +434,102 @@ export class LinkService {
 
     const response = plainToInstance(
       GetLinkStatisticOverviewResponseDto,
+      result,
+      {
+        excludeExtraneousValues: true,
+      },
+    );
+
+    return new ResponseBuilder(response)
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .build();
+  }
+
+  async getClicksTrend(userId: string, query: AnalyticsQueryDto) {
+    const from = query.from ? new Date(query.from) : undefined;
+    const to = query.to ? new Date(query.to) : undefined;
+    const interval = query.interval || 'day';
+
+    const result = (await this.clickRepository.getClicksTrend({
+      userId,
+      from,
+      to,
+      interval,
+      filter: query.filter,
+    })) as Array<{ period: string; count: number }>;
+
+    const response = plainToInstance<TrendPointDto, unknown[]>(
+      TrendPointDto,
+      result,
+      {
+        excludeExtraneousValues: true,
+      },
+    );
+
+    return new ResponseBuilder(response)
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .build();
+  }
+
+  async getTopCountries(userId: string, query: AnalyticsQueryDto) {
+    const from = query.from ? new Date(query.from) : undefined;
+    const to = query.to ? new Date(query.to) : undefined;
+    const result = (await this.clickRepository.getTopCountries({
+      userId,
+      from,
+      to,
+      limit: 5,
+      filter: query.filter,
+    })) as Array<{ country: string; count: number }>;
+
+    const response = plainToInstance<CountryCountDto, unknown[]>(
+      CountryCountDto,
+      result,
+      {
+        excludeExtraneousValues: true,
+      },
+    );
+
+    return new ResponseBuilder(response)
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .build();
+  }
+
+  async getDeviceBreakdown(userId: string, query: AnalyticsQueryDto) {
+    const from = query.from ? new Date(query.from) : undefined;
+    const to = query.to ? new Date(query.to) : undefined;
+    const result = (await this.clickRepository.getDeviceBreakdown({
+      userId,
+      from,
+      to,
+      filter: query.filter,
+    })) as Array<{ device: string; count: number }>;
+
+    const response = plainToInstance<DeviceCountDto, unknown[]>(
+      DeviceCountDto,
+      result,
+      {
+        excludeExtraneousValues: true,
+      },
+    );
+
+    return new ResponseBuilder(response)
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .build();
+  }
+
+  async getBrowserBreakdown(userId: string, query: AnalyticsQueryDto) {
+    const from = query.from ? new Date(query.from) : undefined;
+    const to = query.to ? new Date(query.to) : undefined;
+    const result = (await this.clickRepository.getBrowserBreakdown({
+      userId,
+      from,
+      to,
+      filter: query.filter,
+    })) as Array<{ browser: string; count: number }>;
+
+    const response = plainToInstance<BrowserCountDto, unknown[]>(
+      BrowserCountDto,
       result,
       {
         excludeExtraneousValues: true,
