@@ -34,7 +34,7 @@ export interface LinkRepositoryInterface extends BaseRepositoryInterface<Link> {
 
   getTotalLinkPerStatus(
     userId: string,
-  ): Promise<Array<{ status: string; count: number }>>;
+  ): Promise<Record<string, number | string>>;
 
   getLinkStatisticOverview(
     userId: string,

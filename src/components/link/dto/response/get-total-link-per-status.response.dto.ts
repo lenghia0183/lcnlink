@@ -1,10 +1,15 @@
-import { LINK_STATUS } from '@components/link/link.constant';
 import { Expose } from 'class-transformer';
 
 export class GetTotalLinkPerStatusResponseDto {
   @Expose()
-  status: LINK_STATUS;
+  expired: number;
 
   @Expose()
-  count: number;
+  active: number;
+
+  @Expose()
+  limit_reached: number;
+
+  @Expose()
+  disabled: number;
 }

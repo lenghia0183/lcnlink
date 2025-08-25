@@ -201,25 +201,28 @@ export class LinkRepository
 
   async getTotalLinkPerStatus(
     userId: string,
-  ): Promise<Array<{ status: LINK_STATUS; count: number }>> {
+  ): Promise<{ [status in LINK_STATUS]: number }> {
     const result = await this.createQueryBuilder('link')
-      .select('link.status, COUNT(link.id) AS count')
+      .select('link.status', 'status')
+      .addSelect('COUNT(link.id)', 'count')
       .where('link.deletedAt IS NULL')
       .andWhere('link.userId = :userId', { userId })
       .groupBy('link.status')
       .getRawMany<{ status: LINK_STATUS; count: string }>();
+
     const mappedResult = result.map((row) => ({
       status: row.status,
       count: Number(row.count),
     }));
 
-    return Object.values(LINK_STATUS).map((status) => {
-      const found = mappedResult.find((r) => r.status === status);
-      return {
-        status,
-        count: found ? found.count : 0,
-      };
-    });
+    return Object.values(LINK_STATUS).reduce(
+      (acc, status) => {
+        const found = mappedResult.find((r) => r.status === status);
+        acc[status] = found ? found.count : 0;
+        return acc;
+      },
+      {} as { [status in LINK_STATUS]: number },
+    );
   }
 
   async getLinkStatisticOverview(userId: string): Promise<{
