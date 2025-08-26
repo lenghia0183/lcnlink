@@ -59,13 +59,18 @@ export class LinkController {
     return await this.linkService.getLinkStatisticOverview(req?.userId || '');
   }
 
-  // @Get('/analytics/trend')
-  // async getClicksTrend(
-  //   @Request() req: LoggedInRequest,
-  //   @Query() query: AnalyticsQueryDto,
-  // ) {
-  //   return await this.linkService.getClicksTrend(req?.userId || '', query);
-  // }
+  @Get('/analytics/trend')
+  async getClicksTrend(
+    @Request() req: LoggedInRequest,
+    @Query() query: AnalyticsQueryDto,
+  ) {
+    const { request, responseError } = query;
+
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+    return await this.linkService.getClicksTrend(req?.userId || '', request);
+  }
 
   @Get('/analytics/countries')
   async getTopCountries(

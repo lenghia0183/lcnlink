@@ -47,12 +47,13 @@ export class ClickRepository
 
   async getClicksTrend(params: {
     userId: string;
-    from?: Date;
-    to?: Date;
-    interval?: 'day' | 'week' | 'month';
     filter?: Array<{ column: string; text: string }>;
   }): Promise<Array<{ period: string; count: number }>> {
-    const { userId, from, to, interval = 'day', filter } = params;
+    const { userId, filter } = params;
+
+    let from: Date | undefined;
+    let to: Date | undefined;
+    let interval: 'day' | 'week' | 'month' = 'day';
 
     const qb = this.clickRepository
       .createQueryBuilder('click')
@@ -61,14 +62,23 @@ export class ClickRepository
       .andWhere('link.deletedAt IS NULL')
       .andWhere('link.userId = :userId', { userId });
 
-    if (from) qb.andWhere('click.createdAt >= :from', { from });
-    if (to) qb.andWhere('click.createdAt <= :to', { to });
-
     if (Array.isArray(filter)) {
       filter.forEach((item, index) => {
         if (!item || !item.column || !item.text) return;
         const paramKey = `f_${index}`;
+
         switch (item.column) {
+          case 'from':
+            from = new Date(item.text);
+            break;
+          case 'to':
+            to = new Date(item.text);
+            break;
+          case 'interval':
+            if (['day', 'week', 'month'].includes(item.text)) {
+              interval = item.text as 'day' | 'week' | 'month';
+            }
+            break;
           case 'alias':
             qb.andWhere('link.alias ILIKE :' + paramKey, {
               [paramKey]: `%${item.text}%`,
@@ -79,27 +89,25 @@ export class ClickRepository
               [paramKey]: item.text.split(','),
             });
             break;
-          case 'createdAt': {
-            const [startStr, endStr] = item.text.split('|');
-            if (startStr)
-              qb.andWhere('click.createdAt >= :start_' + paramKey, {
-                ['start_' + paramKey]: new Date(startStr),
-              });
-            if (endStr)
-              qb.andWhere('click.createdAt <= :end_' + paramKey, {
-                ['end_' + paramKey]: new Date(endStr),
-              });
-            break;
-          }
-          default:
-            break;
         }
       });
     }
 
-    // Use DATE_TRUNC compatible with Postgres; for MySQL, adjust accordingly
-    const dateTrunc =
-      interval === 'month' ? 'month' : interval === 'week' ? 'week' : 'day';
+    if (from) qb.andWhere('click.createdAt >= :from', { from });
+    if (to) qb.andWhere('click.createdAt <= :to', { to });
+
+    let dateTrunc: string;
+    switch (interval as 'day' | 'week' | 'month') {
+      case 'month':
+        dateTrunc = 'month';
+        break;
+      case 'week':
+        dateTrunc = 'week';
+        break;
+      case 'day':
+      default:
+        dateTrunc = 'day';
+    }
 
     qb.select(
       `TO_CHAR(DATE_TRUNC('${dateTrunc}', click.createdAt), 'YYYY-MM-DD')`,

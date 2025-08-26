@@ -445,31 +445,26 @@ export class LinkService {
       .build();
   }
 
-  // async getClicksTrend(userId: string, query: AnalyticsQueryDto) {
-  //   const from = query.from ? new Date(query.from) : undefined;
-  //   const to = query.to ? new Date(query.to) : undefined;
-  //   const interval = query.interval || 'day';
+  async getClicksTrend(userId: string, query: AnalyticsQueryDto) {
+    const { filter } = query;
 
-  //   const result = (await this.clickRepository.getClicksTrend({
-  //     userId,
-  //     from,
-  //     to,
-  //     interval,
-  //     filter: query.filter,
-  //   })) as Array<{ period: string; count: number }>;
+    const result = await this.clickRepository.getClicksTrend({
+      userId,
+      filter,
+    });
 
-  //   const response = plainToInstance<TrendPointDto, unknown[]>(
-  //     TrendPointDto,
-  //     result,
-  //     {
-  //       excludeExtraneousValues: true,
-  //     },
-  //   );
+    const response = plainToInstance<TrendPointDto, unknown[]>(
+      TrendPointDto,
+      result,
+      {
+        excludeExtraneousValues: true,
+      },
+    );
 
-  //   return new ResponseBuilder(response)
-  //     .withCode(ResponseCodeEnum.SUCCESS)
-  //     .build();
-  // }
+    return new ResponseBuilder(response)
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .build();
+  }
 
   async getTopCountries(userId: string, query: AnalyticsQueryDto) {
     const { filter } = query;
