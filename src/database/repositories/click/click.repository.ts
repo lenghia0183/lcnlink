@@ -115,12 +115,20 @@ export class ClickRepository
 
   async getTopCountries(params: {
     userId: string;
-    from?: Date;
-    to?: Date;
-    limit?: number;
     filter?: Array<{ column: string; text: string }>;
   }): Promise<Array<{ country: string; count: number }>> {
-    const { userId, from, to, limit = 5, filter } = params;
+    const { userId, filter } = params;
+
+    let from: string | undefined;
+    let to: string | undefined;
+
+    if (Array.isArray(filter)) {
+      filter.forEach((item) => {
+        if (!item || !item.column || !item.text) return;
+        if (item.column === 'from') from = item.text;
+        if (item.column === 'to') to = item.text;
+      });
+    }
 
     const qb = this.clickRepository
       .createQueryBuilder('click')
@@ -149,19 +157,29 @@ export class ClickRepository
       .addSelect('COUNT(click.id)', 'count')
       .groupBy('country')
       .orderBy('count', 'DESC')
-      .limit(limit);
+      .limit(10);
 
     const rows = await qb.getRawMany<{ country: string; count: string }>();
+    console.log('rows', rows);
     return rows.map((r) => ({ country: r.country, count: Number(r.count) }));
   }
 
   async getDeviceBreakdown(params: {
     userId: string;
-    from?: Date;
-    to?: Date;
     filter?: Array<{ column: string; text: string }>;
   }): Promise<Array<{ device: string; count: number }>> {
-    const { userId, from, to, filter } = params;
+    const { userId, filter } = params;
+
+    let from: string | undefined;
+    let to: string | undefined;
+
+    if (Array.isArray(filter)) {
+      filter.forEach((item) => {
+        if (!item || !item.column || !item.text) return;
+        if (item.column === 'from') from = item.text;
+        if (item.column === 'to') to = item.text;
+      });
+    }
 
     const qb = this.clickRepository
       .createQueryBuilder('click')
@@ -197,12 +215,19 @@ export class ClickRepository
 
   async getBrowserBreakdown(params: {
     userId: string;
-    from?: Date;
-    to?: Date;
     filter?: Array<{ column: string; text: string }>;
   }): Promise<Array<{ browser: string; count: number }>> {
-    const { userId, from, to, filter } = params;
+    const { userId, filter } = params;
+    let from: string | undefined;
+    let to: string | undefined;
 
+    if (Array.isArray(filter)) {
+      filter.forEach((item) => {
+        if (!item || !item.column || !item.text) return;
+        if (item.column === 'from') from = item.text;
+        if (item.column === 'to') to = item.text;
+      });
+    }
     const qb = this.clickRepository
       .createQueryBuilder('click')
       .innerJoin(Link, 'link', 'link.id = click.linkId')

@@ -59,20 +59,25 @@ export class LinkController {
     return await this.linkService.getLinkStatisticOverview(req?.userId || '');
   }
 
-  @Get('/analytics/trend')
-  async getClicksTrend(
-    @Request() req: LoggedInRequest,
-    @Query() query: AnalyticsQueryDto,
-  ) {
-    return await this.linkService.getClicksTrend(req?.userId || '', query);
-  }
+  // @Get('/analytics/trend')
+  // async getClicksTrend(
+  //   @Request() req: LoggedInRequest,
+  //   @Query() query: AnalyticsQueryDto,
+  // ) {
+  //   return await this.linkService.getClicksTrend(req?.userId || '', query);
+  // }
 
   @Get('/analytics/countries')
   async getTopCountries(
     @Request() req: LoggedInRequest,
     @Query() query: AnalyticsQueryDto,
   ) {
-    return await this.linkService.getTopCountries(req?.userId || '', query);
+    const { request, responseError } = query;
+
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+    return await this.linkService.getTopCountries(req?.userId || '', request);
   }
 
   @Get('/analytics/devices')
@@ -80,7 +85,15 @@ export class LinkController {
     @Request() req: LoggedInRequest,
     @Query() query: AnalyticsQueryDto,
   ) {
-    return await this.linkService.getDeviceBreakdown(req?.userId || '', query);
+    const { request, responseError } = query;
+
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+    return await this.linkService.getDeviceBreakdown(
+      req?.userId || '',
+      request,
+    );
   }
 
   @Get('/analytics/browsers')
@@ -88,7 +101,14 @@ export class LinkController {
     @Request() req: LoggedInRequest,
     @Query() query: AnalyticsQueryDto,
   ) {
-    return await this.linkService.getBrowserBreakdown(req?.userId || '', query);
+    const { request, responseError } = query;
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+    return await this.linkService.getBrowserBreakdown(
+      req?.userId || '',
+      request,
+    );
   }
 
   @Get(':id')
