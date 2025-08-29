@@ -37,6 +37,7 @@ import { MailService } from '@components/mail/mail.service';
 
 import { ForgotPasswordTokenPayload } from '@components/types/forgot-password-token-payload.interface';
 import { ResetPasswordResponseDto } from './dto/response/reset-password.response.dto';
+import { ChangePasswordRequestDto } from './dto/request/change-password.request.dto';
 
 @Injectable()
 export class AuthService {
@@ -528,6 +529,31 @@ export class AuthService {
 
     return (
       await new ResponseBuilder(response).withCodeI18n(
+        ResponseCodeEnum.SUCCESS,
+        this.i18n,
+      )
+    ).build();
+  }
+
+  async changePassword(userId: string, data: ChangePasswordRequestDto) {
+    await this.userService.getUserById(userId);
+
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new BusinessException(
+        this.i18n.translate(I18nErrorKeys.NOT_FOUND),
+        ResponseCodeEnum.NOT_FOUND,
+      );
+    }
+
+    await user.setAndHashPassword(data?.newPassword || '');
+    await this.userRepository.save(user);
+
+    return (
+      await new ResponseBuilder().withCodeI18n(
         ResponseCodeEnum.SUCCESS,
         this.i18n,
       )

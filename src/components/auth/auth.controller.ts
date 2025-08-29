@@ -33,6 +33,7 @@ import { ThrottleForAuth } from '@core/decorators/throttle-redis.decorator';
 import { UserService } from '@components/user/user.service';
 import { GetUserDetailResponseDto } from '@components/user/dto/response/get-user-detail.response.dto';
 import { UpdateMeRequestDto } from './dto/request/update-me.request.dto';
+import { ChangePasswordRequestDto } from './dto/request/change-password.request.dto';
 
 @ThrottleForAuth()
 @ApiTags('Xác thực')
@@ -285,6 +286,21 @@ export class AuthController {
       return responseError;
     }
     return await this.authService.resetPassword(request);
+  }
+
+  @Put('/change-password')
+  async changePassword(
+    @Body() payload: ChangePasswordRequestDto,
+    @Request() loggedInRequest: LoggedInRequest,
+  ) {
+    const { request, responseError } = payload;
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+    return await this.authService.changePassword(
+      loggedInRequest?.userId || '',
+      request,
+    );
   }
 
   @Public()
