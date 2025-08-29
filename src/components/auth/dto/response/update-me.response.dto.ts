@@ -1,7 +1,7 @@
 import { BaseResponseDto } from '@core/dto/base.response.dto';
 import { Expose } from 'class-transformer';
 
-export class UpdateUserResponseDto extends BaseResponseDto {
+export class UpdateMeResponseDto extends BaseResponseDto {
   @Expose()
   fullname: string;
 

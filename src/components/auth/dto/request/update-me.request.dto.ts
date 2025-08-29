@@ -15,7 +15,7 @@ import {
 } from '@components/user/user.constant';
 import { BaseDto } from '@core/dto/base.request.dto';
 
-export class UpdateUserRequestDto extends BaseDto<UpdateUserRequestDto> {
+export class UpdateMeRequestDto extends BaseDto<UpdateMeRequestDto> {
   @ApiProperty({ description: 'fullname', example: 'kamil mysliwiec' })
   @IsString()
   @IsOptional()

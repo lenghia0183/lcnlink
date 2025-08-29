@@ -32,6 +32,7 @@ import { RefreshTokenRequestDto } from './dto/request/refresh-token.request.dto'
 import { ThrottleForAuth } from '@core/decorators/throttle-redis.decorator';
 import { UserService } from '@components/user/user.service';
 import { GetUserDetailResponseDto } from '@components/user/dto/response/get-user-detail.response.dto';
+import { UpdateMeRequestDto } from './dto/request/update-me.request.dto';
 
 @ThrottleForAuth()
 @ApiTags('Xác thực')
@@ -170,6 +171,21 @@ export class AuthController {
     }
 
     return await this.authService.generate2fa(user);
+  }
+
+  @Put('/me')
+  async updateMe(
+    @Body() payload: UpdateMeRequestDto,
+    @Request() loggedInRequest: LoggedInRequest,
+  ) {
+    const { request, responseError } = payload;
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+    return await this.userService.updateUser(
+      loggedInRequest?.userId || '',
+      request,
+    );
   }
 
   @Get('/me')

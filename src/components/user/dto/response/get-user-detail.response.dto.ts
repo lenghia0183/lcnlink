@@ -32,4 +32,7 @@ export class GetUserDetailResponseDto extends BaseResponseDto {
 
   @Expose()
   isLocked: boolean;
+
+  @Expose()
+  dateOfBirth: Date;
 }
