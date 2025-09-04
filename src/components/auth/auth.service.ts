@@ -38,6 +38,7 @@ import { MailService } from '@components/mail/mail.service';
 import { ForgotPasswordTokenPayload } from '@components/types/forgot-password-token-payload.interface';
 import { ResetPasswordResponseDto } from './dto/response/reset-password.response.dto';
 import { ChangePasswordRequestDto } from './dto/request/change-password.request.dto';
+import { RedisService } from '@core/services/redis.service';
 
 @Injectable()
 export class AuthService {
@@ -48,7 +49,12 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly userRepository: UserRepository,
     private readonly mailService: MailService,
+    private readonly redisService: RedisService,
   ) {}
+
+  private get2FARedisKey(userId: string): string {
+    return `auth:login-2fa-token:${userId}`;
+  }
   async register(data: RegisterRequestDTO) {
     const existedUser = await this.userRepository.findByEmail(data.email);
 
@@ -218,6 +224,12 @@ export class AuthService {
         message: message,
       });
 
+      await this.redisService.set(
+        this.get2FARedisKey(existedUser.id),
+        otpToken,
+        5 * 60,
+      );
+
       return new ResponseBuilder(response)
         .withCode(ResponseCodeEnum.UNAUTHORIZED)
         .withMessage(message)
@@ -349,6 +361,17 @@ export class AuthService {
         where: { id: otpPayload.userId },
       });
 
+      const isInvalidOtpToken = await this.redisService.exists(
+        this.get2FARedisKey(otpPayload.userId),
+      );
+
+      if (!isInvalidOtpToken) {
+        throw new BusinessException(
+          await this.i18n.translate(I18nErrorKeys.TOKEN_INVALID),
+          ResponseCodeEnum.BAD_REQUEST,
+        );
+      }
+
       if (!existedUser) {
         throw new BusinessException(
           await this.i18n.translate(I18nErrorKeys.NOT_FOUND),
@@ -384,6 +407,7 @@ export class AuthService {
 
       await this.userRepository.update(existedUser.id, { refreshToken });
 
+      await this.redisService.del(this.get2FARedisKey(existedUser.id));
       const response = plainToInstance(LoginResponseDTO, existedUser, {
         excludeExtraneousValues: true,
       });
