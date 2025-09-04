@@ -42,6 +42,8 @@ import { RedisService } from '@core/services/redis.service';
 
 @Injectable()
 export class AuthService {
+  private readonly MAX_2FA_ATTEMPTS = 5;
+
   constructor(
     private readonly i18n: I18nService,
     private readonly JwtService: JwtService,
@@ -52,12 +54,16 @@ export class AuthService {
     private readonly redisService: RedisService,
   ) {}
 
-  private get2FARedisKey(userId: string): string {
-    return `auth:login-2fa-token:${userId}`;
+  private get2FARedisKey(token: string): string {
+    return `auth:login-2fa-token:${token}`;
   }
 
-  private getForgotPasswordRedisKey(userId: string): string {
-    return `auth:forgot-password-token:${userId}`;
+  private get2FAAttemptRedisKey(token: string): string {
+    return `auth:login-2fa-attempts:${token}`;
+  }
+
+  private getForgotPasswordRedisKey(token: string): string {
+    return `auth:forgot-password-token:${token}`;
   }
 
   async register(data: RegisterRequestDTO) {
@@ -97,6 +103,7 @@ export class AuthService {
       .withMessage(await this.i18n.translate(I18nMessageKeys.REGISTER_SUCCESS))
       .build();
   }
+
   async refreshToken(data: { refreshToken: string }) {
     const authConfig = this.configService.get('auth', { infer: true });
 
@@ -229,9 +236,17 @@ export class AuthService {
         message: message,
       });
 
+      // Store token with userId as value for verification
       await this.redisService.set(
-        this.get2FARedisKey(existedUser.id),
-        otpToken,
+        this.get2FARedisKey(otpToken),
+        existedUser.id,
+        5 * 60,
+      );
+
+      // Initialize attempt counter for this token
+      await this.redisService.set(
+        this.get2FAAttemptRedisKey(otpToken),
+        '0',
         5 * 60,
       );
 
@@ -275,6 +290,162 @@ export class AuthService {
       .withCode(ResponseCodeEnum.SUCCESS)
       .withMessage(await this.i18n.translate(I18nMessageKeys.LOGIN_SUCCESS))
       .build();
+  }
+
+  async login2fa(data: Login2FaRequestDto) {
+    const authConfig = this.configService.get('auth', { infer: true });
+
+    try {
+      const otpPayload = await this.JwtService.verifyAsync<OtpTokenPayload>(
+        data.otpToken,
+        {
+          secret: authConfig?.otpTokenSecret,
+        },
+      );
+
+      const storedUserId = await this.redisService.get(
+        this.get2FARedisKey(data.otpToken),
+      );
+
+      if (!storedUserId) {
+        throw new BusinessException(
+          await this.i18n.translate(I18nErrorKeys.TOKEN_INVALID),
+          ResponseCodeEnum.BAD_REQUEST,
+        );
+      }
+
+      const currentAttempts = await this.redisService.get(
+        this.get2FAAttemptRedisKey(data.otpToken),
+      );
+
+      const attemptCount = parseInt(currentAttempts || '0', 10);
+
+      if (attemptCount >= this.MAX_2FA_ATTEMPTS) {
+        await this.redisService.del(this.get2FARedisKey(data.otpToken));
+        await this.redisService.del(this.get2FAAttemptRedisKey(data.otpToken));
+
+        throw new BusinessException(
+          await this.i18n.translate(I18nErrorKeys.TOO_MANY_ATTEMPTS),
+          ResponseCodeEnum.TOO_MANY_REQUESTS,
+        );
+      }
+
+      if (storedUserId !== otpPayload.userId) {
+        throw new BusinessException(
+          await this.i18n.translate(I18nErrorKeys.TOKEN_INVALID),
+          ResponseCodeEnum.BAD_REQUEST,
+        );
+      }
+
+      const existedUser = await this.userRepository.findOne({
+        where: { id: otpPayload.userId },
+      });
+
+      if (!existedUser) {
+        throw new BusinessException(
+          await this.i18n.translate(I18nErrorKeys.NOT_FOUND),
+          ResponseCodeEnum.NOT_FOUND,
+        );
+      }
+
+      if (existedUser.isEnable2FA !== IS_2FA_ENUM.ENABLED) {
+        throw new BusinessException(
+          await this.i18n.translate(I18nErrorKeys.TWO_FA_SECRET_NOT_SET),
+          ResponseCodeEnum.BAD_REQUEST,
+        );
+      }
+
+      try {
+        await this.verifyOtp2Fa(existedUser.twoFactorSecret || '', data.otp);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (otpError) {
+        const newAttemptCount = attemptCount + 1;
+        await this.redisService.set(
+          this.get2FAAttemptRedisKey(data.otpToken),
+          newAttemptCount.toString(),
+          5 * 60,
+        );
+
+        if (newAttemptCount >= this.MAX_2FA_ATTEMPTS) {
+          await this.redisService.del(this.get2FARedisKey(data.otpToken));
+          await this.redisService.del(
+            this.get2FAAttemptRedisKey(data.otpToken),
+          );
+
+          throw new BusinessException(
+            await this.i18n.translate(I18nErrorKeys.TOO_MANY_ATTEMPTS),
+            ResponseCodeEnum.TOO_MANY_REQUESTS,
+          );
+        }
+
+        throw new BusinessException(
+          this.i18n.translate(I18nErrorKeys.OTP_INVALID) +
+            ` (${newAttemptCount}/${this.MAX_2FA_ATTEMPTS} attempts)`,
+          ResponseCodeEnum.BAD_REQUEST,
+        );
+      }
+
+      const payload: JwtPayload = {
+        email: existedUser.email,
+        fullname: existedUser.fullname,
+        role: existedUser.role,
+        id: existedUser.id,
+      };
+
+      const accessToken = await this.JwtService.signAsync(payload, {
+        secret: authConfig?.accessSecret,
+        expiresIn: authConfig?.accessExpires,
+      });
+
+      const refreshToken = await this.JwtService.signAsync(payload, {
+        secret: authConfig?.refreshSecret,
+        expiresIn: authConfig?.refreshExpires,
+      });
+
+      await this.userRepository.update(existedUser.id, { refreshToken });
+
+      // Clean up the used tokens from Redis on successful login
+      await this.redisService.del(this.get2FARedisKey(data.otpToken));
+      await this.redisService.del(this.get2FAAttemptRedisKey(data.otpToken));
+
+      const response = plainToInstance(LoginResponseDTO, existedUser, {
+        excludeExtraneousValues: true,
+      });
+      response.refreshToken = refreshToken;
+      response.accessToken = accessToken;
+
+      return new ResponseBuilder(response)
+        .withCode(ResponseCodeEnum.SUCCESS)
+        .withMessage(
+          await this.i18n.translate(I18nMessageKeys.OTP_VERIFICATION_SUCCESS),
+        )
+        .build();
+    } catch (error: unknown) {
+      if (error instanceof BusinessException) {
+        throw error;
+      }
+
+      if (error instanceof Error) {
+        if (error.name === 'JsonWebTokenError') {
+          throw new BusinessException(
+            await this.i18n.translate(I18nErrorKeys.OTP_TOKEN_INVALID),
+            ResponseCodeEnum.BAD_REQUEST,
+          );
+        }
+        if (error.name === 'TokenExpiredError') {
+          await this.redisService.del(this.get2FARedisKey(data.otpToken));
+          await this.redisService.del(
+            this.get2FAAttemptRedisKey(data.otpToken),
+          );
+
+          throw new BusinessException(
+            await this.i18n.translate(I18nErrorKeys.OTP_TOKEN_EXPIRED),
+            ResponseCodeEnum.BAD_REQUEST,
+          );
+        }
+      }
+      throw error;
+    }
   }
 
   async toggle2fa(data: Toggle2faRequestDto) {
@@ -351,99 +522,6 @@ export class AuthService {
       );
   }
 
-  async login2fa(data: Login2FaRequestDto) {
-    const authConfig = this.configService.get('auth', { infer: true });
-
-    try {
-      const otpPayload = await this.JwtService.verifyAsync<OtpTokenPayload>(
-        data.otpToken,
-        {
-          secret: authConfig?.otpTokenSecret,
-        },
-      );
-
-      const existedUser = await this.userRepository.findOne({
-        where: { id: otpPayload.userId },
-      });
-
-      const isInvalidOtpToken = await this.redisService.exists(
-        this.get2FARedisKey(otpPayload.userId),
-      );
-
-      if (!isInvalidOtpToken) {
-        throw new BusinessException(
-          await this.i18n.translate(I18nErrorKeys.TOKEN_INVALID),
-          ResponseCodeEnum.BAD_REQUEST,
-        );
-      }
-
-      if (!existedUser) {
-        throw new BusinessException(
-          await this.i18n.translate(I18nErrorKeys.NOT_FOUND),
-          ResponseCodeEnum.NOT_FOUND,
-        );
-      }
-
-      if (existedUser.isEnable2FA !== IS_2FA_ENUM.ENABLED) {
-        throw new BusinessException(
-          await this.i18n.translate(I18nErrorKeys.TWO_FA_SECRET_NOT_SET),
-          ResponseCodeEnum.BAD_REQUEST,
-        );
-      }
-
-      await this.verifyOtp2Fa(existedUser.twoFactorSecret || '', data.otp);
-
-      const payload: JwtPayload = {
-        email: existedUser.email,
-        fullname: existedUser.fullname,
-        role: existedUser.role,
-        id: existedUser.id,
-      };
-
-      const accessToken = await this.JwtService.signAsync(payload, {
-        secret: authConfig?.accessSecret,
-        expiresIn: authConfig?.accessExpires,
-      });
-
-      const refreshToken = await this.JwtService.signAsync(payload, {
-        secret: authConfig?.refreshSecret,
-        expiresIn: authConfig?.refreshExpires,
-      });
-
-      await this.userRepository.update(existedUser.id, { refreshToken });
-
-      await this.redisService.del(this.get2FARedisKey(existedUser.id));
-      const response = plainToInstance(LoginResponseDTO, existedUser, {
-        excludeExtraneousValues: true,
-      });
-      response.refreshToken = refreshToken;
-      response.accessToken = accessToken;
-
-      return new ResponseBuilder(response)
-        .withCode(ResponseCodeEnum.SUCCESS)
-        .withMessage(
-          await this.i18n.translate(I18nMessageKeys.OTP_VERIFICATION_SUCCESS),
-        )
-        .build();
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        if (error.name === 'JsonWebTokenError') {
-          throw new BusinessException(
-            await this.i18n.translate(I18nErrorKeys.OTP_TOKEN_INVALID),
-            ResponseCodeEnum.BAD_REQUEST,
-          );
-        }
-        if (error.name === 'TokenExpiredError') {
-          throw new BusinessException(
-            await this.i18n.translate(I18nErrorKeys.OTP_TOKEN_EXPIRED),
-            ResponseCodeEnum.BAD_REQUEST,
-          );
-        }
-      }
-      throw error;
-    }
-  }
-
   private async verifyOtp2Fa(
     twoFactorSecret: string,
     otp: string,
@@ -494,10 +572,13 @@ export class AuthService {
     const message: string = this.i18n.translate(
       I18nMessageKeys.FORGOT_PASSWORD_EMAIL_SENT,
     );
+
+    // Store token with userId as value for verification
     await this.redisService.set(
-      this.getForgotPasswordRedisKey(user?.id),
-      forgotPasswordToken,
+      this.getForgotPasswordRedisKey(forgotPasswordToken),
+      user.id,
     );
+
     const response = plainToInstance(ForgotPasswordResponseDto, {
       message,
       email: data.email,
@@ -524,29 +605,39 @@ export class AuthService {
       );
     } catch {
       throw new BusinessException(
-        this.i18n.translate(I18nErrorKeys.RESET_TOKEN_INVALID),
+        await this.i18n.translate(I18nErrorKeys.RESET_TOKEN_INVALID),
         ResponseCodeEnum.BAD_REQUEST,
       );
     }
 
+    // Check if token exists in Redis
+    const storedUserId = await this.redisService.get(
+      this.getForgotPasswordRedisKey(data.token),
+    );
+
+    if (!storedUserId) {
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.RESET_TOKEN_INVALID),
+        ResponseCodeEnum.BAD_REQUEST,
+      );
+    }
+
+    // Verify the stored userId matches with token payload
+    if (storedUserId !== tokenPayload?.userId) {
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.RESET_TOKEN_INVALID),
+        ResponseCodeEnum.BAD_REQUEST,
+      );
+    }
+
+    // Now fetch user data (only once after all validations)
     const user = await this.userRepository.findOne({
       where: { id: tokenPayload?.userId },
     });
 
-    const isInvalidToken = await this.redisService.exists(
-      this.getForgotPasswordRedisKey(user?.id || ''),
-    );
-
-    if (!isInvalidToken) {
-      throw new BusinessException(
-        this.i18n.translate(I18nErrorKeys.RESET_TOKEN_INVALID),
-        ResponseCodeEnum.BAD_REQUEST,
-      );
-    }
-
     if (!user) {
       throw new BusinessException(
-        this.i18n.translate(I18nErrorKeys.RESET_TOKEN_INVALID),
+        await this.i18n.translate(I18nErrorKeys.RESET_TOKEN_INVALID),
         ResponseCodeEnum.BAD_REQUEST,
       );
     }
@@ -554,7 +645,8 @@ export class AuthService {
     await user.setAndHashPassword(data.newPassword);
     await this.userRepository.save(user);
 
-    await this.redisService.del(this.getForgotPasswordRedisKey(user?.id));
+    // Clean up the used token from Redis
+    await this.redisService.del(this.getForgotPasswordRedisKey(data.token));
 
     try {
       await this.mailService.sendPasswordResetSuccessEmail(

@@ -19,6 +19,7 @@ export enum I18nErrorKeys {
   OTP_TOKEN_EXPIRED = 'error.OTP_TOKEN_EXPIRED',
   TWO_FA_ALREADY_SET = 'error.TWO_FA_ALREADY_SET',
   TWO_FA_SECRET_NOT_SET = 'error.TWO_FA_SECRET_NOT_SET',
+  TOO_MANY_ATTEMPTS = 'error.TOO_MANY_ATTEMPTS',
 
   // General
   NOT_FOUND = 'error.NOT_FOUND',
