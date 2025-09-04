@@ -55,6 +55,11 @@ export class AuthService {
   private get2FARedisKey(userId: string): string {
     return `auth:login-2fa-token:${userId}`;
   }
+
+  private getForgotPasswordRedisKey(userId: string): string {
+    return `auth:forgot-password-token:${userId}`;
+  }
+
   async register(data: RegisterRequestDTO) {
     const existedUser = await this.userRepository.findByEmail(data.email);
 
@@ -489,6 +494,10 @@ export class AuthService {
     const message: string = this.i18n.translate(
       I18nMessageKeys.FORGOT_PASSWORD_EMAIL_SENT,
     );
+    await this.redisService.set(
+      this.getForgotPasswordRedisKey(user?.id),
+      forgotPasswordToken,
+    );
     const response = plainToInstance(ForgotPasswordResponseDto, {
       message,
       email: data.email,
@@ -524,6 +533,17 @@ export class AuthService {
       where: { id: tokenPayload?.userId },
     });
 
+    const isInvalidToken = await this.redisService.exists(
+      this.getForgotPasswordRedisKey(user?.id || ''),
+    );
+
+    if (!isInvalidToken) {
+      throw new BusinessException(
+        this.i18n.translate(I18nErrorKeys.RESET_TOKEN_INVALID),
+        ResponseCodeEnum.BAD_REQUEST,
+      );
+    }
+
     if (!user) {
       throw new BusinessException(
         this.i18n.translate(I18nErrorKeys.RESET_TOKEN_INVALID),
@@ -533,6 +553,8 @@ export class AuthService {
 
     await user.setAndHashPassword(data.newPassword);
     await this.userRepository.save(user);
+
+    await this.redisService.del(this.getForgotPasswordRedisKey(user?.id));
 
     try {
       await this.mailService.sendPasswordResetSuccessEmail(
