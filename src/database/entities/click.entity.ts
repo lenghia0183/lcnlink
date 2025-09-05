@@ -17,6 +17,9 @@ export class Click extends BaseModel {
   @Column({ type: 'varchar', length: 50, nullable: true })
   country: string;
 
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  countryCode: string;
+
   @Column({ type: 'varchar', length: 100, nullable: true })
   device: string;
 

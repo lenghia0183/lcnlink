@@ -43,6 +43,10 @@ class EnvironmentVariablesValidator {
   @IsString()
   @IsNotEmpty()
   FRONTEND_URL: string;
+
+  @IsString()
+  @IsNotEmpty()
+  BACKEND_URL: string;
 }
 export default registerAs<AppConfig>('app', () => {
   validateConfig(process.env, EnvironmentVariablesValidator);
@@ -54,5 +58,6 @@ export default registerAs<AppConfig>('app', () => {
     fallbackLanguage: process.env.FALLBACK_LANGUAGE || 'vi',
     appName: process.env.APP_NAME || 'lcnlink',
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
+    backendUrl: process.env.BACKEND_URL || 'http://localhost:3001',
   };
 });

@@ -20,6 +20,8 @@ import { isEmpty } from 'lodash';
 
 import { LoggedInRequest } from '@core/types/logged-in-request.type';
 import { AnalyticsQueryDto } from './dto/request/analytics.query.dto';
+import { Public } from '@core/decorators/public.decorator';
+import { VerifyPasswordRequestDto } from './dto/request/verify-password.request.dto';
 
 @ApiTags('Links')
 @ApiBearerAuth('JWT-auth')
@@ -157,5 +159,20 @@ export class LinkController {
       request.id,
       request?.userId || '',
     );
+  }
+
+  @Public()
+  @Post('/:alias/verify-password')
+  @ApiOperation({ summary: 'Verify password for protected link' })
+  async verifyPassword(
+    @Param('alias') alias: string,
+    @Body() payload: VerifyPasswordRequestDto,
+  ) {
+    const { request, responseError } = payload;
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+
+    return await this.linkService.verifyPassword(alias, request);
   }
 }

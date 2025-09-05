@@ -26,7 +26,9 @@ async function bootstrap() {
     prefix: '/',
   });
 
-  app.setGlobalPrefix(apiPrefix);
+  app.setGlobalPrefix(apiPrefix, {
+    exclude: ['/r/:alias', '/p/:alias'],
+  });
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle(`${appName} API`)

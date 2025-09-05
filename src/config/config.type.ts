@@ -8,6 +8,7 @@ export type AppConfig = {
   fallbackLanguage: string;
   appName: string;
   frontendUrl: string;
+  backendUrl: string;
 };
 
 export type DatabaseConfig = {

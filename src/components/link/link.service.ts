@@ -27,6 +27,7 @@ import {
   BrowserCountDto,
 } from './dto/response/get-link-statistic-overview.response.dto';
 import { AnalyticsQueryDto } from './dto/request/analytics.query.dto';
+import geoip from 'geoip-lite';
 
 @Injectable()
 export class LinkService {
@@ -51,6 +52,17 @@ export class LinkService {
     const ip = Array.isArray(ipRaw) ? ipRaw[0] : ipRaw;
     const userAgent = req.get('user-agent') || '';
     const referrer = req.get('referer') || '';
+
+    let country = 'Unknown';
+    let countryCode = '';
+
+    if (ip && ip !== 'unknown' && ip !== '::1' && ip !== '127.0.0.1') {
+      const geo = geoip.lookup(ip);
+      if (geo) {
+        country = geo.country || 'Unknown';
+        countryCode = geo.country || '';
+      }
+    }
 
     // Simple device/browser detection from user-agent
     let device = 'Unknown';
@@ -83,6 +95,8 @@ export class LinkService {
       device,
       browser,
       referrer,
+      country,
+      countryCode,
     };
   }
 
@@ -102,9 +116,9 @@ export class LinkService {
     }
 
     const appConfig = this.configService.get<AppConfig>('app');
-    const frontendUrl =
-      (appConfig && appConfig.frontendUrl) || 'http://localhost:3000';
-    const shortedUrl = `${frontendUrl.replace(/\/$/, '')}/r/${alias}`;
+    const backendUrl =
+      (appConfig && appConfig.backendUrl) || 'http://localhost:3001';
+    const shortedUrl = `${backendUrl.replace(/\/$/, '')}/r/${alias}`;
 
     // Hash password if provided
     let hashedPassword: string | undefined = undefined;
@@ -333,7 +347,7 @@ export class LinkService {
 
     // Get client information
     const clientInfo = this.getClientInfo(req);
-
+    console.log('clientInfo', clientInfo);
     // Record click
     await this.clickRepository.createClick({
       linkId: link.id,
@@ -341,6 +355,8 @@ export class LinkService {
       device: clientInfo.device,
       browser: clientInfo.browser,
       referrer: clientInfo.referrer,
+      country: clientInfo.country,
+      countryCode: clientInfo.countryCode,
     });
 
     // If link has password, return link without incrementing successful access
@@ -386,7 +402,12 @@ export class LinkService {
     // Password is correct, increment successful access count
     await this.linkRepository.incrementSuccessfulAccessCount(link.id, 1);
 
-    return link;
+    const response = {
+      originalUrl: link.originalUrl,
+    };
+    return new ResponseBuilder(response)
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .build();
   }
 
   async list(request: GetListLinkRequestDto, isExport = false) {

@@ -1,17 +1,20 @@
-import { Controller, Get, Post, Param, Body, Res, Req } from '@nestjs/common';
+import { Controller, Get, Param, Body, Res, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { LinkService } from './link.service';
-import { VerifyPasswordRequestDto } from './dto/request/verify-password.request.dto';
 import { Response, Request } from 'express';
-import { isEmpty } from 'lodash';
+
 import { Public } from '@core/decorators/public.decorator';
+import { ConfigService } from '@nestjs/config';
+import { AppConfig } from '@config/config.type';
 
 @ApiTags('Public Links')
 @Controller()
 export class PublicLinkController {
-  constructor(private readonly linkService: LinkService) {}
+  constructor(
+    private readonly linkService: LinkService,
+    private readonly configService: ConfigService,
+  ) {}
 
-  // public redirect by alias (without API prefix)
   @Public()
   @Get('/r/:alias')
   @ApiOperation({ summary: 'Redirect by alias (public)' })
@@ -21,54 +24,16 @@ export class PublicLinkController {
     @Req() req: Request,
   ) {
     const result = await this.linkService.handleRedirect(alias, req);
+    const appConfig = this.configService.get<AppConfig>('app');
+    const frontendUrl =
+      (appConfig && appConfig.frontendUrl) || 'http://localhost:3000';
 
     if (result.requiresPassword) {
-      // Redirect to password form page
-      return res.redirect(`/api/v1/p/${alias}`);
+      return res.redirect(
+        `${frontendUrl}/passkey?alias=${alias}&shortedUrl=${result.link.shortedUrl}`,
+      );
     }
 
     return res.redirect(result.link.originalUrl);
-  }
-
-  // verify password for protected link (without API prefix)
-  @Public()
-  @Post('/r/:alias/verify-password')
-  @ApiOperation({ summary: 'Verify password for protected link' })
-  async verifyPassword(
-    @Param('alias') alias: string,
-    @Body() payload: VerifyPasswordRequestDto,
-    @Res() res: Response,
-  ) {
-    const { request, responseError } = payload;
-    if (!isEmpty(responseError)) {
-      return responseError;
-    }
-
-    const link = await this.linkService.verifyPassword(alias, request);
-
-    // Return JSON response with redirect URL
-    return res.json({
-      redirectUrl: link.originalUrl,
-    });
-  }
-
-  // Show password form page (without API prefix)
-  @Public()
-  @Get('/p/:alias')
-  @ApiOperation({ summary: 'Show password form page' })
-  async showPasswordForm(@Param('alias') alias: string, @Res() res: Response) {
-    // Check if link exists and has password
-    const link = await this.linkService.getByAlias(alias);
-    if (!link) {
-      return res.status(404).send('Link không tồn tại');
-    }
-
-    if (!link.password) {
-      // If no password, redirect directly
-      return res.redirect(link.originalUrl);
-    }
-
-    // Return password form HTML page
-    return res.sendFile('password-form.html', { root: './public/pages' });
   }
 }
