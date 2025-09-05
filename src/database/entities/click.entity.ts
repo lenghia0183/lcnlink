@@ -25,6 +25,4 @@ export class Click extends BaseModel {
 
   @Column({ type: 'text', nullable: true })
   referrer: string;
-
-  // createdAt is provided by BaseModel (@CreateDateColumn)
 }

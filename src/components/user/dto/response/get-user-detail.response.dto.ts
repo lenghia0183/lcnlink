@@ -25,6 +25,9 @@ export class GetUserDetailResponseDto extends BaseResponseDto {
   twoFactorSecret: string;
 
   @Expose()
+  twoFactorQr: string;
+
+  @Expose()
   isEnable2FA: number;
 
   @Expose()

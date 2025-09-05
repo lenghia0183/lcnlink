@@ -19,6 +19,7 @@ import { GetUserDetailResponseDto } from './dto/response/get-user-detail.respons
 import { getPayloadFromRequest } from '@utils/common';
 
 import { USER_LOCKED_ENUM } from './user.constant';
+import { Not } from 'typeorm';
 
 @Injectable()
 export class UserService {
@@ -127,13 +128,17 @@ export class UserService {
     const payload = getPayloadFromRequest(request);
 
     if (payload.email) {
-      const isEmailExists = await this.userRepository.isEmailExists(
-        payload.email,
-      );
+      const isEmailExists = await this.userRepository.findOne({
+        where: {
+          email: payload.email,
+          id: Not(id),
+        },
+      });
       if (isEmailExists) {
         return new ResponseBuilder()
           .withCode(ResponseCodeEnum.BAD_REQUEST)
-          .withMessage(await this.i18n.translate(I18nErrorKeys.EMAIL_EXIST));
+          .withMessage(await this.i18n.translate(I18nErrorKeys.EMAIL_EXIST))
+          .build();
       }
     }
     const user = await this.getUserById(id);

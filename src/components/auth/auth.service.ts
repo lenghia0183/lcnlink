@@ -90,6 +90,7 @@ export class AuthService {
       twoFactorUri: uri,
       isLocked: USER_LOCKED_ENUM.UNLOCKED,
       role: USER_ROLE_ENUM.USER,
+      dateOfBirth: data.dateOfBirth,
     });
 
     const savedUser = await this.userRepository.save(user);
