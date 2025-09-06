@@ -308,47 +308,21 @@ export class LinkService {
     ).build();
   }
 
-  async handleRedirect(alias: string, req: Request) {
+  async redirect(alias: string, req: Request) {
     const link = await this.getByAlias(alias);
-    console.log('link', link);
-    if (!link) {
-      throw new BusinessException(
-        await this.i18n.translate(I18nErrorKeys.NOT_FOUND),
-        ResponseCodeEnum.NOT_FOUND,
-      );
-    }
+    if (!link) return null;
 
-    // Check if link is active
-    if (!(link.status === LINK_STATUS.ACTIVE)) {
-      throw new BusinessException(
-        await this.i18n.translate(I18nErrorKeys.FORBIDDEN),
-        ResponseCodeEnum.FORBIDDEN,
-      );
-    }
-
-    // Check if link has expired
-    if (link.expireAt && new Date() > link.expireAt) {
-      throw new BusinessException(
-        await this.i18n.translate(I18nErrorKeys.FORBIDDEN),
-        ResponseCodeEnum.FORBIDDEN,
-      );
-    }
-
-    // Check if max clicks reached
-    if (link.maxClicks && link.clicksCount >= link.maxClicks) {
-      throw new BusinessException(
-        await this.i18n.translate(I18nErrorKeys.FORBIDDEN),
-        ResponseCodeEnum.FORBIDDEN,
-      );
-    }
-
-    // Always increment clicks count
     await this.linkRepository.incrementClicksCount(link.id, 1);
 
-    // Get client information
+    const isValid =
+      link.status === LINK_STATUS.ACTIVE &&
+      (!link.expireAt || new Date() <= link.expireAt) &&
+      (!link.maxClicks || link.clicksCount < link.maxClicks);
+
+    if (!isValid) return null;
+
     const clientInfo = this.getClientInfo(req);
-    console.log('clientInfo', clientInfo);
-    // Record click
+
     await this.clickRepository.createClick({
       linkId: link.id,
       ipAddress: clientInfo.ipAddress,
@@ -359,12 +333,10 @@ export class LinkService {
       countryCode: clientInfo.countryCode,
     });
 
-    // If link has password, return link without incrementing successful access
     if (link.password) {
       return { link, requiresPassword: true };
     }
 
-    // If no password, increment successful access count
     await this.linkRepository.incrementSuccessfulAccessCount(link.id, 1);
 
     return { link, requiresPassword: false };

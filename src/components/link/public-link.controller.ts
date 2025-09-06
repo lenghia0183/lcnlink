@@ -23,10 +23,14 @@ export class PublicLinkController {
     @Res() res: Response,
     @Req() req: Request,
   ) {
-    const result = await this.linkService.handleRedirect(alias, req);
     const appConfig = this.configService.get<AppConfig>('app');
     const frontendUrl =
       (appConfig && appConfig.frontendUrl) || 'http://localhost:3000';
+    const result = await this.linkService.redirect(alias, req);
+
+    if (result === null) {
+      return res.redirect(`${frontendUrl}/not-found`);
+    }
 
     if (result.requiresPassword) {
       return res.redirect(

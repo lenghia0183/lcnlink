@@ -520,7 +520,8 @@ export class AuthService {
       .withCode(ResponseCodeEnum.SUCCESS)
       .withMessage(
         await this.i18n.translate(I18nMessageKeys.CHANGE_2FA_SECRET_SUCCESS),
-      );
+      )
+      .build();
   }
 
   private async verifyOtp2Fa(
