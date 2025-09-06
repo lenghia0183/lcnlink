@@ -32,6 +32,18 @@ export type AuthConfig = {
   otpTokenExpires?: string;
   forgotPasswordSecret?: string;
   forgotPasswordExpires?: string;
+
+  google: {
+    clientId?: string;
+    clientSecret?: string;
+    callbackUrl?: string;
+  };
+
+  facebook: {
+    clientId?: string;
+    clientSecret?: string;
+    callbackUrl?: string;
+  };
 };
 
 export type AdminConfig = {

@@ -12,6 +12,12 @@ import { Link } from './link.entity';
 
 @Entity('users')
 export class User extends BaseModel {
+  @Column({ nullable: true })
+  oauthProvider?: string;
+
+  @Column({ nullable: true })
+  oauthProviderId?: string;
+
   @Column({ length: 100, nullable: true })
   fullname: string;
 

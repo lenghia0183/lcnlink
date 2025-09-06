@@ -39,6 +39,7 @@ import { ForgotPasswordTokenPayload } from '@components/types/forgot-password-to
 import { ResetPasswordResponseDto } from './dto/response/reset-password.response.dto';
 import { ChangePasswordRequestDto } from './dto/request/change-password.request.dto';
 import { RedisService } from '@core/services/redis.service';
+import { OAuthUser } from './strategies/google.strategy';
 
 @Injectable()
 export class AuthService {
@@ -698,5 +699,56 @@ export class AuthService {
         this.i18n,
       )
     ).build();
+  }
+
+  async validateOAuthLogin({
+    provider,
+    providerId,
+    email,
+    fullname,
+  }: OAuthUser) {
+    let user = await this.userRepository.findOne({ where: { email } });
+
+    if (!user) {
+      user = this.userRepository.create({
+        email,
+        fullname,
+        role: USER_ROLE_ENUM.USER,
+        isLocked: USER_LOCKED_ENUM.UNLOCKED,
+        oauthProvider: provider,
+        oauthProviderId: providerId,
+      });
+      await this.userRepository.save(user);
+    }
+
+    const authConfig = this.configService.get('auth', { infer: true });
+    const payload: JwtPayload = {
+      email: user.email,
+      fullname: user.fullname,
+      role: user.role,
+      id: user.id,
+    };
+
+    const accessToken = await this.JwtService.signAsync(payload, {
+      secret: authConfig?.accessSecret,
+      expiresIn: authConfig?.accessExpires,
+    });
+
+    const refreshToken = await this.JwtService.signAsync(payload, {
+      secret: authConfig?.refreshSecret,
+      expiresIn: authConfig?.refreshExpires,
+    });
+
+    await this.userRepository.update(user.id, { refreshToken });
+
+    return {
+      userData: user,
+      accessToken,
+      refreshToken,
+      provider,
+      providerId,
+      email,
+      fullname,
+    };
   }
 }

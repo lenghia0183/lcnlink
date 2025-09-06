@@ -36,6 +36,32 @@ class EnvironmentVariablesValidator {
   @IsString()
   @IsNotEmpty()
   FORGOT_PASSWORD_TOKEN_EXPIRES_IN: string;
+
+  // Google OAuth
+  @IsString()
+  @IsNotEmpty()
+  GOOGLE_OAUTH_CLIENT_ID: string;
+
+  @IsString()
+  @IsNotEmpty()
+  GOOGLE_OAUTH_CLIENT_SECRET: string;
+
+  @IsString()
+  @IsNotEmpty()
+  GOOGLE_OAUTH_CALLBACK_URL: string;
+
+  // Facebook OAuth
+  @IsString()
+  @IsNotEmpty()
+  FACEBOOK_OAUTH_CLIENT_ID: string;
+
+  @IsString()
+  @IsNotEmpty()
+  FACEBOOK_OAUTH_CLIENT_SECRET: string;
+
+  @IsString()
+  @IsNotEmpty()
+  FACEBOOK_OAUTH_CALLBACK_URL: string;
 }
 
 export default registerAs<AuthConfig>('auth', () => {
@@ -50,5 +76,15 @@ export default registerAs<AuthConfig>('auth', () => {
     otpTokenExpires: process.env.OTP_TOKEN_EXPIRES_IN,
     forgotPasswordSecret: process.env.FORGOT_PASSWORD_TOKEN_SECRET,
     forgotPasswordExpires: process.env.FORGOT_PASSWORD_TOKEN_EXPIRES_IN,
+    google: {
+      clientId: process.env.GOOGLE_OAUTH_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
+      callbackUrl: process.env.GOOGLE_OAUTH_CALLBACK_URL,
+    },
+    facebook: {
+      clientId: process.env.FACEBOOK_OAUTH_CLIENT_ID,
+      clientSecret: process.env.FACEBOOK_OAUTH_CLIENT_SECRET,
+      callbackUrl: process.env.FACEBOOK_OAUTH_CALLBACK_URL,
+    },
   };
 });
