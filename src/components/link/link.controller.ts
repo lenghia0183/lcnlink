@@ -30,15 +30,19 @@ export class LinkController {
   constructor(private readonly linkService: LinkService) {}
 
   @Post()
+  @Public()
   @ApiOperation({ summary: 'Create short link' })
-  async createLink(@Body() payload: CreateLinkRequestDto) {
+  async createLink(
+    @Body() payload: CreateLinkRequestDto,
+    @Request() req: LoggedInRequest,
+  ) {
     const { responseError, request } = payload;
 
     if (!isEmpty(responseError)) {
       return responseError;
     }
 
-    return await this.linkService.createLink(request);
+    return await this.linkService.createLink(request, req?.userId || null);
   }
 
   @Get('/list')

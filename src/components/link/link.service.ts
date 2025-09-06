@@ -100,7 +100,7 @@ export class LinkService {
     };
   }
 
-  async createLink(data: CreateLinkRequestDto) {
+  async createLink(data: CreateLinkRequestDto, userId: string | null) {
     let alias = data.alias;
     if (alias) {
       const exists = await this.linkRepository.findByAlias(alias);
@@ -132,7 +132,7 @@ export class LinkService {
       alias,
       shortedUrl,
       password: hashedPassword,
-      userId: data.userId,
+      userId: userId || null,
       maxClicks: data.maxClicks,
       expireAt: data.expireAt ? new Date(String(data.expireAt)) : undefined,
       isUsePassword: !!hashedPassword,

@@ -14,8 +14,8 @@ import { LINK_STATUS } from '@components/link/link.constant';
 
 @Entity('links')
 export class Link extends BaseModel {
-  @Column()
-  userId: string;
+  @Column({ type: 'varchar', nullable: true })
+  userId: string | null;
 
   @ManyToOne(() => User, (user: User) => user.links, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
