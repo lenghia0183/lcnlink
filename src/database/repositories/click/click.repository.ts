@@ -124,7 +124,7 @@ export class ClickRepository
   async getTopCountries(params: {
     userId: string;
     filter?: Array<{ column: string; text: string }>;
-  }): Promise<Array<{ country: string; count: number }>> {
+  }): Promise<Array<{ country: string; count: number; percentage: number }>> {
     const { userId, filter } = params;
 
     let from: string | undefined;
@@ -163,13 +163,25 @@ export class ClickRepository
     qb.select('COALESCE(click.country, :unknown)', 'country')
       .setParameter('unknown', 'Unknown')
       .addSelect('COUNT(click.id)', 'count')
+      .addSelect(
+        `ROUND((COUNT(click.id)::decimal * 100.0 / SUM(COUNT(click.id)) OVER ()), 2)`,
+        'percentage',
+      )
       .groupBy('country')
       .orderBy('count', 'DESC')
       .limit(10);
 
-    const rows = await qb.getRawMany<{ country: string; count: string }>();
-    console.log('rows', rows);
-    return rows.map((r) => ({ country: r.country, count: Number(r.count) }));
+    const rows = await qb.getRawMany<{
+      country: string;
+      count: string;
+      percentage: string;
+    }>();
+
+    return rows.map((r) => ({
+      country: r.country,
+      count: Number(r.count),
+      percentage: Number(r.percentage),
+    }));
   }
 
   async getDeviceBreakdown(params: {
@@ -214,17 +226,30 @@ export class ClickRepository
     qb.select('COALESCE(click.device, :unknown)', 'device')
       .setParameter('unknown', 'Unknown')
       .addSelect('COUNT(click.id)', 'count')
+      .addSelect(
+        `ROUND( (COUNT(click.id)::decimal * 100.0 / SUM(COUNT(click.id)) OVER ()), 2 )`,
+        'percentage',
+      )
       .groupBy('device')
       .orderBy('count', 'DESC');
 
-    const rows = await qb.getRawMany<{ device: string; count: string }>();
-    return rows.map((r) => ({ device: r.device, count: Number(r.count) }));
+    const rows = await qb.getRawMany<{
+      device: string;
+      count: string;
+      percentage: string;
+    }>();
+
+    return rows.map((r) => ({
+      device: r.device,
+      count: Number(r.count),
+      percentage: Number(r.percentage),
+    }));
   }
 
   async getBrowserBreakdown(params: {
     userId: string;
     filter?: Array<{ column: string; text: string }>;
-  }): Promise<Array<{ browser: string; count: number }>> {
+  }): Promise<Array<{ browser: string; count: number; percentage: number }>> {
     const { userId, filter } = params;
     let from: string | undefined;
     let to: string | undefined;
@@ -236,6 +261,7 @@ export class ClickRepository
         if (item.column === 'to') to = item.text;
       });
     }
+
     const qb = this.clickRepository
       .createQueryBuilder('click')
       .innerJoin(Link, 'link', 'link.id = click.linkId')
@@ -261,10 +287,23 @@ export class ClickRepository
     qb.select('COALESCE(click.browser, :unknown)', 'browser')
       .setParameter('unknown', 'Unknown')
       .addSelect('COUNT(click.id)', 'count')
+      .addSelect(
+        `ROUND((COUNT(click.id)::decimal * 100.0 / SUM(COUNT(click.id)) OVER ()), 2)`,
+        'percentage',
+      )
       .groupBy('browser')
       .orderBy('count', 'DESC');
 
-    const rows = await qb.getRawMany<{ browser: string; count: string }>();
-    return rows.map((r) => ({ browser: r.browser, count: Number(r.count) }));
+    const rows = await qb.getRawMany<{
+      browser: string;
+      count: string;
+      percentage: string;
+    }>();
+
+    return rows.map((r) => ({
+      browser: r.browser,
+      count: Number(r.count),
+      percentage: Number(r.percentage),
+    }));
   }
 }

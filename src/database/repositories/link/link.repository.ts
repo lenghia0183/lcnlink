@@ -230,13 +230,19 @@ export class LinkRepository
     totalClicks: number;
     totalProtectedLink: number;
     totalLimitedLink: number;
+    totalUniqueVisitors: number;
+    totalSuccessfulAccess: number;
+    returningVisitorRate: number;
   }> {
     const result = await this.createQueryBuilder('link')
+      .leftJoin('link.clicks', 'click')
       .select([
-        'COUNT(link.id) AS "totalLink"',
+        'COUNT(DISTINCT link.id) AS "totalLink"',
         'SUM(link.clicksCount) AS "totalClicks"',
         'COUNT(CASE WHEN link.isUsePassword = true THEN 1 END) AS "totalProtectedLink"',
         'COUNT(CASE WHEN link.maxClicks > 0 THEN 1 END) AS "totalLimitedLink"',
+        'COUNT(DISTINCT click.ipAddress) AS "totalUniqueVisitors"',
+        'SUM(link.successfulAccessCount) AS "totalSuccessfulAccess"',
       ])
       .where('link.deletedAt IS NULL')
       .andWhere('link.userId = :userId', { userId })
@@ -245,13 +251,35 @@ export class LinkRepository
         totalClicks: number;
         totalProtectedLink: number;
         totalLimitedLink: number;
+        totalUniqueVisitors: number;
+        totalSuccessfulAccess: number;
       }>();
+
+    const returning = await this.createQueryBuilder('link')
+      .leftJoin('link.clicks', 'click')
+      .select('COUNT(DISTINCT click.ipAddress)', 'returningVisitors')
+      .where('link.deletedAt IS NULL')
+      .andWhere('link.userId = :userId', { userId })
+      .groupBy('click.ipAddress')
+      .having('COUNT(click.id) > 1')
+      .getRawMany<{ returningVisitors: number }>();
+
+    const returningVisitors = returning.length;
+
+    const totalUniqueVisitors = Number(result?.totalUniqueVisitors) || 0;
+    const returningVisitorRate =
+      totalUniqueVisitors > 0
+        ? (returningVisitors / totalUniqueVisitors) * 100
+        : 0;
 
     return {
       totalLink: Number(result?.totalLink) || 0,
       totalClicks: Number(result?.totalClicks) || 0,
       totalProtectedLink: Number(result?.totalProtectedLink) || 0,
       totalLimitedLink: Number(result?.totalLimitedLink) || 0,
+      totalUniqueVisitors,
+      totalSuccessfulAccess: Number(result?.totalSuccessfulAccess) || 0,
+      returningVisitorRate: Number(returningVisitorRate.toFixed(2)),
     };
   }
 }

@@ -9,6 +9,14 @@ export class GetLinkStatisticOverviewResponseDto {
   totalProtectedLink: number;
   @Expose()
   totalLimitedLink: number;
+  @Expose()
+  totalUniqueVisitors: number;
+
+  @Expose()
+  totalSuccessfulAccess: number;
+
+  @Expose()
+  returningVisitorRate: number;
 }
 
 export class TrendPointDto {
@@ -23,13 +31,20 @@ export class CountryCountDto {
   country: string;
   @Expose()
   count: number;
+
+  @Expose()
+  percentage: number;
 }
 
 export class DeviceCountDto {
   @Expose()
   device: string;
+
   @Expose()
   count: number;
+
+  @Expose()
+  percentage: number;
 }
 
 export class BrowserCountDto {
