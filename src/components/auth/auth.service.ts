@@ -702,8 +702,8 @@ export class AuthService {
   }
 
   async validateOAuthLogin({
-    provider,
-    providerId,
+    oauthProvider,
+    oauthProviderId,
     email,
     fullname,
   }: OAuthUser) {
@@ -715,8 +715,8 @@ export class AuthService {
         fullname,
         role: USER_ROLE_ENUM.USER,
         isLocked: USER_LOCKED_ENUM.UNLOCKED,
-        oauthProvider: provider,
-        oauthProviderId: providerId,
+        oauthProvider: oauthProvider,
+        oauthProviderId: oauthProviderId,
       });
       await this.userRepository.save(user);
     }
@@ -745,8 +745,8 @@ export class AuthService {
       userData: user,
       accessToken,
       refreshToken,
-      provider,
-      providerId,
+      oauthProvider,
+      oauthProviderId,
       email,
       fullname,
     };

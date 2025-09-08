@@ -30,8 +30,8 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     const { name, emails, id } = profile;
 
     const user: OAuthUser = {
-      provider: 'facebook',
-      providerId: id,
+      oauthProvider: 'facebook',
+      oauthProviderId: id,
       email: emails?.[0]?.value ?? '',
       fullname: `${name?.givenName ?? ''} ${name?.familyName ?? ''}`.trim(),
     };

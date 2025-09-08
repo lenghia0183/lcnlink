@@ -1,5 +1,15 @@
 import { Public } from '@core/decorators/public.decorator';
-import { Body, Controller, Get, Post, Put, Request } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Put,
+  Req,
+  Request,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -34,6 +44,11 @@ import { UserService } from '@components/user/user.service';
 import { GetUserDetailResponseDto } from '@components/user/dto/response/get-user-detail.response.dto';
 import { UpdateMeRequestDto } from './dto/request/update-me.request.dto';
 import { ChangePasswordRequestDto } from './dto/request/change-password.request.dto';
+import { GoogleAuthGuard } from '@core/guards/google.guard';
+import { Response } from 'express';
+import { AppConfig } from '@config/config.type';
+import { ConfigService } from '@nestjs/config';
+import { OAuthCallbackRequest } from '@core/types/oauth-callback-request.type';
 
 @ThrottleForAuth()
 @ApiTags('Xác thực')
@@ -42,6 +57,7 @@ export class AuthController {
   constructor(
     private authService: AuthService,
     private userService: UserService,
+    private configService: ConfigService,
   ) {}
   @Public()
   @Post('/register')
@@ -65,6 +81,27 @@ export class AuthController {
       return responseError;
     }
     return await this.authService.register(request);
+  }
+
+  @Public()
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  async googleLogin() {
+    // passport tự redirect sang Google
+  }
+
+  @Public()
+  @Get('google/callback')
+  @UseGuards(GoogleAuthGuard)
+  googleCallback(@Req() req: OAuthCallbackRequest, @Res() res: Response) {
+    const user = req.user;
+    if (!user) return;
+    console.log('user', user);
+    const appConfig = this.configService.get<AppConfig>('app');
+    const frontendUrl = appConfig?.frontendUrl || 'http://localhost:3000';
+    res.redirect(
+      `${frontendUrl}/login?access_token=${user?.accessToken || ''}&refresh_token=${user?.refreshToken || ''}&isEnable2FA=${user?.isEnable2FA || false}`,
+    );
   }
 
   @Public()

@@ -6,10 +6,13 @@ import { AuthService } from '../auth.service';
 import { AuthConfig } from '@config/config.type';
 
 export interface OAuthUser {
-  provider: 'google' | 'facebook';
-  providerId: string;
+  oauthProvider: 'google' | 'facebook';
+  oauthProviderId: string;
   email: string;
   fullname: string;
+  refreshToken?: string;
+  accessToken?: string;
+  isEnable2FA?: boolean;
 }
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -32,11 +35,12 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     refreshToken: string,
     profile: Profile,
   ): Promise<OAuthUser> {
+    console.log('profile', profile);
     const { name, emails, id } = profile;
 
     const user: OAuthUser = {
-      provider: 'google',
-      providerId: id,
+      oauthProvider: 'google',
+      oauthProviderId: id,
       email: emails?.[0]?.value ?? '',
       fullname: `${name?.givenName ?? ''} ${name?.familyName ?? ''}`.trim(),
     };
