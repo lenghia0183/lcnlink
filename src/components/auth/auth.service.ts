@@ -39,7 +39,7 @@ import { ForgotPasswordTokenPayload } from '@components/types/forgot-password-to
 import { ResetPasswordResponseDto } from './dto/response/reset-password.response.dto';
 import { ChangePasswordRequestDto } from './dto/request/change-password.request.dto';
 import { RedisService } from '@core/services/redis.service';
-import { OAuthUser } from './strategies/google.strategy';
+import { OAuthUser, OAuthValidationResult } from './strategies/google.strategy';
 
 @Injectable()
 export class AuthService {
@@ -65,6 +65,45 @@ export class AuthService {
 
   private getForgotPasswordRedisKey(token: string): string {
     return `auth:forgot-password-token:${token}`;
+  }
+
+  private async handle2FARequired(user: User) {
+    const authConfig = this.configService.get('auth', { infer: true });
+
+    const otpPayload = {
+      userId: user.id,
+      email: user.email,
+      timestamp: Date.now(),
+    };
+
+    const otpToken = await this.JwtService.signAsync(otpPayload, {
+      secret: authConfig?.otpTokenSecret,
+      expiresIn: authConfig?.otpTokenExpires,
+    });
+
+    const message = this.i18n.translate(I18nMessageKeys.OTP_REQUIRED);
+    const response = plainToInstance(Login2FARequiredResponseDTO, {
+      requires2FA: true,
+      email: user.email,
+      otpToken: otpToken,
+      message: message,
+    });
+
+    // Store token with userId as value for verification
+    await this.redisService.set(this.get2FARedisKey(otpToken), user.id, 5 * 60);
+
+    // Initialize attempt counter for this token
+    await this.redisService.set(
+      this.get2FAAttemptRedisKey(otpToken),
+      '0',
+      5 * 60,
+    );
+
+    return {
+      response,
+      message,
+      otpToken,
+    };
   }
 
   async register(data: RegisterRequestDTO) {
@@ -217,40 +256,7 @@ export class AuthService {
     }
 
     if (existedUser.isEnable2FA === IS_2FA_ENUM.ENABLED) {
-      const authConfig = this.configService.get('auth', { infer: true });
-
-      const otpPayload = {
-        userId: existedUser.id,
-        email: existedUser.email,
-        timestamp: Date.now(),
-      };
-
-      const otpToken = await this.JwtService.signAsync(otpPayload, {
-        secret: authConfig?.otpTokenSecret,
-        expiresIn: authConfig?.otpTokenExpires,
-      });
-
-      const message = this.i18n.translate(I18nMessageKeys.OTP_REQUIRED);
-      const response = plainToInstance(Login2FARequiredResponseDTO, {
-        requires2FA: true,
-        email: existedUser.email,
-        otpToken: otpToken,
-        message: message,
-      });
-
-      // Store token with userId as value for verification
-      await this.redisService.set(
-        this.get2FARedisKey(otpToken),
-        existedUser.id,
-        5 * 60,
-      );
-
-      // Initialize attempt counter for this token
-      await this.redisService.set(
-        this.get2FAAttemptRedisKey(otpToken),
-        '0',
-        5 * 60,
-      );
+      const { response, message } = await this.handle2FARequired(existedUser);
 
       return new ResponseBuilder(response)
         .withCode(ResponseCodeEnum.UNAUTHORIZED)
@@ -706,10 +712,20 @@ export class AuthService {
     oauthProviderId,
     email,
     fullname,
-  }: OAuthUser) {
+  }: OAuthUser): Promise<OAuthValidationResult> {
     let user = await this.userRepository.findOne({ where: { email } });
 
+    if (user && user.isLocked === USER_LOCKED_ENUM.LOCKED) {
+      return {
+        success: false,
+        isLocked: true,
+        message: this.i18n.translate(I18nErrorKeys.ACCOUNT_IS_LOCKED),
+        email,
+      };
+    }
+
     if (!user) {
+      const { secret, uri, qr } = twoFactor.generateSecret();
       user = this.userRepository.create({
         email,
         fullname,
@@ -717,8 +733,24 @@ export class AuthService {
         isLocked: USER_LOCKED_ENUM.UNLOCKED,
         oauthProvider: oauthProvider,
         oauthProviderId: oauthProviderId,
+        isEnable2FA: IS_2FA_ENUM.DISABLED,
+        twoFactorSecret: secret,
+        twoFactorUri: uri,
+        twoFactorQr: qr,
       });
       await this.userRepository.save(user);
+    }
+
+    if (user.isEnable2FA === IS_2FA_ENUM.ENABLED) {
+      const { otpToken } = await this.handle2FARequired(user);
+
+      return {
+        success: true,
+        requires2FA: true,
+        otpToken,
+        email: user.email,
+        message: this.i18n.translate(I18nMessageKeys.OTP_REQUIRED),
+      };
     }
 
     const authConfig = this.configService.get('auth', { infer: true });
@@ -742,6 +774,8 @@ export class AuthService {
     await this.userRepository.update(user.id, { refreshToken });
 
     return {
+      success: true,
+      requires2FA: false,
       userData: user,
       accessToken,
       refreshToken,
@@ -749,6 +783,7 @@ export class AuthService {
       oauthProviderId,
       email,
       fullname,
+      isEnable2FA: user?.isEnable2FA || IS_2FA_ENUM.DISABLED,
     };
   }
 }

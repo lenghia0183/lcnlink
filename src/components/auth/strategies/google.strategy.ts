@@ -4,15 +4,34 @@ import { Profile, Strategy } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../auth.service';
 import { AuthConfig } from '@config/config.type';
+import { User } from '@database/entities/user.entity';
+import { IS_2FA_ENUM } from '@components/user/user.constant';
+
+export interface OAuthValidationResult {
+  success: boolean;
+
+  isLocked?: boolean;
+  message?: string;
+
+  requires2FA?: boolean;
+  otpToken?: string;
+
+  userData?: User;
+  email: string;
+  fullname?: string;
+  oauthProvider?: 'google' | 'facebook';
+  oauthProviderId?: string;
+
+  accessToken?: string;
+  refreshToken?: string;
+  isEnable2FA?: IS_2FA_ENUM;
+}
 
 export interface OAuthUser {
   oauthProvider: 'google' | 'facebook';
   oauthProviderId: string;
   email: string;
   fullname: string;
-  refreshToken?: string;
-  accessToken?: string;
-  isEnable2FA?: boolean;
 }
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -34,8 +53,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     accessToken: string,
     refreshToken: string,
     profile: Profile,
-  ): Promise<OAuthUser> {
-    console.log('profile', profile);
+  ): Promise<OAuthValidationResult> {
     const { name, emails, id } = profile;
 
     const user: OAuthUser = {
