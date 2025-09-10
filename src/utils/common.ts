@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { ResponseCodeEnum } from '@constant/response-code.enum';
 import { omit, replace } from 'lodash';
 
 export const REGEX_FOR_FILTER =
@@ -69,6 +70,14 @@ export const isDevMode = () => {
     process.env.NODE_ENV?.startsWith('dev') ||
     process.env.NODE_ENV?.startsWith('local') ||
     process.env.NODE_ENV?.startsWith('stag')
+  );
+};
+
+export const validateResponseCode = (
+  responseCode: ResponseCodeEnum,
+): boolean => {
+  return [ResponseCodeEnum.SUCCESS, ResponseCodeEnum.CREATED].includes(
+    responseCode,
   );
 };
 

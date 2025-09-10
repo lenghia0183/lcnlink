@@ -190,47 +190,49 @@ export class AuthService {
       );
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      return {
-        success: false,
-        message: this.i18n.translate(I18nErrorKeys.TOKEN_INVALID),
-      };
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.TOKEN_INVALID),
+        ResponseCodeEnum.BAD_REQUEST,
+      );
     }
 
     const storedUserId = await this.redisService.get(
       this.getVerifyEmailRedisKey(verifyToken),
     );
     if (!storedUserId || storedUserId !== tokenPayload?.id) {
-      return {
-        success: false,
-        message: this.i18n.translate(I18nErrorKeys.TOKEN_INVALID),
-      };
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.TOKEN_INVALID),
+        ResponseCodeEnum.BAD_REQUEST,
+      );
     }
 
     const user = await this.userRepository.findOne({
       where: { id: tokenPayload.id },
     });
     if (!user) {
-      return {
-        success: false,
-        message: this.i18n.translate(I18nErrorKeys.NOT_FOUND),
-      };
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.NOT_FOUND),
+        ResponseCodeEnum.NOT_FOUND,
+      );
     }
 
     if (user.isVerified) {
-      return {
-        success: false,
-        message: this.i18n.translate(I18nErrorKeys.EMAIL_ALREADY_VERIFIED),
-      };
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.EMAIL_ALREADY_VERIFIED),
+        ResponseCodeEnum.BAD_REQUEST,
+      );
     }
 
     await this.userRepository.update(user.id, {
       isVerified: BOOLEAN_ENUM.TRUE,
     });
     await this.redisService.del(this.getVerifyEmailRedisKey(verifyToken));
-    return {
-      success: false,
-      message: this.i18n.translate(I18nMessageKeys.SUCCESS),
-    };
+
+    const response = { success: true };
+    return new ResponseBuilder(response)
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .withMessage(await this.i18n.translate(I18nMessageKeys.SUCCESS))
+      .build();
   }
 
   async refreshToken(data: { refreshToken: string }) {

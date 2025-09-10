@@ -10,6 +10,9 @@ export enum IS_ACTION_ENUM {
   NO,
   YES,
 }
+export const AUTH_FLOW = {
+  VERIFY_EMAIL: 'verify-email',
+};
 
 export const TIMEZONE_HCM_CITY = 'Asia/Ho_Chi_Minh';
 

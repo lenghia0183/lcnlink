@@ -50,6 +50,8 @@ import { Response } from 'express';
 import { AppConfig } from '@config/config.type';
 import { ConfigService } from '@nestjs/config';
 import { OAuthCallbackRequest } from '@core/types/oauth-callback-request.type';
+import { validateResponseCode } from '@utils/common';
+import { AUTH_FLOW } from '@constant/app.enum';
 
 @ThrottleForAuth()
 @ApiTags('Xác thực')
@@ -214,13 +216,21 @@ export class AuthController {
     const response = await this.authService.verifyEmail(token);
     const appConfig = this.configService.get<AppConfig>('app');
     const frontendUrl = appConfig?.frontendUrl || 'http://localhost:3000';
-    if (response.success) {
+    if (validateResponseCode(response.statusCode)) {
       const params = new URLSearchParams({
-        message: response.message,
+        message: response.message || '',
         success: 'true',
+        flow: AUTH_FLOW.VERIFY_EMAIL,
       });
 
       res.redirect(`${frontendUrl}/login?${params.toString()}`);
+    } else {
+      const params = new URLSearchParams({
+        success: 'false',
+        message: response.message || '',
+        flow: AUTH_FLOW.VERIFY_EMAIL,
+      });
+      res.redirect(`${frontendUrl}/error?${params.toString()}`);
     }
   }
 
