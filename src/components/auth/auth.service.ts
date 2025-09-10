@@ -40,6 +40,8 @@ import { ResetPasswordResponseDto } from './dto/response/reset-password.response
 import { ChangePasswordRequestDto } from './dto/request/change-password.request.dto';
 import { RedisService } from '@core/services/redis.service';
 import { OAuthUser, OAuthValidationResult } from './strategies/google.strategy';
+import { JwtVerifyEmailPayload } from '@core/types/jwt-payload-verify-email.type';
+import { BOOLEAN_ENUM } from '@constant/app.enum';
 
 @Injectable()
 export class AuthService {
@@ -65,6 +67,10 @@ export class AuthService {
 
   private getForgotPasswordRedisKey(token: string): string {
     return `auth:forgot-password-token:${token}`;
+  }
+
+  private getVerifyEmailRedisKey(token: string): string {
+    return `auth:verify-email:${token}`;
   }
 
   private async handle2FARequired(user: User) {
@@ -135,6 +141,33 @@ export class AuthService {
 
     const savedUser = await this.userRepository.save(user);
 
+    // Tạo token xác minh email
+    // const authConfig = this.configService.get('auth', { infer: true });
+    const verifyTokenPayload: JwtVerifyEmailPayload = {
+      id: savedUser.id,
+      email: savedUser.email,
+    };
+    const verifyToken = this.JwtService.sign(verifyTokenPayload, {
+      secret: 'test',
+      expiresIn: '15m',
+    });
+
+    await this.redisService.set(
+      this.getVerifyEmailRedisKey(verifyToken),
+      savedUser.id,
+      15 * 60,
+    );
+
+    try {
+      await this.mailService.sendVerificationEmail(
+        savedUser.email,
+        savedUser.fullname || 'User',
+        verifyToken,
+      );
+    } catch (error) {
+      console.error('Error sending verification emailopilot:', error);
+    }
+
     const response = plainToInstance(RegisterResponseDTO, savedUser, {
       excludeExtraneousValues: true,
     });
@@ -143,6 +176,61 @@ export class AuthService {
       .withCode(ResponseCodeEnum.CREATED)
       .withMessage(await this.i18n.translate(I18nMessageKeys.REGISTER_SUCCESS))
       .build();
+  }
+
+  async verifyEmail(verifyToken: string) {
+    const authConfig = this.configService.get('auth', { infer: true });
+
+    // Xác minh token
+    let tokenPayload: JwtVerifyEmailPayload;
+    try {
+      tokenPayload = await this.JwtService.verifyAsync<JwtVerifyEmailPayload>(
+        verifyToken,
+        { secret: 'test' },
+      );
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      return {
+        success: false,
+        message: this.i18n.translate(I18nErrorKeys.TOKEN_INVALID),
+      };
+    }
+
+    const storedUserId = await this.redisService.get(
+      this.getVerifyEmailRedisKey(verifyToken),
+    );
+    if (!storedUserId || storedUserId !== tokenPayload?.id) {
+      return {
+        success: false,
+        message: this.i18n.translate(I18nErrorKeys.TOKEN_INVALID),
+      };
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { id: tokenPayload.id },
+    });
+    if (!user) {
+      return {
+        success: false,
+        message: this.i18n.translate(I18nErrorKeys.NOT_FOUND),
+      };
+    }
+
+    if (user.isVerified) {
+      return {
+        success: false,
+        message: this.i18n.translate(I18nErrorKeys.EMAIL_ALREADY_VERIFIED),
+      };
+    }
+
+    await this.userRepository.update(user.id, {
+      isVerified: BOOLEAN_ENUM.TRUE,
+    });
+    await this.redisService.del(this.getVerifyEmailRedisKey(verifyToken));
+    return {
+      success: false,
+      message: this.i18n.translate(I18nMessageKeys.SUCCESS),
+    };
   }
 
   async refreshToken(data: { refreshToken: string }) {

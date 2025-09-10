@@ -5,6 +5,7 @@ import {
   Get,
   Post,
   Put,
+  Query,
   Req,
   Request,
   Res,
@@ -191,6 +192,36 @@ export class AuthController {
       return responseError;
     }
     return await this.authService.login2fa(request);
+  }
+
+  @Public()
+  @Get('/verify-email')
+  @ApiOperation({
+    summary: 'Xác minh email',
+    description: 'Xác minh địa chỉ email bằng token được gửi qua email',
+  })
+  @ApiResponse({
+    status: 200,
+    description:
+      'Xác minh email thành công, trả về URL điều hướng đến trang đăng nhập',
+    type: Object,
+  })
+  @ApiBadRequestResponse({
+    description: 'Token không hợp lệ hoặc đã hết hạn',
+  })
+  async verifyEmail(@Query('token') token: string, @Res() res: Response) {
+    console.log('token', token);
+    const response = await this.authService.verifyEmail(token);
+    const appConfig = this.configService.get<AppConfig>('app');
+    const frontendUrl = appConfig?.frontendUrl || 'http://localhost:3000';
+    if (response.success) {
+      const params = new URLSearchParams({
+        message: response.message,
+        success: 'true',
+      });
+
+      res.redirect(`${frontendUrl}/login?${params.toString()}`);
+    }
   }
 
   @Put('/toggle-2fa')

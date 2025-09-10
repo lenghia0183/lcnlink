@@ -68,6 +68,9 @@ export class User extends BaseModel {
   @Column({ type: 'int', enum: BOOLEAN_ENUM, default: BOOLEAN_ENUM.TRUE })
   isActive: BOOLEAN_ENUM;
 
+  @Column({ type: 'int', enum: BOOLEAN_ENUM, default: BOOLEAN_ENUM.FALSE })
+  isVerified: BOOLEAN_ENUM;
+
   @Column({
     type: 'int',
     enum: USER_LOCKED_ENUM,

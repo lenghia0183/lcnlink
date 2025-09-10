@@ -9,5 +9,12 @@
   "RESET_PASSWORD_IGNORE": "Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.",
   "RESET_PASSWORD_SUCCESS_MESSAGE": "Mật khẩu của bạn đã được đặt lại thành công.",
   "RESET_PASSWORD_SUCCESS_LOGIN": "Bây giờ bạn có thể đăng nhập bằng mật khẩu mới.",
-  "RESET_PASSWORD_SUCCESS_SECURITY": "Nếu bạn không thực hiện thay đổi này, vui lòng liên hệ với chúng tôi ngay lập tức."
+  "RESET_PASSWORD_SUCCESS_SECURITY": "Nếu bạn không thực hiện thay đổi này, vui lòng liên hệ với chúng tôi ngay lập tức.",
+  "VERIFY_EMAIL_SUBJECT": "Xác minh địa chỉ email của bạn",
+  "VERIFY_EMAIL_EXPIRATION": "15 phút",
+  "VERIFY_EMAIL_GREETING": "Xin chào",
+  "VERIFY_EMAIL_MESSAGE": "Vui lòng xác minh địa chỉ email để kích hoạt tài khoản của bạn.",
+  "VERIFY_EMAIL_BUTTON": "Xác minh email",
+  "VERIFY_EMAIL_EXPIRY_NOTE": "Liên kết này sẽ hết hạn sau",
+  "VERIFY_EMAIL_IGNORE": "Nếu bạn không tạo tài khoản này, vui lòng bỏ qua email này."
 }

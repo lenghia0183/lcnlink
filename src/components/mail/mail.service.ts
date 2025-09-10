@@ -102,4 +102,54 @@ export class MailService {
       },
     });
   }
+
+  async sendVerificationEmail(
+    email: string,
+    fullname: string,
+    verifyToken: string,
+    lang?: string,
+  ): Promise<void> {
+    const appConfig = this.configService.get<AppConfig>('app');
+
+    const verifyUrl = `${appConfig?.backendUrl}/api/v1/auth/verify-email?token=${verifyToken}`;
+
+    const subject = this.i18n.translate(I18nMailKeys.VERIFY_EMAIL_SUBJECT);
+    const expirationTime = this.i18n.translate(
+      I18nMailKeys.VERIFY_EMAIL_EXPIRATION,
+    );
+    const verifyEmailGreeting = this.i18n.translate(
+      I18nMailKeys.VERIFY_EMAIL_GREETING,
+    );
+    const verifyEmailMessage = this.i18n.translate(
+      I18nMailKeys.VERIFY_EMAIL_MESSAGE,
+    );
+    const verifyEmailButton = this.i18n.translate(
+      I18nMailKeys.VERIFY_EMAIL_BUTTON,
+    );
+    const verifyEmailExpiryNote = this.i18n.translate(
+      I18nMailKeys.VERIFY_EMAIL_EXPIRY_NOTE,
+    );
+    const verifyEmailIgnore = this.i18n.translate(
+      I18nMailKeys.VERIFY_EMAIL_IGNORE,
+    );
+
+    await this.mailerService.sendMail({
+      to: email,
+      subject,
+      template: 'verify-email',
+      context: {
+        fullname,
+        verifyUrl,
+        appName: appConfig?.appName,
+        expirationTime,
+        lang: lang || appConfig?.fallbackLanguage,
+        verifyEmailSubject: subject,
+        verifyEmailGreeting,
+        verifyEmailMessage,
+        verifyEmailButton,
+        verifyEmailExpiryNote,
+        verifyEmailIgnore,
+      },
+    });
+  }
 }

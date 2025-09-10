@@ -71,6 +71,9 @@ export class RegisterResponseDTO extends BaseDto<RegisterResponseDTO> {
   @Expose()
   isActive: number;
 
+  @Expose()
+  isVerified: number;
+
   @ApiProperty({
     description: 'Is account locked (1 = locked, 0 = unlocked)',
     example: 0,
