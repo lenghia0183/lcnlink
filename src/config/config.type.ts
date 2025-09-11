@@ -32,6 +32,8 @@ export type AuthConfig = {
   otpTokenExpires?: string;
   forgotPasswordSecret?: string;
   forgotPasswordExpires?: string;
+  verifyEmailSecret?: string;
+  verifyEmailExpires?: string;
 
   google: {
     clientId?: string;

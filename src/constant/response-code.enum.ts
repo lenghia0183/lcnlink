@@ -54,6 +54,26 @@ const CODE_I18N_KEYS: Record<ResponseCodeEnum, string> = {
   [ResponseCodeEnum.TOO_MANY_REQUESTS]: I18nMessageKeys.TOO_MANY_REQUESTS,
 };
 
+export enum ErrorCodeEnum {
+  BUSINESS_ERROR = 'BUSINESS_ERROR',
+
+  // Auth errors
+  EMAIL_NOT_VERIFIED = 'EMAIL_NOT_VERIFIED',
+  USER_NOT_ACTIVE = 'USER_NOT_ACTIVE',
+  INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',
+
+  // User errors
+  USER_ALREADY_EXISTS = 'USER_ALREADY_EXISTS',
+  USER_NOT_FOUND = 'USER_NOT_FOUND',
+
+  // General business errors
+  CODE_EXIST = 'CODE_EXIST',
+  OPERATION_FORBIDDEN = 'OPERATION_FORBIDDEN',
+
+  // Fallback
+  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
+}
+
 // Fallback messages for backward compatibility
 const CODE_MESSAGES: Record<ResponseCodeEnum, string> = {
   [ResponseCodeEnum.NOT_FOUND]: ErrorMessageEnum.NOT_FOUND,

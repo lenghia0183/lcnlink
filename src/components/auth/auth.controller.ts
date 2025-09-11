@@ -52,6 +52,7 @@ import { ConfigService } from '@nestjs/config';
 import { OAuthCallbackRequest } from '@core/types/oauth-callback-request.type';
 import { validateResponseCode } from '@utils/common';
 import { AUTH_FLOW } from '@constant/app.enum';
+import { ResendVerifyEmailRequestDto } from './dto/request/resend-verify-email.request.dto';
 
 @ThrottleForAuth()
 @ApiTags('Xác thực')
@@ -212,7 +213,6 @@ export class AuthController {
     description: 'Token không hợp lệ hoặc đã hết hạn',
   })
   async verifyEmail(@Query('token') token: string, @Res() res: Response) {
-    console.log('token', token);
     const response = await this.authService.verifyEmail(token);
     const appConfig = this.configService.get<AppConfig>('app');
     const frontendUrl = appConfig?.frontendUrl || 'http://localhost:3000';
@@ -232,6 +232,30 @@ export class AuthController {
       });
       res.redirect(`${frontendUrl}/error?${params.toString()}`);
     }
+  }
+
+  @Public()
+  @Post('/resend-verify-email')
+  @ApiOperation({
+    summary: 'Gửi lại email xác minh',
+    description:
+      'Gửi lại email chứa link xác minh đến địa chỉ email đã đăng ký',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Email xác minh đã được gửi lại thành công',
+    type: ResendVerifyEmailRequestDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Email không tồn tại hoặc đã được xác minh',
+  })
+  @ApiBody({ type: ResendVerifyEmailRequestDto })
+  async resendVerifyEmail(@Body() payload: ResendVerifyEmailRequestDto) {
+    const { request, responseError } = payload;
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+    return await this.authService.resendVerifyEmail(request);
   }
 
   @Put('/toggle-2fa')

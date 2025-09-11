@@ -8,7 +8,7 @@ import { plainToInstance } from 'class-transformer';
 import { RegisterResponseDTO } from './dto/response/register.response.dto';
 import { ResponseBuilder } from '@utils/response-builder';
 import { I18nService } from 'nestjs-i18n';
-import { ResponseCodeEnum } from '@constant/response-code.enum';
+import { ErrorCodeEnum, ResponseCodeEnum } from '@constant/response-code.enum';
 import { UserService } from '@components/user/user.service';
 import { BusinessException } from '@core/exception-filters/business-exception.filter';
 import { LoginRequestDto } from './dto/request/login.request.dto';
@@ -142,14 +142,14 @@ export class AuthService {
     const savedUser = await this.userRepository.save(user);
 
     // Tạo token xác minh email
-    // const authConfig = this.configService.get('auth', { infer: true });
+    const authConfig = this.configService.get<AuthConfig>('auth');
     const verifyTokenPayload: JwtVerifyEmailPayload = {
       id: savedUser.id,
       email: savedUser.email,
     };
     const verifyToken = this.JwtService.sign(verifyTokenPayload, {
-      secret: 'test',
-      expiresIn: '15m',
+      secret: authConfig?.verifyEmailSecret,
+      expiresIn: authConfig?.verifyEmailExpires,
     });
 
     await this.redisService.set(
@@ -179,14 +179,16 @@ export class AuthService {
   }
 
   async verifyEmail(verifyToken: string) {
-    const authConfig = this.configService.get('auth', { infer: true });
+    const authConfig = this?.configService?.get<AuthConfig>('auth');
 
     // Xác minh token
     let tokenPayload: JwtVerifyEmailPayload;
     try {
       tokenPayload = await this.JwtService.verifyAsync<JwtVerifyEmailPayload>(
         verifyToken,
-        { secret: 'test' },
+        {
+          secret: authConfig?.verifyEmailSecret,
+        },
       );
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
@@ -232,6 +234,62 @@ export class AuthService {
     return new ResponseBuilder(response)
       .withCode(ResponseCodeEnum.SUCCESS)
       .withMessage(await this.i18n.translate(I18nMessageKeys.SUCCESS))
+      .build();
+  }
+
+  async resendVerifyEmail(data: ForgotPasswordRequestDto) {
+    const user = await this.userRepository.findByEmail(data.email);
+    const authConfig = this.configService.get<AuthConfig>('auth');
+
+    if (!user) {
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.EMAIL_NOT_EXIST),
+        ResponseCodeEnum.NOT_FOUND,
+      );
+    }
+
+    if (user.isVerified) {
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.EMAIL_ALREADY_VERIFIED),
+        ResponseCodeEnum.BAD_REQUEST,
+      );
+    }
+
+    const verifyTokenPayload: JwtVerifyEmailPayload = {
+      id: user.id,
+      email: user.email,
+    };
+
+    const verifyToken = await this.JwtService.signAsync(verifyTokenPayload, {
+      secret: authConfig?.verifyEmailSecret,
+      expiresIn: authConfig?.verifyEmailExpires,
+    });
+
+    await this.redisService.set(
+      this.getVerifyEmailRedisKey(verifyToken),
+      user.id,
+      15 * 60,
+    );
+
+    try {
+      await this.mailService.sendVerificationEmail(
+        user.email,
+        user.fullname || 'User',
+        verifyToken,
+      );
+    } catch (error) {
+      console.error('Error sending verification email:', error);
+    }
+
+    const message = this.i18n.translate(I18nMessageKeys.VERIFY_EMAIL_SENT);
+    const response = plainToInstance(ForgotPasswordResponseDto, {
+      message,
+      email: data.email,
+    });
+
+    return new ResponseBuilder(response)
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .withMessage(message)
       .build();
   }
 
@@ -326,6 +384,14 @@ export class AuthService {
       throw new BusinessException(
         await this.i18n.translate(I18nErrorKeys.EMAIL_OR_PASSWORD_INVALID),
         ResponseCodeEnum.BAD_REQUEST,
+      );
+    }
+
+    if (!existedUser.isVerified) {
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.EMAIL_NOT_VERIFIED),
+        ResponseCodeEnum.BAD_REQUEST,
+        ErrorCodeEnum.EMAIL_NOT_VERIFIED,
       );
     }
 

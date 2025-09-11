@@ -37,6 +37,14 @@ class EnvironmentVariablesValidator {
   @IsNotEmpty()
   FORGOT_PASSWORD_TOKEN_EXPIRES_IN: string;
 
+  @IsString()
+  @IsNotEmpty()
+  VERIFY_EMAIL_TOKEN_SECRET: string;
+
+  @IsString()
+  @IsNotEmpty()
+  VERIFY_EMAIL_TOKEN_EXPIRES_IN: string;
+
   // Google OAuth
   @IsString()
   @IsNotEmpty()
@@ -76,6 +84,8 @@ export default registerAs<AuthConfig>('auth', () => {
     otpTokenExpires: process.env.OTP_TOKEN_EXPIRES_IN,
     forgotPasswordSecret: process.env.FORGOT_PASSWORD_TOKEN_SECRET,
     forgotPasswordExpires: process.env.FORGOT_PASSWORD_TOKEN_EXPIRES_IN,
+    verifyEmailSecret: process.env.VERIFY_EMAIL_TOKEN_SECRET,
+    verifyEmailExpires: process.env.VERIFY_EMAIL_TOKEN_EXPIRES_IN,
     google: {
       clientId: process.env.GOOGLE_OAUTH_CLIENT_ID,
       clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
