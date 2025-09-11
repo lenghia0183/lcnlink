@@ -233,7 +233,9 @@ export class AuthService {
     const response = { success: true };
     return new ResponseBuilder(response)
       .withCode(ResponseCodeEnum.SUCCESS)
-      .withMessage(await this.i18n.translate(I18nMessageKeys.SUCCESS))
+      .withMessage(
+        await this.i18n.translate(I18nMessageKeys.VERIFY_EMAIL_SUCCESS),
+      )
       .build();
   }
 
@@ -870,6 +872,24 @@ export class AuthService {
     fullname,
   }: OAuthUser): Promise<OAuthValidationResult> {
     let user = await this.userRepository.findOne({ where: { email } });
+
+    if (
+      user?.isVerified === BOOLEAN_ENUM.TRUE &&
+      !user?.oauthProvider &&
+      !user?.oauthProviderId
+    ) {
+      await this.userRepository.update(user.id, {
+        oauthProvider,
+        oauthProviderId,
+      });
+    } else if (
+      user?.isVerified === BOOLEAN_ENUM.FALSE &&
+      !user?.oauthProvider &&
+      !user?.oauthProviderId
+    ) {
+      await this.userRepository.softDelete(user.id);
+      user = null;
+    }
 
     if (user && user.isLocked === USER_LOCKED_ENUM.LOCKED) {
       return {

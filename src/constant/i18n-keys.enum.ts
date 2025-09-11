@@ -107,9 +107,15 @@ export enum I18nMessageKeys {
   OTP_VERIFICATION_SUCCESS = 'message.OTP_VERIFICATION_SUCCESS',
 
   VERIFY_EMAIL_SENT = 'message.VERIFY_EMAIL_SENT',
+  VERIFY_EMAIL_SUCCESS = 'message.VERIFY_EMAIL_SUCCESS',
 
   // File Upload
   UPLOAD_SUCCESS = 'message.UPLOAD_SUCCESS',
+
+  // Link Operations
+  LINK_CREATE_SUCCESS = 'message.LINK_CREATE_SUCCESS',
+  LINK_UPDATE_SUCCESS = 'message.LINK_UPDATE_SUCCESS',
+  LINK_DELETE_SUCCESS = 'message.LINK_DELETE_SUCCESS',
 }
 
 export enum I18nValidationKeys {

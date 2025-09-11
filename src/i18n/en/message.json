@@ -21,11 +21,15 @@
   "ENABLE_2FA_SUCCESS": "2FA enabled successfully",
   "DISABLE_2FA_SUCCESS": "2FA disabled successfully",
   "GENERATE_2FA_SECRET_SUCCESS": "2FA secret generated successfully",
+  "VERIFY_EMAIL_SUCCESS": "Email verified successfully",
   "CHANGE_2FA_SECRET_SUCCESS": "2FA secret changed successfully",
   "OTP_REQUIRED": "Please provide your 2FA code to complete login",
   "OTP_VERIFICATION_SUCCESS": "OTP verification successful",
   "UPLOAD_SUCCESS": "File uploaded successfully",
   "CHANGE_PASSWORD_SUCCESS": "Password changed successfully",
   "FORGOT_PASSWORD_EMAIL_SENT": "If the email exists in our system, you will receive password reset instructions",
-  "RESET_PASSWORD_SUCCESS": "Password has been reset successfully"
+  "RESET_PASSWORD_SUCCESS": "Password has been reset successfully",
+  "LINK_CREATE_SUCCESS": "Link created successfully! Your new link is ready to use",
+  "LINK_UPDATE_SUCCESS": "Link updated successfully! Your changes have been saved",
+  "LINK_DELETE_SUCCESS": "Link deleted successfully! The link has been removed"
 }

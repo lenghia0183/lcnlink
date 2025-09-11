@@ -12,7 +12,7 @@ import { I18nService } from 'nestjs-i18n';
 import { plainToInstance } from 'class-transformer';
 import { LinkResponseDto } from './dto/response/link.response.dto';
 import { BusinessException } from '@core/exception-filters/business-exception.filter';
-import { I18nErrorKeys } from '@constant/i18n-keys.enum';
+import { I18nErrorKeys, I18nMessageKeys } from '@constant/i18n-keys.enum';
 import { AppConfig } from '@config/config.type';
 import { getPayloadFromRequest } from '@utils/common';
 import { Request } from 'express';
@@ -142,12 +142,10 @@ export class LinkService {
       excludeExtraneousValues: true,
     });
 
-    return (
-      await new ResponseBuilder(response).withCodeI18n(
-        ResponseCodeEnum.CREATED,
-        this.i18n,
-      )
-    ).build();
+    return new ResponseBuilder(response)
+      .withCode(ResponseCodeEnum.CREATED)
+      .withMessage(this.i18n.translate(I18nMessageKeys.LINK_CREATE_SUCCESS))
+      .build();
   }
 
   async updateLink(id: string, request: UpdateLinkRequestDto, userId: string) {
@@ -199,12 +197,10 @@ export class LinkService {
       excludeExtraneousValues: true,
     });
 
-    return (
-      await new ResponseBuilder(response).withCodeI18n(
-        ResponseCodeEnum.SUCCESS,
-        this.i18n,
-      )
-    ).build();
+    return new ResponseBuilder(response)
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .withMessage(this.i18n.translate(I18nMessageKeys.LINK_UPDATE_SUCCESS))
+      .build();
   }
 
   async deleteLink(id: string, userId: string) {
@@ -225,12 +221,10 @@ export class LinkService {
 
     await this.linkRepository.softDelete(id);
 
-    return (
-      await new ResponseBuilder().withCodeI18n(
-        ResponseCodeEnum.SUCCESS,
-        this.i18n,
-      )
-    ).build();
+    return new ResponseBuilder()
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .withMessage(this.i18n.translate(I18nMessageKeys.LINK_DELETE_SUCCESS))
+      .build();
   }
 
   async getById(id: string, userId: string) {

@@ -21,6 +21,7 @@
   "SWITCHING_PROTOCOLS": "Chuyển đổi giao thức",
   "PROCESSING": "Đang xử lý",
   "EARLY_HINTS": "Gợi ý sớm",
+  "VERIFY_EMAIL_SUCCESS": "Xác thức email thành công",
   "CREATED": "Đã tạo",
   "ACCEPTED": "Đã chấp nhận",
   "NON_AUTHORITATIVE_INFORMATION": "Thông tin không có thẩm quyền",
@@ -28,5 +29,8 @@
   "TOO_MANY_REQUESTS": "Quá nhiều yêu cầu",
   "UNKNOWN_ERROR": "Lỗi không xác định",
   "FORGOT_PASSWORD_EMAIL_SENT": "Nếu email tồn tại trong hệ thống, bạn sẽ nhận được email hướng dẫn đặt lại mật khẩu",
-  "RESET_PASSWORD_SUCCESS": "Mật khẩu đã được đặt lại thành công"
+  "RESET_PASSWORD_SUCCESS": "Mật khẩu đã được đặt lại thành công",
+  "LINK_CREATE_SUCCESS": "Đã tạo link thành công! Link mới của bạn đã sẵn sàng để sử dụng",
+  "LINK_UPDATE_SUCCESS": "Đã cập nhật link thành công! Các thay đổi của bạn đã được lưu",
+  "LINK_DELETE_SUCCESS": "Đã xóa link thành công! Link đã được gỡ bỏ"
 }
