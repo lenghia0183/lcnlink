@@ -47,12 +47,15 @@ export class LinkController {
 
   @Get('/list')
   @ApiOperation({ summary: 'Get list of links' })
-  async getList(@Query() query: GetListLinkRequestDto) {
+  async getList(
+    @Query() query: GetListLinkRequestDto,
+    @Request() req: LoggedInRequest,
+  ) {
     const { responseError, request } = query;
     if (!isEmpty(responseError)) {
       return responseError;
     }
-    return await this.linkService.list(request);
+    return await this.linkService.list(request, req?.userId || '');
   }
 
   @Get('/total-link-per-status')

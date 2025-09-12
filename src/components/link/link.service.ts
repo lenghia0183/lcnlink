@@ -376,7 +376,7 @@ export class LinkService {
       .build();
   }
 
-  async list(request: GetListLinkRequestDto, isExport = false) {
+  async list(request: GetListLinkRequestDto, userId: string, isExport = false) {
     const { keyword, sort, filter, page, limit } = request;
 
     const { data, total } = await this.linkRepository.findWithFilters({
@@ -386,6 +386,7 @@ export class LinkService {
       page,
       limit,
       isExport,
+      userId,
     });
 
     const response = plainToInstance(LinkResponseDto, data, {

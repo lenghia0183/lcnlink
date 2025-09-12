@@ -86,6 +86,7 @@ export class LinkRepository
     page?: number;
     limit?: number;
     isExport?: boolean;
+    userId?: string;
   }): Promise<{ data: Link[]; total: number }> {
     const { keyword, filter, sort, page, limit, isExport } = params;
 
@@ -93,6 +94,9 @@ export class LinkRepository
       this.createQueryBuilder('link');
 
     queryBuilder.where('link.deletedAt IS NULL');
+    if (params.userId) {
+      queryBuilder.andWhere('link.userId = :userId', { userId: params.userId });
+    }
 
     if (!isEmpty(keyword)) {
       queryBuilder.andWhere(
