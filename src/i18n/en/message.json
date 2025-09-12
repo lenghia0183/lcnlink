@@ -31,5 +31,6 @@
   "RESET_PASSWORD_SUCCESS": "Password has been reset successfully",
   "LINK_CREATE_SUCCESS": "Link created successfully! Your new link is ready to use",
   "LINK_UPDATE_SUCCESS": "Link updated successfully! Your changes have been saved",
-  "LINK_DELETE_SUCCESS": "Link deleted successfully! The link has been removed"
+  "LINK_DELETE_SUCCESS": "Link deleted successfully! The link has been removed",
+  "VERIFY_EMAIL_SENT": "Please check your email to verify your account"
 }

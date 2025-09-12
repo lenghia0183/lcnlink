@@ -42,6 +42,7 @@ import { RedisService } from '@core/services/redis.service';
 import { OAuthUser, OAuthValidationResult } from './strategies/google.strategy';
 import { JwtVerifyEmailPayload } from '@core/types/jwt-payload-verify-email.type';
 import { BOOLEAN_ENUM } from '@constant/app.enum';
+import { ResendVerifyEmailResponseDto } from './dto/response/resend-email.response.dto';
 
 @Injectable()
 export class AuthService {
@@ -283,15 +284,13 @@ export class AuthService {
       console.error('Error sending verification email:', error);
     }
 
-    const message = this.i18n.translate(I18nMessageKeys.VERIFY_EMAIL_SENT);
-    const response = plainToInstance(ForgotPasswordResponseDto, {
-      message,
+    const response = plainToInstance(ResendVerifyEmailResponseDto, {
       email: data.email,
     });
 
     return new ResponseBuilder(response)
       .withCode(ResponseCodeEnum.SUCCESS)
-      .withMessage(message)
+      .withMessage(this.i18n.translate(I18nMessageKeys.VERIFY_EMAIL_SENT))
       .build();
   }
 

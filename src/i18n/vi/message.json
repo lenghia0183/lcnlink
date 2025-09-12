@@ -32,5 +32,6 @@
   "RESET_PASSWORD_SUCCESS": "Mật khẩu đã được đặt lại thành công",
   "LINK_CREATE_SUCCESS": "Đã tạo link thành công! Link mới của bạn đã sẵn sàng để sử dụng",
   "LINK_UPDATE_SUCCESS": "Đã cập nhật link thành công! Các thay đổi của bạn đã được lưu",
-  "LINK_DELETE_SUCCESS": "Đã xóa link thành công! Link đã được gỡ bỏ"
+  "LINK_DELETE_SUCCESS": "Đã xóa link thành công! Link đã được gỡ bỏ",
+  "VERIFY_EMAIL_SENT": "Vui lòng kiểm tra email de xác thức tài khoản"
 }
