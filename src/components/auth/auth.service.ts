@@ -43,6 +43,7 @@ import { OAuthUser, OAuthValidationResult } from './strategies/google.strategy';
 import { JwtVerifyEmailPayload } from '@core/types/jwt-payload-verify-email.type';
 import { BOOLEAN_ENUM } from '@constant/app.enum';
 import { ResendVerifyEmailResponseDto } from './dto/response/resend-email.response.dto';
+import QRCode from 'qrcode';
 
 @Injectable()
 export class AuthService {
@@ -123,7 +124,8 @@ export class AuthService {
       );
     }
 
-    const { secret, uri, qr } = twoFactor.generateSecret();
+    const { secret, uri } = twoFactor.generateSecret();
+    const qrCodeDataUrl: string = await QRCode.toDataURL(uri);
 
     const user = this.userRepository.create({
       email: data.email,
@@ -133,7 +135,7 @@ export class AuthService {
       phone: data.phone,
       createdBy: data.userId,
       twoFactorSecret: secret,
-      twoFactorQr: qr,
+      twoFactorQr: qrCodeDataUrl,
       twoFactorUri: uri,
       isLocked: USER_LOCKED_ENUM.UNLOCKED,
       role: USER_ROLE_ENUM.USER,
@@ -647,14 +649,14 @@ export class AuthService {
   async generate2fa(user: User) {
     const appConfig = this.configService.get<AppConfig>('app')!;
 
-    const { secret, uri, qr } = twoFactor.generateSecret({
+    const { secret, uri } = twoFactor.generateSecret({
       name: appConfig?.appName,
       account: user?.email || '',
     });
-
+    const qrCodeDataUrl: string = await QRCode.toDataURL(uri);
     const response = {
       secret,
-      qrCodeUrl: qr,
+      qrCodeUrl: qrCodeDataUrl,
       uri,
     };
 
@@ -870,7 +872,9 @@ export class AuthService {
     email,
     fullname,
   }: OAuthUser): Promise<OAuthValidationResult> {
-    let user = await this.userRepository.findOne({ where: { email } });
+    let user = await this.userRepository.findOne({
+      where: { email, oauthProvider, oauthProviderId },
+    });
 
     if (
       user?.isVerified === BOOLEAN_ENUM.TRUE &&
@@ -900,7 +904,9 @@ export class AuthService {
     }
 
     if (!user) {
-      const { secret, uri, qr } = twoFactor.generateSecret();
+      const { secret, uri } = twoFactor.generateSecret();
+      const qrCodeDataUrl: string = await QRCode.toDataURL(uri);
+
       user = this.userRepository.create({
         email,
         fullname,
@@ -911,7 +917,8 @@ export class AuthService {
         isEnable2FA: IS_2FA_ENUM.DISABLED,
         twoFactorSecret: secret,
         twoFactorUri: uri,
-        twoFactorQr: qr,
+        twoFactorQr: qrCodeDataUrl,
+        isVerified: BOOLEAN_ENUM.TRUE,
       });
       await this.userRepository.save(user);
     }

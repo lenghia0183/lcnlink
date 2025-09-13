@@ -10,6 +10,7 @@ import { RepositoryModule } from '@database/repositories/repository.module';
 import { MailModule } from '@components/mail/mail.module';
 import { RedisService } from '@core/services/redis.service';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { FacebookStrategy } from './strategies/facebook.strategy';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
     PassportModule.register({ defaultStrategy: 'jwt' }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, RedisService, GoogleStrategy],
+  providers: [AuthService, RedisService, GoogleStrategy, FacebookStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

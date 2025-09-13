@@ -13,6 +13,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService<AllConfigType>);
 
   const appConfig = configService.get('app', { infer: true });
+
   const { port, appName, apiPrefix } = appConfig!;
 
   app.enableCors({

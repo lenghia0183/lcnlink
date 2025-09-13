@@ -19,10 +19,16 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
       callbackURL:
         configService.get<AuthConfig>('auth')?.facebook?.callbackUrl || '',
       profileFields: ['id', 'emails', 'name'],
+      scope: ['email'],
     });
   }
 
-  async validate(profile: Profile): Promise<OAuthValidationResult> {
+  async validate(
+    accessToken: string,
+    refreshToken: string,
+    profile: Profile,
+  ): Promise<OAuthValidationResult> {
+    console.log(profile);
     const { name, emails, id } = profile;
 
     const user: OAuthUser = {
