@@ -49,11 +49,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     });
   }
 
-  async validate(
-    accessToken: string,
-    refreshToken: string,
-    profile: Profile,
-  ): Promise<OAuthValidationResult> {
+  async validate(accessToken: string, refreshToken: string, profile: Profile) {
     const { name, emails, id } = profile;
 
     const user: OAuthUser = {

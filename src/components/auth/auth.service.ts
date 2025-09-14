@@ -39,11 +39,12 @@ import { ForgotPasswordTokenPayload } from '@components/types/forgot-password-to
 import { ResetPasswordResponseDto } from './dto/response/reset-password.response.dto';
 import { ChangePasswordRequestDto } from './dto/request/change-password.request.dto';
 import { RedisService } from '@core/services/redis.service';
-import { OAuthUser, OAuthValidationResult } from './strategies/google.strategy';
+import { OAuthUser } from './strategies/google.strategy';
 import { JwtVerifyEmailPayload } from '@core/types/jwt-payload-verify-email.type';
 import { BOOLEAN_ENUM } from '@constant/app.enum';
 import { ResendVerifyEmailResponseDto } from './dto/response/resend-email.response.dto';
 import QRCode from 'qrcode';
+import { OAuthValidationResponseDto } from './dto/response/validate-oauth.response.dto';
 
 @Injectable()
 export class AuthService {
@@ -871,7 +872,7 @@ export class AuthService {
     oauthProviderId,
     email,
     fullname,
-  }: OAuthUser): Promise<OAuthValidationResult> {
+  }: OAuthUser) {
     let user = await this.userRepository.findOne({
       where: { email, oauthProvider, oauthProviderId },
     });
@@ -895,12 +896,17 @@ export class AuthService {
     }
 
     if (user && user.isLocked === USER_LOCKED_ENUM.LOCKED) {
-      return {
+      const response = plainToInstance(OAuthValidationResponseDto, {
         success: false,
         isLocked: true,
         message: this.i18n.translate(I18nErrorKeys.ACCOUNT_IS_LOCKED),
         email,
-      };
+      });
+
+      return new ResponseBuilder(response)
+        .withCode(ResponseCodeEnum.UNAUTHORIZED)
+        .withMessage(await this.i18n.translate(I18nErrorKeys.ACCOUNT_IS_LOCKED))
+        .build();
     }
 
     if (!user) {
@@ -926,13 +932,17 @@ export class AuthService {
     if (user.isEnable2FA === IS_2FA_ENUM.ENABLED) {
       const { otpToken } = await this.handle2FARequired(user);
 
-      return {
-        success: true,
+      const response = plainToInstance(OAuthValidationResponseDto, {
         requires2FA: true,
-        otpToken,
         email: user.email,
+        otpToken: otpToken,
         message: this.i18n.translate(I18nMessageKeys.OTP_REQUIRED),
-      };
+      });
+
+      return new ResponseBuilder(response)
+        .withCode(ResponseCodeEnum.UNAUTHORIZED)
+        .withMessage(await this.i18n.translate(I18nMessageKeys.OTP_REQUIRED))
+        .build();
     }
 
     const authConfig = this.configService.get('auth', { infer: true });
@@ -955,17 +965,26 @@ export class AuthService {
 
     await this.userRepository.update(user.id, { refreshToken });
 
-    return {
-      success: true,
-      requires2FA: false,
-      userData: user,
-      accessToken,
-      refreshToken,
-      oauthProvider,
-      oauthProviderId,
-      email,
-      fullname,
-      isEnable2FA: user?.isEnable2FA || IS_2FA_ENUM.DISABLED,
-    };
+    const response: OAuthValidationResponseDto = plainToInstance(
+      OAuthValidationResponseDto,
+      {
+        success: true,
+        requires2FA: false,
+        userData: user,
+        accessToken,
+        refreshToken,
+        oauthProvider,
+        oauthProviderId,
+        email,
+        fullname: user.fullname,
+        isEnable2FA: user.isEnable2FA || IS_2FA_ENUM.DISABLED,
+        message: this.i18n.translate(I18nMessageKeys.LOGIN_SUCCESS),
+      },
+    );
+
+    return new ResponseBuilder(response)
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .withMessage(await this.i18n.translate(I18nMessageKeys.LOGIN_SUCCESS))
+      .build();
   }
 }

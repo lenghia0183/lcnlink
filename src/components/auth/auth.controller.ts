@@ -115,36 +115,36 @@ export class AuthController {
     const appConfig = this.configService.get<AppConfig>('app');
     const frontendUrl = appConfig?.frontendUrl || 'http://localhost:3000';
 
-    if (!user.success) {
+    if (!validateResponseCode(user.statusCode)) {
       const params = new URLSearchParams({
         error: 'oauth_error',
         message: user.message || 'Authentication failed',
-        ...(user.isLocked && { locked: 'true' }),
-        ...(user.email && { email: user.email }),
+        ...(user.data?.isLocked && { locked: 'true' }),
+        ...(user.data?.email && { email: user.data?.email }),
       });
 
       return res.redirect(`${frontendUrl}/login?${params.toString()}`);
     }
 
-    if (user.requires2FA) {
+    if (user.data?.requires2FA) {
       const params = new URLSearchParams({
         requires2FA: 'true',
-        token: user.otpToken || '',
-        email: user.email || '',
-        message: user.message || '',
-        oauth_provider: user.oauthProvider || 'google',
+        token: user.data.otpToken || '',
+        email: user.data.email || '',
+        message: user.data.message || '',
+        oauth_provider: user.data.oauthProvider || 'google',
       });
 
       return res.redirect(`${frontendUrl}/verify-2fa?${params.toString()}`);
     }
 
     const params = new URLSearchParams({
-      access_token: user.accessToken || '',
-      refresh_token: user.refreshToken || '',
-      isEnable2FA: user.isEnable2FA?.toString() || 'false',
-      email: user.email || '',
-      fullname: user.fullname || '',
-      oauth_provider: user.oauthProvider || 'google',
+      access_token: user?.data?.accessToken || '',
+      refresh_token: user?.data?.refreshToken || '',
+      isEnable2FA: user?.data?.isEnable2FA?.toString() || 'false',
+      email: user?.data?.email || '',
+      fullname: user?.data?.fullname || '',
+      oauth_provider: user?.data?.oauthProvider || 'google',
       success: 'true',
     });
 
@@ -165,36 +165,36 @@ export class AuthController {
     const appConfig = this.configService.get<AppConfig>('app');
     const frontendUrl = appConfig?.frontendUrl || 'http://localhost:3000';
 
-    if (!user.success) {
+    if (!validateResponseCode(user.statusCode)) {
       const params = new URLSearchParams({
         error: 'oauth_error',
         message: user.message || 'Authentication failed',
-        ...(user.isLocked && { locked: 'true' }),
-        ...(user.email && { email: user.email }),
+        ...(user.data?.isLocked && { locked: 'true' }),
+        ...(user.data?.email && { email: user.data?.email }),
       });
 
       return res.redirect(`${frontendUrl}/login?${params.toString()}`);
     }
 
-    if (user.requires2FA) {
+    if (user.data?.requires2FA) {
       const params = new URLSearchParams({
         requires2FA: 'true',
-        token: user.otpToken || '',
-        email: user.email || '',
-        message: user.message || '',
-        oauth_provider: user.oauthProvider || 'google',
+        token: user.data.otpToken || '',
+        email: user.data.email || '',
+        message: user.data.message || '',
+        oauth_provider: user.data.oauthProvider || 'facebook',
       });
 
       return res.redirect(`${frontendUrl}/verify-2fa?${params.toString()}`);
     }
 
     const params = new URLSearchParams({
-      access_token: user.accessToken || '',
-      refresh_token: user.refreshToken || '',
-      isEnable2FA: user.isEnable2FA?.toString() || 'false',
-      email: user.email || '',
-      fullname: user.fullname || '',
-      oauth_provider: user.oauthProvider || 'google',
+      access_token: user?.data?.accessToken || '',
+      refresh_token: user?.data?.refreshToken || '',
+      isEnable2FA: user?.data?.isEnable2FA?.toString() || 'false',
+      email: user?.data?.email || '',
+      fullname: user?.data?.fullname || '',
+      oauth_provider: user?.data?.oauthProvider || 'facebook',
       success: 'true',
     });
 
