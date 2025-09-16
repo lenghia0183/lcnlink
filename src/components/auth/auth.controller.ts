@@ -146,6 +146,7 @@ export class AuthController {
       fullname: user?.data?.fullname || '',
       oauth_provider: user?.data?.oauthProvider || 'google',
       success: 'true',
+      message: user?.message || '',
     });
 
     res.redirect(`${frontendUrl}/login?${params.toString()}`);
@@ -196,6 +197,7 @@ export class AuthController {
       fullname: user?.data?.fullname || '',
       oauth_provider: user?.data?.oauthProvider || 'facebook',
       success: 'true',
+      message: user?.message || '',
     });
 
     res.redirect(`${frontendUrl}/login?${params.toString()}`);
