@@ -2,7 +2,7 @@ import { USER_ROLE_ENUM } from '@components/user/user.constant';
 
 export const DEFAULT_THROTTLE_CONFIG = {
   TTL: {
-    [USER_ROLE_ENUM.ADMIN]: 30,
+    [USER_ROLE_ENUM.ADMIN]: 10000,
     [USER_ROLE_ENUM.USER]: 30,
     [USER_ROLE_ENUM.GUEST]: 30,
     UNKNOWN_ROLE: 30,

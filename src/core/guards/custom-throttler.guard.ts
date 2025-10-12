@@ -7,6 +7,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { I18nService } from 'nestjs-i18n';
 import { Injectable, ExecutionContext } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import { USER_ROLE_ENUM } from '@components/user/user.constant';
 import { LoggedInRequest } from '@core/types/logged-in-request.type';
@@ -27,6 +28,7 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
     storageService: ThrottlerStorage,
     reflector: Reflector,
     private readonly i18n: I18nService,
+    private readonly configService: ConfigService,
   ) {
     super(options, storageService, reflector);
   }
@@ -38,6 +40,12 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    // Skip throttling in development environment
+    const nodeEnv = this.configService.get<string>('app.nodeEnv');
+    if (nodeEnv === 'development') {
+      return true;
+    }
+
     const roleBasedOptions =
       this.reflector.getAllAndOverride<ThrottleByRoleOptions>(
         THROTTLE_BY_ROLE_KEY,
