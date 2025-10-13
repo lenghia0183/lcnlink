@@ -51,7 +51,14 @@ export class LinkService {
 
     const ip = Array.isArray(ipRaw) ? ipRaw[0] : ipRaw;
     const userAgent = req.get('user-agent') || '';
-    const referrer = req.get('referer') || '';
+
+    // Get referrer from HTTP header
+    let referrer = req.get('referer') || '';
+
+    const urlParams = req.query;
+    if (urlParams.src) {
+      referrer = urlParams.src as string;
+    }
 
     let country = 'Unknown';
     let countryCode = '';
