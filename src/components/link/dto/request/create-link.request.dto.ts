@@ -24,4 +24,8 @@ export class CreateLinkRequestDto extends BaseDto<CreateLinkRequestDto> {
   @IsOptional()
   @IsDateString()
   expireAt?: string;
+
+  @IsOptional()
+  @IsString()
+  referrer?: string;
 }

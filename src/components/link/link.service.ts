@@ -125,7 +125,12 @@ export class LinkService {
     const appConfig = this.configService.get<AppConfig>('app');
     const backendUrl =
       (appConfig && appConfig.backendUrl) || 'http://localhost:3001';
-    const shortedUrl = `${backendUrl.replace(/\/$/, '')}/r/${alias}`;
+
+    let shortedUrl = `${backendUrl.replace(/\/$/, '')}/r/${alias}`;
+
+    if (data.referrer) {
+      shortedUrl += `?src=${encodeURIComponent(data.referrer)}`;
+    }
 
     // Hash password if provided
     let hashedPassword: string | undefined = undefined;
