@@ -15,6 +15,7 @@ import { RequestLoggingMiddleware } from '@core/middlewares/request-logging.midd
 import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from '@components/user/user.module';
 import { LinkModule } from '@components/link/link.module';
+import { ReferrerModule } from '@components/referrer/referrer.module';
 import { RepositoryModule } from '@database/repositories/repository.module';
 
 import { AdminInitService } from '@core/services/admin-init.service';
@@ -49,6 +50,7 @@ import { CustomThrottlerModule } from '@core/modules/throttler/throttler.module'
     RepositoryModule,
     UserModule,
     LinkModule,
+    ReferrerModule,
     AuthModule,
     S3Module,
     I18nModule,

@@ -9,6 +9,7 @@ import {
 } from '@components/user/user.constant';
 import { BOOLEAN_ENUM } from '@constant/app.enum';
 import { Link } from './link.entity';
+import { Referrer } from './referrer.entity';
 
 @Entity('users')
 export class User extends BaseModel {
@@ -83,6 +84,9 @@ export class User extends BaseModel {
 
   @OneToMany(() => Link, (link) => link.user)
   links: Link[];
+
+  @OneToMany(() => Referrer, (referrer) => referrer.user)
+  referrers: Referrer[];
 
   @BeforeInsert()
   @BeforeUpdate()
