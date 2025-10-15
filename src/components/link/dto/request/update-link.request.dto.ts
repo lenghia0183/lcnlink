@@ -25,4 +25,8 @@ export class UpdateLinkRequestDto extends BaseDto<UpdateLinkRequestDto> {
   @IsOptional()
   @IsDateString()
   expireAt?: string;
+
+  @IsOptional()
+  @IsString()
+  referrerId?: string;
 }

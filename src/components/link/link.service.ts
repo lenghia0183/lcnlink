@@ -28,6 +28,7 @@ import {
 } from './dto/response/get-link-statistic-overview.response.dto';
 import { AnalyticsQueryDto } from './dto/request/analytics.query.dto';
 import geoip from 'geoip-lite';
+import { ReferrerRepository } from '@database/repositories';
 
 @Injectable()
 export class LinkService {
@@ -35,6 +36,7 @@ export class LinkService {
     private readonly i18n: I18nService,
     private readonly linkRepository: LinkRepository,
     private readonly clickRepository: ClickRepository,
+    private readonly referrerRepository: ReferrerRepository,
     private readonly configService: ConfigService,
   ) {}
 
@@ -122,14 +124,27 @@ export class LinkService {
       alias = this.generateAlias(10);
     }
 
+    if (data.referrerId) {
+      const referrer = await this.referrerRepository.findById(data.referrerId);
+      if (!referrer) {
+        throw new BusinessException(
+          await this.i18n.translate(I18nErrorKeys.BAD_REQUEST),
+          ResponseCodeEnum.BAD_REQUEST,
+        );
+      }
+    }
+
     const appConfig = this.configService.get<AppConfig>('app');
     const backendUrl =
       (appConfig && appConfig.backendUrl) || 'http://localhost:3001';
 
     let shortedUrl = `${backendUrl.replace(/\/$/, '')}/r/${alias}`;
 
-    if (data.referrer) {
-      shortedUrl += `?src=${encodeURIComponent(data.referrer)}`;
+    if (data.referrerId) {
+      const referrer = await this.referrerRepository.findById(data.referrerId);
+      if (referrer) {
+        shortedUrl += `?src=${encodeURIComponent(referrer.referrer)}`;
+      }
     }
 
     // Hash password if provided
@@ -148,6 +163,7 @@ export class LinkService {
       maxClicks: data.maxClicks,
       expireAt: data.expireAt ? new Date(String(data.expireAt)) : undefined,
       isUsePassword: !!hashedPassword,
+      referrerId: data.referrerId || null,
     });
 
     const response = plainToInstance(LinkResponseDto, saved, {
@@ -178,6 +194,18 @@ export class LinkService {
       );
     }
 
+    if (payload.referrerId) {
+      const referrer = await this.referrerRepository.findById(
+        payload.referrerId,
+      );
+      if (!referrer) {
+        throw new BusinessException(
+          await this.i18n.translate(I18nErrorKeys.BAD_REQUEST),
+          ResponseCodeEnum.BAD_REQUEST,
+        );
+      }
+    }
+
     if (payload.alias && payload.alias !== link.alias) {
       const exists = await this.linkRepository.findByAlias(payload.alias);
       if (exists && exists.id !== link.id) {
@@ -191,7 +219,24 @@ export class LinkService {
       const frontendUrl =
         (appConfig && appConfig.frontendUrl) || 'http://localhost:3000';
 
-      const newShortedUrl = `${frontendUrl.replace(/\/$/, '')}/r/${payload.alias}`;
+      let newShortedUrl = `${frontendUrl.replace(/\/$/, '')}/r/${payload.alias}`;
+
+      if (payload.referrerId) {
+        const referrer = await this.referrerRepository.findById(
+          payload.referrerId,
+        );
+        if (referrer) {
+          newShortedUrl += `?src=${encodeURIComponent(referrer.referrer)}`;
+        }
+      } else if (link.referrerId) {
+        const referrer = await this.referrerRepository.findById(
+          link.referrerId,
+        );
+        if (referrer) {
+          newShortedUrl += `?src=${encodeURIComponent(referrer.referrer)}`;
+        }
+      }
+
       link.shortedUrl = newShortedUrl;
     }
 
@@ -201,7 +246,11 @@ export class LinkService {
       payload.password = await bcrypt.hash(payload.password, salt);
     }
 
-    Object.assign(link, { ...payload, isUsePassword: !!payload.password });
+    Object.assign(link, {
+      ...payload,
+      isUsePassword: !!payload.password,
+      referrerId: payload.referrerId || link.referrerId,
+    });
 
     const saved = await this.linkRepository.save(link);
 
@@ -400,6 +449,8 @@ export class LinkService {
       isExport,
       userId,
     });
+
+    console.log('data', data);
 
     const response = plainToInstance(LinkResponseDto, data, {
       excludeExtraneousValues: true,

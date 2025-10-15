@@ -3,6 +3,7 @@ import { BaseRepositoryInterface } from '../../../core/repository/base-repositor
 
 export interface ReferrerRepositoryInterface
   extends BaseRepositoryInterface<Referrer> {
+  findById(id: string): Promise<Referrer | null>;
   findByReferrer(referrer: string): Promise<Referrer | null>;
   findByUser(
     userId: string,

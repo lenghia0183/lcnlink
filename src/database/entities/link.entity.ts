@@ -11,6 +11,7 @@ import { User } from './user.entity';
 import { Click } from './click.entity';
 import { BaseModel } from '@core/schema/base.model';
 import { LINK_STATUS } from '@components/link/link.constant';
+import { Referrer } from './referrer.entity';
 
 @Entity('links')
 export class Link extends BaseModel {
@@ -56,6 +57,13 @@ export class Link extends BaseModel {
 
   @OneToMany(() => Click, (click) => click.link)
   clicks: Click[];
+
+  @Column({ type: 'varchar', nullable: true })
+  referrerId: string | null;
+
+  @ManyToOne(() => Referrer, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'referrerId' })
+  referrer: Referrer;
 
   @BeforeInsert()
   @BeforeUpdate()

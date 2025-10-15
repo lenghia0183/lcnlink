@@ -27,5 +27,5 @@ export class CreateLinkRequestDto extends BaseDto<CreateLinkRequestDto> {
 
   @IsOptional()
   @IsString()
-  referrer?: string;
+  referrerId?: string;
 }

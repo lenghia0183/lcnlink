@@ -1,4 +1,4 @@
-import { Expose } from 'class-transformer';
+import { Expose, Transform } from 'class-transformer';
 
 export class LinkResponseDto {
   @Expose()
@@ -36,4 +36,23 @@ export class LinkResponseDto {
 
   @Expose()
   status: number;
+
+  @Expose()
+  referrerId: string | null;
+
+  // ✅ Transform để giữ lại dữ liệu referrer nếu có
+  @Expose()
+  @Transform(({ obj }) => {
+    if (!obj.referrer) return null;
+    return {
+      id: obj.referrer.id,
+      referrer: obj.referrer.referrer,
+      alias: obj.referrer.alias,
+    };
+  })
+  referrer: {
+    id: string;
+    referrer: string;
+    alias: string;
+  } | null;
 }

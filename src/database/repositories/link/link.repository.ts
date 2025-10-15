@@ -21,7 +21,11 @@ export class LinkRepository
   }
 
   async findByAlias(alias: string): Promise<Link | null> {
-    return this.findOne({ where: { alias } });
+    return this.createQueryBuilder('link')
+      .leftJoinAndSelect('link.referrer', 'referrer')
+      .where('link.alias = :alias', { alias })
+      .andWhere('link.deletedAt IS NULL')
+      .getOne();
   }
 
   async findByUser(
@@ -92,6 +96,8 @@ export class LinkRepository
 
     const queryBuilder: SelectQueryBuilder<Link> =
       this.createQueryBuilder('link');
+
+    queryBuilder.leftJoinAndSelect('link.referrer', 'referrer');
 
     queryBuilder.where('link.deletedAt IS NULL');
     if (params.userId) {
@@ -179,7 +185,7 @@ export class LinkRepository
     }
 
     const [links, total] = await queryBuilder.getManyAndCount();
-
+    console.log('links', links);
     for (const link of links) {
       let newStatus: LINK_STATUS | null = null;
 
@@ -285,5 +291,13 @@ export class LinkRepository
       totalSuccessfulAccess: Number(result?.totalSuccessfulAccess) || 0,
       returningVisitorRate: Number(returningVisitorRate.toFixed(2)),
     };
+  }
+
+  async findById(id: string): Promise<Link | null> {
+    return this.createQueryBuilder('link')
+      .leftJoinAndSelect('link.referrer', 'referrer')
+      .where('link.id = :id', { id })
+      .andWhere('link.deletedAt IS NULL')
+      .getOne();
   }
 }

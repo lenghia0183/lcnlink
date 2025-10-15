@@ -17,6 +17,10 @@ export class ReferrerRepository
     super(referrerRepository);
   }
 
+  async findById(id: string): Promise<Referrer | null> {
+    return this.findOne({ where: { id } });
+  }
+
   async findByReferrer(referrer: string): Promise<Referrer | null> {
     return this.findOne({ where: { referrer } });
   }
