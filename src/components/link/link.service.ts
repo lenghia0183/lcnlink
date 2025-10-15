@@ -450,8 +450,6 @@ export class LinkService {
       userId,
     });
 
-    console.log('data', data);
-
     const response = plainToInstance(LinkResponseDto, data, {
       excludeExtraneousValues: true,
     });
