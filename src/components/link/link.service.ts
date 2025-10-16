@@ -29,6 +29,7 @@ import {
 import { AnalyticsQueryDto } from './dto/request/analytics.query.dto';
 import geoip from 'geoip-lite';
 import { ReferrerRepository } from '@database/repositories';
+import { Referrer } from '@database/entities/referrer.entity';
 
 @Injectable()
 export class LinkService {
@@ -193,7 +194,7 @@ export class LinkService {
     }
 
     const appConfig = this.configService.get<AppConfig>('app');
-    const frontendUrl = (
+    const backendUrl = (
       appConfig?.backendUrl || 'http://localhost:3001'
     ).replace(/\/$/, '');
 
@@ -208,34 +209,37 @@ export class LinkService {
       link.alias = payload.alias;
     }
 
+    // Cache referrer lookup result to avoid multiple database calls
+    let referrer: Referrer | null = null;
     if (payload.referrerId && payload.referrerId !== link.referrerId) {
-      const referrer = await this.referrerRepository.findById(
-        payload.referrerId,
-      );
+      referrer = await this.referrerRepository.findById(payload.referrerId);
       if (referrer) {
         link.referrerId = payload.referrerId;
-        link.shortedUrl = `${frontendUrl}/r/${link.alias}?src=${encodeURIComponent(referrer.referrer)}`;
+        link.shortedUrl = `${backendUrl}/r/${link.alias}?src=${encodeURIComponent(referrer.referrer)}`;
       } else {
         link.referrerId = null;
-        link.shortedUrl = `${frontendUrl}/r/${link.alias}`;
+        link.shortedUrl = `${backendUrl}/r/${link.alias}`;
       }
-    } else {
-      const referrer = link.referrerId
-        ? await this.referrerRepository.findById(link.referrerId)
-        : null;
+    } else if (link.referrerId) {
+      referrer = await this.referrerRepository.findById(link.referrerId);
       link.shortedUrl = referrer
-        ? `${frontendUrl}/r/${link.alias}?src=${encodeURIComponent(referrer.referrer)}`
-        : `${frontendUrl}/r/${link.alias}`;
+        ? `${backendUrl}/r/${link.alias}?src=${encodeURIComponent(referrer.referrer)}`
+        : `${backendUrl}/r/${link.alias}`;
+    } else {
+      link.shortedUrl = `${backendUrl}/r/${link.alias}`;
     }
 
+    // Improve password handling to avoid modifying request payload
+    let hashedPassword: string | undefined = link.password;
     if (payload.password) {
       const salt = await bcrypt.genSalt(10);
-      payload.password = await bcrypt.hash(payload.password, salt);
+      hashedPassword = await bcrypt.hash(payload.password, salt);
     }
 
     Object.assign(link, {
       ...payload,
-      isUsePassword: !!payload.password,
+      password: hashedPassword,
+      isUsePassword: !!hashedPassword,
     });
 
     const saved = await this.linkRepository.save(link);
@@ -400,7 +404,6 @@ export class LinkService {
       );
     }
 
-    // Verify password
     const isPasswordValid = await bcrypt.compare(
       passwordData.password,
       link.password,
@@ -413,7 +416,6 @@ export class LinkService {
       );
     }
 
-    // Password is correct, increment successful access count
     await this.linkRepository.incrementSuccessfulAccessCount(link.id, 1);
 
     const response = {
