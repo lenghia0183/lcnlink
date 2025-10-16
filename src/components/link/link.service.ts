@@ -116,7 +116,9 @@ export class LinkService {
       if (exists) {
         return new ResponseBuilder()
           .withCode(ResponseCodeEnum.BAD_REQUEST)
-          .withMessage('Alias already exists')
+          .withMessage(
+            await this.i18n.translate(I18nErrorKeys.LINK_ALIAS_EXISTS),
+          )
           .build();
       }
     } else {
@@ -127,7 +129,7 @@ export class LinkService {
       const referrer = await this.referrerRepository.findById(data.referrerId);
       if (!referrer) {
         throw new BusinessException(
-          await this.i18n.translate(I18nErrorKeys.BAD_REQUEST),
+          await this.i18n.translate(I18nErrorKeys.LINK_REFERRER_NOT_FOUND),
           ResponseCodeEnum.BAD_REQUEST,
         );
       }
@@ -171,7 +173,9 @@ export class LinkService {
 
     return new ResponseBuilder(response)
       .withCode(ResponseCodeEnum.CREATED)
-      .withMessage(this.i18n.translate(I18nMessageKeys.LINK_CREATE_SUCCESS))
+      .withMessage(
+        await this.i18n.translate(I18nMessageKeys.LINK_CREATE_SUCCESS),
+      )
       .build();
   }
 
@@ -181,14 +185,14 @@ export class LinkService {
     const link = await this.linkRepository.findOne({ where: { id } });
     if (!link) {
       throw new BusinessException(
-        await this.i18n.translate(I18nErrorKeys.NOT_FOUND),
+        await this.i18n.translate(I18nErrorKeys.LINK_NOT_FOUND),
         ResponseCodeEnum.NOT_FOUND,
       );
     }
 
     if (link.userId !== userId) {
       throw new BusinessException(
-        await this.i18n.translate(I18nErrorKeys.FORBIDDEN),
+        await this.i18n.translate(I18nErrorKeys.LINK_PERMISSION_DENIED),
         ResponseCodeEnum.FORBIDDEN,
       );
     }
@@ -203,7 +207,9 @@ export class LinkService {
       if (exists && exists.id !== link.id) {
         return new ResponseBuilder()
           .withCode(ResponseCodeEnum.BAD_REQUEST)
-          .withMessage('Alias already exists')
+          .withMessage(
+            await this.i18n.translate(I18nErrorKeys.LINK_ALIAS_EXISTS),
+          )
           .build();
       }
       link.alias = payload.alias;
@@ -263,14 +269,14 @@ export class LinkService {
     const link = await this.linkRepository.findById(id);
     if (!link) {
       throw new BusinessException(
-        await this.i18n.translate(I18nErrorKeys.NOT_FOUND),
+        await this.i18n.translate(I18nErrorKeys.LINK_NOT_FOUND),
         ResponseCodeEnum.NOT_FOUND,
       );
     }
 
     if (link.userId !== userId) {
       throw new BusinessException(
-        await this.i18n.translate(I18nErrorKeys.FORBIDDEN),
+        await this.i18n.translate(I18nErrorKeys.LINK_PERMISSION_DENIED),
         ResponseCodeEnum.FORBIDDEN,
       );
     }
@@ -279,7 +285,9 @@ export class LinkService {
 
     return new ResponseBuilder()
       .withCode(ResponseCodeEnum.SUCCESS)
-      .withMessage(this.i18n.translate(I18nMessageKeys.LINK_DELETE_SUCCESS))
+      .withMessage(
+        await this.i18n.translate(I18nMessageKeys.LINK_DELETE_SUCCESS),
+      )
       .build();
   }
 
@@ -287,14 +295,14 @@ export class LinkService {
     const link = await this.linkRepository.findById(id);
     if (!link) {
       throw new BusinessException(
-        await this.i18n.translate(I18nErrorKeys.NOT_FOUND),
+        await this.i18n.translate(I18nErrorKeys.LINK_NOT_FOUND),
         ResponseCodeEnum.NOT_FOUND,
       );
     }
 
     if (link.userId !== userId) {
       throw new BusinessException(
-        await this.i18n.translate(I18nErrorKeys.FORBIDDEN),
+        await this.i18n.translate(I18nErrorKeys.LINK_PERMISSION_DENIED),
         ResponseCodeEnum.FORBIDDEN,
       );
     }
@@ -311,24 +319,18 @@ export class LinkService {
     ).build();
   }
 
-  async getByAlias(alias: string) {
-    const link = await this.linkRepository.findByAlias(alias);
-    if (!link) return null;
-    return link;
-  }
-
   async toggleActiveLink(id: string, userId: string) {
     const link = await this.linkRepository.findById(id);
     if (!link) {
       throw new BusinessException(
-        await this.i18n.translate(I18nErrorKeys.NOT_FOUND),
+        await this.i18n.translate(I18nErrorKeys.LINK_NOT_FOUND),
         ResponseCodeEnum.NOT_FOUND,
       );
     }
 
     if (link.userId !== userId) {
       throw new BusinessException(
-        await this.i18n.translate(I18nErrorKeys.FORBIDDEN),
+        await this.i18n.translate(I18nErrorKeys.LINK_PERMISSION_DENIED),
         ResponseCodeEnum.FORBIDDEN,
       );
     }
@@ -356,6 +358,12 @@ export class LinkService {
         this.i18n,
       )
     ).build();
+  }
+
+  async getByAlias(alias: string) {
+    const link = await this.linkRepository.findByAlias(alias);
+    if (!link) return null;
+    return link;
   }
 
   async redirect(alias: string, req: Request) {
@@ -396,7 +404,7 @@ export class LinkService {
     const link = await this.getByAlias(alias);
     if (!link) {
       throw new BusinessException(
-        await this.i18n.translate(I18nErrorKeys.NOT_FOUND),
+        await this.i18n.translate(I18nErrorKeys.LINK_NOT_FOUND),
         ResponseCodeEnum.NOT_FOUND,
       );
     }

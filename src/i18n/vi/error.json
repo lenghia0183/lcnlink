@@ -42,5 +42,12 @@
   "TOO_MANY_FILES": "Số lượng file vượt quá giới hạn cho phép ({maxFiles} files)",
   "GET_PRE_URL_FAILED": "Lấy url thất bại",
   "LINK_PASSWORD_INVALID": "Sai mật khẩu",
-  "TOO_MANY_ATTEMPTS": "Đã vượt quá số lần thử tối đa, vui lòng thử lại sau"
+  "TOO_MANY_ATTEMPTS": "Đã vượt quá số lần thử tối đa, vui lòng thử lại sau",
+  "LINK_ALIAS_EXISTS": "Đường dẫn rút gọn này đã được sử dụng. Vui lòng chọn đường dẫn khác",
+  "LINK_NOT_FOUND": "Không tìm thấy đường dẫn yêu cầu",
+  "LINK_EXPIRED": "Đường dẫn này đã hết hạn và không còn khả dụng",
+  "LINK_INACTIVE": "Đường dẫn này hiện đang không hoạt động",
+  "LINK_MAX_CLICKS_REACHED": "Đường dẫn này đã đạt đến số lần truy cập tối đa",
+  "LINK_PERMISSION_DENIED": "Bạn không có quyền truy cập đường dẫn này",
+  "LINK_REFERRER_NOT_FOUND": "Không tìm thấy nguồn giới thiệu được chỉ định"
 }

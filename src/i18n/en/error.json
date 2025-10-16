@@ -41,5 +41,12 @@
   "INVALID_FILE_NAME": "File name contains invalid characters",
   "TOO_MANY_FILES": "Number of files exceeds the allowed limit ({maxFiles} files)",
   "GET_PRE_URL_FAILED": "Get url failed",
-  "LINK_PASSWORD_INVALID": "Incorrect password"
+  "LINK_PASSWORD_INVALID": "Incorrect password",
+  "LINK_ALIAS_EXISTS": "This alias is already in use. Please choose a different alias",
+  "LINK_NOT_FOUND": "The requested link could not be found",
+  "LINK_EXPIRED": "This link has expired and is no longer available",
+  "LINK_INACTIVE": "This link is currently inactive",
+  "LINK_MAX_CLICKS_REACHED": "This link has reached its maximum number of clicks",
+  "LINK_PERMISSION_DENIED": "You don't have permission to access this link",
+  "LINK_REFERRER_NOT_FOUND": "The specified referrer could not be found"
 }
