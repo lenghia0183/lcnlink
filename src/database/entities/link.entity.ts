@@ -41,7 +41,7 @@ export class Link extends BaseModel {
   expireAt: Date;
 
   @Column({ type: 'int', nullable: true })
-  maxClicks: number;
+  maxClicks: number | null;
 
   @Column({ type: 'int', default: 0 })
   clicksCount: number;

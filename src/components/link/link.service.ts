@@ -229,6 +229,10 @@ export class LinkService {
       link.shortedUrl = `${backendUrl}/r/${link.alias}`;
     }
 
+    if (payload.maxClicks === null || payload.maxClicks === undefined) {
+      link.maxClicks = null;
+    }
+
     // Improve password handling to avoid modifying request payload
     let hashedPassword: string | undefined = link.password;
     if (payload.password) {
@@ -363,7 +367,7 @@ export class LinkService {
     const isValid =
       link.status === LINK_STATUS.ACTIVE &&
       (!link.expireAt || new Date() <= link.expireAt) &&
-      (!link.maxClicks || link.clicksCount < link.maxClicks);
+      (link.maxClicks == null || link.clicksCount < link.maxClicks);
 
     if (!isValid) return null;
 
