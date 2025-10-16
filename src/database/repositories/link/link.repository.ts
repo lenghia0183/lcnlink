@@ -185,7 +185,7 @@ export class LinkRepository
     }
 
     const [links, total] = await queryBuilder.getManyAndCount();
-    console.log('links', links);
+
     for (const link of links) {
       let newStatus: LINK_STATUS | null = null;
 

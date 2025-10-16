@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { LinkRepository, ClickRepository } from '@database/repositories';
 import { ConfigService } from '@nestjs/config';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as GenerateUUID } from 'uuid';
 import { CreateLinkRequestDto } from './dto/request/create-link.request.dto';
 import { UpdateLinkRequestDto } from './dto/request/update-link.request.dto';
 import { GetListLinkRequestDto } from './dto/request/get-list-link.request.dto';
@@ -41,7 +41,7 @@ export class LinkService {
   ) {}
 
   private generateAlias(length = 10) {
-    return uuidv4().replace(/-/g, '').slice(0, length);
+    return GenerateUUID().replace(/-/g, '').slice(0, length);
   }
 
   private getClientInfo(req: Request) {
@@ -54,7 +54,6 @@ export class LinkService {
     const ip = Array.isArray(ipRaw) ? ipRaw[0] : ipRaw;
     const userAgent = req.get('user-agent') || '';
 
-    // Get referrer from HTTP header
     let referrer = req.get('referer') || '';
 
     const urlParams = req.query;
@@ -73,7 +72,6 @@ export class LinkService {
       }
     }
 
-    // Simple device/browser detection from user-agent
     let device = 'Unknown';
     let browser = 'Unknown';
 
@@ -179,7 +177,7 @@ export class LinkService {
   async updateLink(id: string, request: UpdateLinkRequestDto, userId: string) {
     const payload = getPayloadFromRequest(request);
 
-    const link = await this.linkRepository.findById(id);
+    const link = await this.linkRepository.findOne({ where: { id } });
     if (!link) {
       throw new BusinessException(
         await this.i18n.translate(I18nErrorKeys.NOT_FOUND),
@@ -194,17 +192,10 @@ export class LinkService {
       );
     }
 
-    if (payload.referrerId) {
-      const referrer = await this.referrerRepository.findById(
-        payload.referrerId,
-      );
-      if (!referrer) {
-        throw new BusinessException(
-          await this.i18n.translate(I18nErrorKeys.BAD_REQUEST),
-          ResponseCodeEnum.BAD_REQUEST,
-        );
-      }
-    }
+    const appConfig = this.configService.get<AppConfig>('app');
+    const frontendUrl = (
+      appConfig?.backendUrl || 'http://localhost:3001'
+    ).replace(/\/$/, '');
 
     if (payload.alias && payload.alias !== link.alias) {
       const exists = await this.linkRepository.findByAlias(payload.alias);
@@ -214,33 +205,29 @@ export class LinkService {
           .withMessage('Alias already exists')
           .build();
       }
-
-      const appConfig = this.configService.get<AppConfig>('app');
-      const frontendUrl =
-        (appConfig && appConfig.frontendUrl) || 'http://localhost:3000';
-
-      let newShortedUrl = `${frontendUrl.replace(/\/$/, '')}/r/${payload.alias}`;
-
-      if (payload.referrerId) {
-        const referrer = await this.referrerRepository.findById(
-          payload.referrerId,
-        );
-        if (referrer) {
-          newShortedUrl += `?src=${encodeURIComponent(referrer.referrer)}`;
-        }
-      } else if (link.referrerId) {
-        const referrer = await this.referrerRepository.findById(
-          link.referrerId,
-        );
-        if (referrer) {
-          newShortedUrl += `?src=${encodeURIComponent(referrer.referrer)}`;
-        }
-      }
-
-      link.shortedUrl = newShortedUrl;
+      link.alias = payload.alias;
     }
 
-    // Hash password if provided
+    if (payload.referrerId && payload.referrerId !== link.referrerId) {
+      const referrer = await this.referrerRepository.findById(
+        payload.referrerId,
+      );
+      if (referrer) {
+        link.referrerId = payload.referrerId;
+        link.shortedUrl = `${frontendUrl}/r/${link.alias}?src=${encodeURIComponent(referrer.referrer)}`;
+      } else {
+        link.referrerId = null;
+        link.shortedUrl = `${frontendUrl}/r/${link.alias}`;
+      }
+    } else {
+      const referrer = link.referrerId
+        ? await this.referrerRepository.findById(link.referrerId)
+        : null;
+      link.shortedUrl = referrer
+        ? `${frontendUrl}/r/${link.alias}?src=${encodeURIComponent(referrer.referrer)}`
+        : `${frontendUrl}/r/${link.alias}`;
+    }
+
     if (payload.password) {
       const salt = await bcrypt.genSalt(10);
       payload.password = await bcrypt.hash(payload.password, salt);
@@ -249,18 +236,18 @@ export class LinkService {
     Object.assign(link, {
       ...payload,
       isUsePassword: !!payload.password,
-      referrerId: payload.referrerId || link.referrerId,
     });
 
     const saved = await this.linkRepository.save(link);
-
     const response = plainToInstance(LinkResponseDto, saved, {
       excludeExtraneousValues: true,
     });
 
     return new ResponseBuilder(response)
       .withCode(ResponseCodeEnum.SUCCESS)
-      .withMessage(this.i18n.translate(I18nMessageKeys.LINK_UPDATE_SUCCESS))
+      .withMessage(
+        await this.i18n.translate(I18nMessageKeys.LINK_UPDATE_SUCCESS),
+      )
       .build();
   }
 
