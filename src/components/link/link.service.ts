@@ -239,9 +239,36 @@ export class LinkService {
       link.maxClicks = null;
     }
 
-    // Improve password handling to avoid modifying request payload
+    // Handle password update with validation
     let hashedPassword: string | undefined = link.password;
-    if (payload.password) {
+
+    if (
+      'currentPassword' in payload &&
+      payload.currentPassword !== undefined &&
+      'newPassword' in payload &&
+      payload.newPassword !== undefined
+    ) {
+      if (link.password) {
+        const isCurrentPasswordValid = await bcrypt.compare(
+          payload.currentPassword,
+          link.password,
+        );
+
+        if (!isCurrentPasswordValid) {
+          throw new BusinessException(
+            await this.i18n.translate(I18nErrorKeys.LINK_PASSWORD_INVALID),
+            ResponseCodeEnum.UNAUTHORIZED,
+          );
+        }
+      }
+
+      if (payload.newPassword) {
+        const salt = await bcrypt.genSalt(10);
+        hashedPassword = await bcrypt.hash(payload.newPassword, salt);
+      } else {
+        hashedPassword = undefined;
+      }
+    } else if (payload.password) {
       const salt = await bcrypt.genSalt(10);
       hashedPassword = await bcrypt.hash(payload.password, salt);
     }
@@ -251,6 +278,9 @@ export class LinkService {
       password: hashedPassword,
       isUsePassword: !!hashedPassword,
     });
+
+    delete (link as { currentPassword?: string }).currentPassword;
+    delete (link as { newPassword?: string }).newPassword;
 
     const saved = await this.linkRepository.save(link);
     const response = plainToInstance(LinkResponseDto, saved, {

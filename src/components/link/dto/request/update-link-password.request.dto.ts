@@ -1,7 +1,7 @@
 import { BaseDto } from '@core/dto/base.request.dto';
 import { IsString, IsOptional, IsInt, IsDateString } from 'class-validator';
 
-export class UpdateLinkRequestDto extends BaseDto<UpdateLinkRequestDto> {
+export class UpdateLinkPasswordRequestDto extends BaseDto<UpdateLinkPasswordRequestDto> {
   @IsOptional()
   @IsString()
   originalUrl?: string;
@@ -13,10 +13,6 @@ export class UpdateLinkRequestDto extends BaseDto<UpdateLinkRequestDto> {
   @IsOptional()
   @IsString()
   description?: string;
-
-  @IsOptional()
-  @IsString()
-  password?: string;
 
   @IsOptional()
   @IsString()
