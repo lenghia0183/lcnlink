@@ -16,10 +16,6 @@ export class UpdateLinkRequestDto extends BaseDto<UpdateLinkRequestDto> {
 
   @IsOptional()
   @IsString()
-  password?: string;
-
-  @IsOptional()
-  @IsString()
   currentPassword?: string;
 
   @IsOptional()

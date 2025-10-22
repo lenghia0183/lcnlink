@@ -215,7 +215,6 @@ export class LinkService {
       link.alias = payload.alias;
     }
 
-    // Cache referrer lookup result to avoid multiple database calls
     let referrer: Referrer | null = null;
     if (payload.referrerId && payload.referrerId !== link.referrerId) {
       referrer = await this.referrerRepository.findById(payload.referrerId);
@@ -223,8 +222,12 @@ export class LinkService {
         link.referrerId = payload.referrerId;
         link.shortedUrl = `${backendUrl}/r/${link.alias}?src=${encodeURIComponent(referrer.referrer)}`;
       } else {
-        link.referrerId = null;
-        link.shortedUrl = `${backendUrl}/r/${link.alias}`;
+        return new ResponseBuilder()
+          .withCode(ResponseCodeEnum.BAD_REQUEST)
+          .withMessage(
+            await this.i18n.translate(I18nErrorKeys.LINK_REFERRER_NOT_FOUND),
+          )
+          .build();
       }
     } else if (link.referrerId) {
       referrer = await this.referrerRepository.findById(link.referrerId);
@@ -239,7 +242,6 @@ export class LinkService {
       link.maxClicks = null;
     }
 
-    // Handle password update with validation
     let hashedPassword: string | undefined = link.password;
 
     if (
@@ -255,10 +257,12 @@ export class LinkService {
         );
 
         if (!isCurrentPasswordValid) {
-          throw new BusinessException(
-            await this.i18n.translate(I18nErrorKeys.LINK_PASSWORD_INVALID),
-            ResponseCodeEnum.UNAUTHORIZED,
-          );
+          return new ResponseBuilder()
+            .withCode(ResponseCodeEnum.BAD_REQUEST)
+            .withMessage(
+              await this.i18n.translate(I18nErrorKeys.OLD_PASSWORD_INVALID),
+            )
+            .build();
         }
       }
 
@@ -268,9 +272,9 @@ export class LinkService {
       } else {
         hashedPassword = undefined;
       }
-    } else if (payload.password) {
+    } else if (payload.currentPassword) {
       const salt = await bcrypt.genSalt(10);
-      hashedPassword = await bcrypt.hash(payload.password, salt);
+      hashedPassword = await bcrypt.hash(payload.currentPassword, salt);
     }
 
     Object.assign(link, {

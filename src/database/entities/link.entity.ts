@@ -72,7 +72,7 @@ export class Link extends BaseModel {
       this.status = LINK_STATUS.EXPIRED;
     } else if (this.maxClicks && this.clicksCount >= this.maxClicks) {
       this.status = LINK_STATUS.LIMIT_REACHED;
-    } else if (!this.status) {
+    } else {
       this.status = LINK_STATUS.ACTIVE;
     }
   }
