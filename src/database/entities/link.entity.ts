@@ -12,6 +12,7 @@ import { Click } from './click.entity';
 import { BaseModel } from '@core/schema/base.model';
 import { LINK_STATUS } from '@components/link/link.constant';
 import { Referrer } from './referrer.entity';
+import * as bcrypt from 'bcrypt';
 
 @Entity('links')
 export class Link extends BaseModel {
@@ -38,7 +39,7 @@ export class Link extends BaseModel {
   password: string;
 
   @Column({ type: 'timestamp', nullable: true })
-  expireAt: Date;
+  expireAt: Date | null;
 
   @Column({ type: 'int', nullable: true })
   maxClicks: number | null;
@@ -67,6 +68,18 @@ export class Link extends BaseModel {
 
   @BeforeInsert()
   @BeforeUpdate()
+  async hashPasswordAndSetStatus() {
+    if (this.password && !this.password.startsWith('$2b$')) {
+      const salt = await bcrypt.genSalt(10);
+      this.password = await bcrypt.hash(this.password, salt);
+      this.isUsePassword = true;
+    } else if (!this.password) {
+      this.isUsePassword = false;
+    }
+
+    this.updateStatus();
+  }
+
   updateStatus() {
     if (this.expireAt && new Date(this.expireAt) < new Date()) {
       this.status = LINK_STATUS.EXPIRED;

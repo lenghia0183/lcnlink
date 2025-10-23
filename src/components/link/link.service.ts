@@ -148,22 +148,15 @@ export class LinkService {
       }
     }
 
-    // Hash password if provided
-    let hashedPassword: string | undefined = undefined;
-    if (data.password) {
-      const salt = await bcrypt.genSalt(10);
-      hashedPassword = await bcrypt.hash(data.password, salt);
-    }
-
     const saved = await this.linkRepository.createLink({
       originalUrl: data.originalUrl,
       alias,
       shortedUrl,
-      password: hashedPassword,
+      password: data.password || '',
       userId: userId || null,
       maxClicks: data.maxClicks,
       expireAt: data.expireAt ? new Date(String(data.expireAt)) : undefined,
-      isUsePassword: !!hashedPassword,
+      isUsePassword: !!data.password,
       referrerId: data.referrerId || null,
     });
 
@@ -242,7 +235,7 @@ export class LinkService {
       link.maxClicks = null;
     }
 
-    let hashedPassword: string | undefined = link.password;
+    let password: string | undefined = link.password;
 
     if (
       'currentPassword' in payload &&
@@ -266,21 +259,15 @@ export class LinkService {
         }
       }
 
-      if (payload.newPassword) {
-        const salt = await bcrypt.genSalt(10);
-        hashedPassword = await bcrypt.hash(payload.newPassword, salt);
-      } else {
-        hashedPassword = undefined;
-      }
+      password = payload.newPassword;
     } else if (payload.currentPassword) {
-      const salt = await bcrypt.genSalt(10);
-      hashedPassword = await bcrypt.hash(payload.currentPassword, salt);
+      password = payload.currentPassword;
     }
 
     Object.assign(link, {
       ...payload,
-      password: hashedPassword,
-      isUsePassword: !!hashedPassword,
+      password: password,
+      isUsePassword: password ? true : false,
     });
 
     delete (link as { currentPassword?: string }).currentPassword;
