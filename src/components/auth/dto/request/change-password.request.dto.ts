@@ -12,4 +12,14 @@ export class ChangePasswordRequestDto extends BaseDto<ChangePasswordRequestDto> 
   @IsNotEmpty()
   @MinLength(6)
   newPassword: string;
+
+  @ApiProperty({
+    description: 'Mật khẩu cũ cho tài khoản',
+    example: 'oldSecurePassword123',
+    minLength: 6,
+  })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(6)
+  currentPassword: string;
 }

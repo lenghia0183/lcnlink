@@ -805,16 +805,17 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new BusinessException(
-        await this.i18n.translate(I18nErrorKeys.RESET_TOKEN_INVALID),
-        ResponseCodeEnum.BAD_REQUEST,
-      );
+      return await new ResponseBuilder()
+        .withCode(ResponseCodeEnum.BAD_REQUEST)
+        .withMessage(
+          await this.i18n.translate(I18nErrorKeys.RESET_TOKEN_INVALID),
+        )
+        .build();
     }
 
-    await user.setAndHashPassword(data.newPassword);
+    user.password = data.newPassword;
     await this.userRepository.save(user);
 
-    // Clean up the used token from Redis
     await this.redisService.del(this.getForgotPasswordRedisKey(data.token));
 
     try {
@@ -843,8 +844,6 @@ export class AuthService {
   }
 
   async changePassword(userId: string, data: ChangePasswordRequestDto) {
-    await this.userService.getUserById(userId);
-
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
@@ -856,7 +855,19 @@ export class AuthService {
       );
     }
 
-    await user.setAndHashPassword(data?.newPassword || '');
+    const isCurrentPasswordValid = await bcrypt.compare(
+      data.currentPassword,
+      user.password,
+    );
+
+    if (!isCurrentPasswordValid) {
+      throw new BusinessException(
+        this.i18n.translate(I18nErrorKeys.OLD_PASSWORD_INVALID),
+        ResponseCodeEnum.BAD_REQUEST,
+      );
+    }
+
+    user.password = data.newPassword;
     await this.userRepository.save(user);
 
     return (
