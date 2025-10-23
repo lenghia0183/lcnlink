@@ -81,37 +81,8 @@ export class LinkController {
     return await this.linkService.getClicksTrend(req?.userId || '', request);
   }
 
-  @Get('/analytics/countries')
-  async getTopCountries(
-    @Request() req: LoggedInRequest,
-    @Query() query: AnalyticsQueryDto,
-  ) {
-    const { request, responseError } = query;
-
-    if (!isEmpty(responseError)) {
-      return responseError;
-    }
-    return await this.linkService.getTopCountries(req?.userId || '', request);
-  }
-
-  @Get('/analytics/devices')
-  async getDeviceBreakdown(
-    @Request() req: LoggedInRequest,
-    @Query() query: AnalyticsQueryDto,
-  ) {
-    const { request, responseError } = query;
-
-    if (!isEmpty(responseError)) {
-      return responseError;
-    }
-    return await this.linkService.getDeviceBreakdown(
-      req?.userId || '',
-      request,
-    );
-  }
-
-  @Get('/analytics/browsers')
-  async getBrowserBreakdown(
+  @Get('/analytics')
+  async getAllAnalytics(
     @Request() req: LoggedInRequest,
     @Query() query: AnalyticsQueryDto,
   ) {
@@ -119,7 +90,7 @@ export class LinkController {
     if (!isEmpty(responseError)) {
       return responseError;
     }
-    return await this.linkService.getBrowserBreakdown(
+    return await this.linkService.getAllAnalyticsData(
       req?.userId || '',
       request,
     );
