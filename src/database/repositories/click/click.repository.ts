@@ -162,6 +162,11 @@ export class ClickRepository
             [paramKey]: `%${item.text}%`,
           });
         }
+        if (item.column === 'linkId') {
+          qb.andWhere('link.id = :' + paramKey, {
+            [paramKey]: item.text,
+          });
+        }
       });
     }
 
