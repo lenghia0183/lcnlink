@@ -89,6 +89,11 @@ export class ClickRepository
               [paramKey]: item.text.split(','),
             });
             break;
+          case 'linkId':
+            qb.andWhere('link.id = :' + paramKey, {
+              [paramKey]: item.text,
+            });
+            break;
         }
       });
     }
@@ -220,6 +225,11 @@ export class ClickRepository
             [paramKey]: `%${item.text}%`,
           });
         }
+        if (item.column === 'linkId') {
+          qb.andWhere('link.id = :' + paramKey, {
+            [paramKey]: item.text,
+          });
+        }
       });
     }
 
@@ -276,9 +286,16 @@ export class ClickRepository
       filter.forEach((item, index) => {
         if (!item || !item.column || !item.text) return;
         const paramKey = `f_${index}`;
+        if (item.column === 'from') from = item.text;
+        if (item.column === 'to') to = item.text;
         if (item.column === 'alias') {
           qb.andWhere('link.alias ILIKE :' + paramKey, {
             [paramKey]: `%${item.text}%`,
+          });
+        }
+        if (item.column === 'linkId') {
+          qb.andWhere('link.id = :' + paramKey, {
+            [paramKey]: item.text,
           });
         }
       });

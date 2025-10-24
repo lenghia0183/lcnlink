@@ -537,14 +537,34 @@ export class LinkService {
       .build();
   }
 
-  async getAllAnalyticsData(userId: string, query: AnalyticsQueryDto) {
+  async getAllAnalyticsData(
+    userId: string,
+    query: AnalyticsQueryDto,
+    linkId?: string,
+  ) {
     const { filter } = query;
 
+    const updatedFilter = linkId
+      ? [...(filter || []), { column: 'linkId', text: linkId }]
+      : filter;
+
     const [trend, countries, devices, browsers] = await Promise.all([
-      this.clickRepository.getClicksTrend({ userId, filter }),
-      this.clickRepository.getTopCountries({ userId, filter }),
-      this.clickRepository.getDeviceBreakdown({ userId, filter }),
-      this.clickRepository.getBrowserBreakdown({ userId, filter }),
+      this.clickRepository.getClicksTrend({
+        userId,
+        filter: updatedFilter,
+      }),
+      this.clickRepository.getTopCountries({
+        userId,
+        filter: updatedFilter,
+      }),
+      this.clickRepository.getDeviceBreakdown({
+        userId,
+        filter: updatedFilter,
+      }),
+      this.clickRepository.getBrowserBreakdown({
+        userId,
+        filter: updatedFilter,
+      }),
     ]);
 
     const trendResponse = plainToInstance<TrendPointDto, unknown[]>(

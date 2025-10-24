@@ -38,5 +38,6 @@ export interface LinkRepositoryInterface extends BaseRepositoryInterface<Link> {
 
   getLinkStatisticOverview(
     userId: string,
+    linkId?: string,
   ): Promise<Record<string, number | string>>;
 }

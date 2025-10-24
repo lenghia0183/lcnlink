@@ -68,17 +68,24 @@ export class LinkController {
     return await this.linkService.getLinkStatisticOverview(req?.userId || '');
   }
 
-  @Get('/analytics/trend')
-  async getClicksTrend(
+  @Get('/analytics/:id')
+  async getAllAnalyticsById(
     @Request() req: LoggedInRequest,
     @Query() query: AnalyticsQueryDto,
+    @Param() params: IdParamDto,
   ) {
-    const { request, responseError } = query;
+    const merged = mergePayload(params, query);
+    const { request, responseError } = merged;
 
     if (!isEmpty(responseError)) {
       return responseError;
     }
-    return await this.linkService.getClicksTrend(req?.userId || '', request);
+
+    return await this.linkService.getAllAnalyticsData(
+      req?.userId || '',
+      request,
+      request?.id,
+    );
   }
 
   @Get('/analytics')
@@ -94,6 +101,19 @@ export class LinkController {
       req?.userId || '',
       request,
     );
+  }
+
+  @Get('/analytics/trend')
+  async getClicksTrend(
+    @Request() req: LoggedInRequest,
+    @Query() query: AnalyticsQueryDto,
+  ) {
+    const { request, responseError } = query;
+
+    if (!isEmpty(responseError)) {
+      return responseError;
+    }
+    return await this.linkService.getClicksTrend(req?.userId || '', request);
   }
 
   @Get(':id')
