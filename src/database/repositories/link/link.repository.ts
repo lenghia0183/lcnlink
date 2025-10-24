@@ -4,6 +4,7 @@ import { Repository, SelectQueryBuilder, DeepPartial } from 'typeorm';
 import { BaseRepository } from '../../../core/repository/base.repository.abstract';
 import { LinkRepositoryInterface } from './link-repository.interface';
 import { Link } from '@database/entities/link.entity';
+import { ClickRepository } from '../click/click.repository';
 import { isEmpty } from 'lodash';
 import { getPostgresLikePattern, EnumSort } from '@utils/common';
 import { LINK_STATUS } from '@components/link/link.constant';
@@ -16,6 +17,7 @@ export class LinkRepository
   constructor(
     @InjectRepository(Link)
     private readonly linkRepository: Repository<Link>,
+    private readonly clickRepository: ClickRepository,
   ) {
     super(linkRepository);
   }
@@ -265,8 +267,9 @@ export class LinkRepository
         totalSuccessfulAccess: number;
       }>();
 
-    const returning = await this.createQueryBuilder('link')
-      .leftJoin('link.clicks', 'click')
+    const returning = await this.clickRepository
+      .createQueryBuilder('click')
+      .leftJoin('click.link', 'link')
       .select('COUNT(DISTINCT click.ipAddress)', 'returningVisitors')
       .where('link.deletedAt IS NULL')
       .andWhere('link.userId = :userId', { userId })
@@ -326,9 +329,11 @@ export class LinkRepository
         totalSuccessfulAccess: number;
       }>();
 
-    const returning = await this.createQueryBuilder('click')
+    const returning = await this.clickRepository
+      .createQueryBuilder('click')
       .select('COUNT(DISTINCT click.ipAddress)', 'returningVisitors')
       .where('click.linkId = :linkId', { linkId })
+      .andWhere('click.deletedAt IS NULL')
       .groupBy('click.ipAddress')
       .having('COUNT(click.id) > 1')
       .getRawMany<{ returningVisitors: number }>();
