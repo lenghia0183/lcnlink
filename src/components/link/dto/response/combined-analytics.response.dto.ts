@@ -30,8 +30,12 @@ export class DeviceCountDto {
 export class BrowserCountDto {
   @Expose()
   browser: string;
+
   @Expose()
   count: number;
+
+  @Expose()
+  percentage: number;
 }
 
 export class CombinedAnalyticsResponseDto {

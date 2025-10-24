@@ -40,4 +40,14 @@ export interface LinkRepositoryInterface extends BaseRepositoryInterface<Link> {
     userId: string,
     linkId?: string,
   ): Promise<Record<string, number | string>>;
+
+  getSingleLinkStatistic(
+    userId: string,
+    linkId: string,
+  ): Promise<{
+    totalClicks: number;
+    totalUniqueVisitors: number;
+    totalSuccessfulAccess: number;
+    returningVisitorRate: number;
+  }>;
 }

@@ -293,6 +293,61 @@ export class LinkRepository
     };
   }
 
+  async getSingleLinkStatistic(
+    userId: string,
+    linkId: string,
+  ): Promise<{
+    totalClicks: number;
+    totalUniqueVisitors: number;
+    totalSuccessfulAccess: number;
+    returningVisitorRate: number;
+  }> {
+    const link = await this.createQueryBuilder('link')
+      .where('link.id = :linkId', { linkId })
+      .andWhere('link.userId = :userId', { userId })
+      .andWhere('link.deletedAt IS NULL')
+      .getOne();
+
+    if (!link) {
+      throw new Error('Link not found or does not belong to user');
+    }
+
+    const result = await this.createQueryBuilder('link')
+      .leftJoin('link.clicks', 'click')
+      .select([
+        'SUM(link.clicksCount) AS "totalClicks"',
+        'COUNT(DISTINCT click.ipAddress) AS "totalUniqueVisitors"',
+        'SUM(link.successfulAccessCount) AS "totalSuccessfulAccess"',
+      ])
+      .where('link.id = :linkId', { linkId })
+      .getRawOne<{
+        totalClicks: number;
+        totalUniqueVisitors: number;
+        totalSuccessfulAccess: number;
+      }>();
+
+    const returning = await this.createQueryBuilder('click')
+      .select('COUNT(DISTINCT click.ipAddress)', 'returningVisitors')
+      .where('click.linkId = :linkId', { linkId })
+      .groupBy('click.ipAddress')
+      .having('COUNT(click.id) > 1')
+      .getRawMany<{ returningVisitors: number }>();
+
+    const returningVisitors = returning.length;
+    const totalUniqueVisitors = Number(result?.totalUniqueVisitors) || 0;
+    const returningVisitorRate =
+      totalUniqueVisitors > 0
+        ? (returningVisitors / totalUniqueVisitors) * 100
+        : 0;
+
+    return {
+      totalClicks: Number(result?.totalClicks) || 0,
+      totalUniqueVisitors,
+      totalSuccessfulAccess: Number(result?.totalSuccessfulAccess) || 0,
+      returningVisitorRate: Number(returningVisitorRate.toFixed(2)),
+    };
+  }
+
   async findById(id: string): Promise<Link | null> {
     return this.createQueryBuilder('link')
       .leftJoinAndSelect('link.referrer', 'referrer')

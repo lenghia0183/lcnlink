@@ -68,6 +68,20 @@ export class LinkController {
     return await this.linkService.getLinkStatisticOverview(req?.userId || '');
   }
 
+  @Get('/statistic-overview/:id')
+  async getSingleLinkStatistic(
+    @Request() req: LoggedInRequest,
+    @Param() params: IdParamDto,
+  ) {
+    const { request, responseError } = params;
+    if (!isEmpty(responseError)) return responseError;
+
+    return await this.linkService.getSingleLinkStatistic(
+      req?.userId || '',
+      request.id,
+    );
+  }
+
   @Get('/analytics/:id')
   async getAllAnalyticsById(
     @Request() req: LoggedInRequest,

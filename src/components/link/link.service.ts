@@ -30,6 +30,7 @@ import {
   DeviceCountDto,
   TrendPointDto,
 } from './dto/response/combined-analytics.response.dto';
+import { GetSingleLinkStatisticResponseDto } from './dto/response/get-single-link-statistic.response.dto';
 
 @Injectable()
 export class LinkService {
@@ -505,6 +506,25 @@ export class LinkService {
 
     const response = plainToInstance(
       GetLinkStatisticOverviewResponseDto,
+      result,
+      {
+        excludeExtraneousValues: true,
+      },
+    );
+
+    return new ResponseBuilder(response)
+      .withCode(ResponseCodeEnum.SUCCESS)
+      .build();
+  }
+
+  async getSingleLinkStatistic(userId: string, linkId: string) {
+    const result = await this.linkRepository.getSingleLinkStatistic(
+      userId,
+      linkId,
+    );
+
+    const response = plainToInstance(
+      GetSingleLinkStatisticResponseDto,
       result,
       {
         excludeExtraneousValues: true,
