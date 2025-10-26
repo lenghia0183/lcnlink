@@ -48,5 +48,6 @@
   "LINK_INACTIVE": "This link is currently inactive",
   "LINK_MAX_CLICKS_REACHED": "This link has reached its maximum number of clicks",
   "LINK_PERMISSION_DENIED": "You don't have permission to access this link",
-  "LINK_REFERRER_NOT_FOUND": "The specified referrer could not be found"
+  "LINK_REFERRER_NOT_FOUND": "The specified referrer could not be found",
+  "ACCOUNT_USES_OAUTH": "This account is associated with {provider}. Please log in using {provider} instead of email/password authentication"
 }

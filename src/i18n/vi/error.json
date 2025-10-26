@@ -49,5 +49,6 @@
   "LINK_INACTIVE": "Đường dẫn này hiện đang không hoạt động",
   "LINK_MAX_CLICKS_REACHED": "Đường dẫn này đã đạt đến số lần truy cập tối đa",
   "LINK_PERMISSION_DENIED": "Bạn không có quyền truy cập đường dẫn này",
-  "LINK_REFERRER_NOT_FOUND": "Không tìm thấy nguồn giới thiệu được chỉ định"
+  "LINK_REFERRER_NOT_FOUND": "Không tìm thấy nguồn giới thiệu được chỉ định",
+  "ACCOUNT_USES_OAUTH": "Tài khoản này đã được liên kết với {provider}. Vui lòng đăng nhập bằng {provider} thay vì xác thực bằng email/mật khẩu"
 }

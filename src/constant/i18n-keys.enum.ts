@@ -70,6 +70,7 @@ export enum I18nErrorKeys {
 
   EMAIL_ALREADY_VERIFIED = 'error.EMAIL_ALREADY_VERIFIED',
   EMAIL_NOT_VERIFIED = 'error.EMAIL_NOT_VERIFIED',
+  ACCOUNT_USES_OAUTH = 'error.ACCOUNT_USES_OAUTH',
 }
 
 export enum I18nMessageKeys {

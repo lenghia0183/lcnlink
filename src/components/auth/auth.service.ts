@@ -391,6 +391,19 @@ export class AuthService {
       );
     }
 
+    // Check if the account is associated with an OAuth provider
+    if (existedUser.oauthProvider && existedUser.oauthProviderId) {
+      const providerName =
+        existedUser.oauthProvider.charAt(0).toUpperCase() +
+        existedUser.oauthProvider.slice(1);
+      throw new BusinessException(
+        await this.i18n.translate(I18nErrorKeys.ACCOUNT_USES_OAUTH, {
+          args: { provider: providerName },
+        }),
+        ResponseCodeEnum.BAD_REQUEST,
+      );
+    }
+
     if (!existedUser.isVerified) {
       throw new BusinessException(
         await this.i18n.translate(I18nErrorKeys.EMAIL_NOT_VERIFIED),
@@ -805,7 +818,7 @@ export class AuthService {
     });
 
     if (!user) {
-      return await new ResponseBuilder()
+      return new ResponseBuilder()
         .withCode(ResponseCodeEnum.BAD_REQUEST)
         .withMessage(
           await this.i18n.translate(I18nErrorKeys.RESET_TOKEN_INVALID),
