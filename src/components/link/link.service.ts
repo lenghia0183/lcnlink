@@ -405,7 +405,8 @@ export class LinkService {
 
     const clientInfo = this.getClientInfo(req);
 
-    await this.clickRepository.createClick({
+    // Create click record with isSuccessful=false by default
+    const click = await this.clickRepository.createClick({
       linkId: link.id,
       ipAddress: clientInfo.ipAddress,
       device: clientInfo.device,
@@ -413,12 +414,15 @@ export class LinkService {
       referrer: clientInfo.referrer,
       country: clientInfo.country,
       countryCode: clientInfo.countryCode,
+      isSuccessful: false, // Default to false, will be updated to true if password is correct
     });
 
     if (link.password) {
-      return { link, requiresPassword: true };
+      return { link, requiresPassword: true, clickId: click.id };
     }
 
+    // If no password required, update click record to successful
+    await this.clickRepository.update(click.id, { isSuccessful: true });
     await this.linkRepository.incrementSuccessfulAccessCount(link.id, 1);
 
     return { link, requiresPassword: false };
@@ -445,6 +449,20 @@ export class LinkService {
       link.password,
     );
 
+    // Update or create click record based on password validation result
+    if (passwordData.clickId) {
+      // Update existing click record
+      await this.clickRepository.update(passwordData.clickId, {
+        isSuccessful: isPasswordValid,
+      });
+    } else {
+      // Create new click record (fallback for cases where clickId is not available)
+      await this.clickRepository.createClick({
+        linkId: link.id,
+        isSuccessful: isPasswordValid,
+      });
+    }
+
     if (!isPasswordValid) {
       throw new BusinessException(
         await this.i18n.translate(I18nErrorKeys.LINK_PASSWORD_INVALID),
@@ -452,6 +470,7 @@ export class LinkService {
       );
     }
 
+    // If password is valid, increment successful access count
     await this.linkRepository.incrementSuccessfulAccessCount(link.id, 1);
 
     const response = {

@@ -48,7 +48,9 @@ export class ClickRepository
   async getClicksTrend(params: {
     userId: string;
     filter?: Array<{ column: string; text: string }>;
-  }): Promise<Array<{ period: string; count: number }>> {
+  }): Promise<
+    Array<{ period: string; totalClick: number; totalClickSuccess: number }>
+  > {
     const { userId, filter } = params;
 
     let from: Date | undefined;
@@ -118,12 +120,24 @@ export class ClickRepository
       `TO_CHAR(DATE_TRUNC('${dateTrunc}', click.createdAt), 'YYYY-MM-DD')`,
       'period',
     )
-      .addSelect('COUNT(click.id)', 'count')
+      .addSelect('COUNT(click.id)', 'totalClick')
+      .addSelect(
+        'COUNT(CASE WHEN click.isSuccessful = true THEN 1 END)',
+        'totalClickSuccess',
+      )
       .groupBy(`DATE_TRUNC('${dateTrunc}', click.createdAt)`)
       .orderBy(`DATE_TRUNC('${dateTrunc}', click.createdAt)`, 'ASC');
 
-    const rows = await qb.getRawMany<{ period: string; count: string }>();
-    return rows.map((r) => ({ period: r.period, count: Number(r.count) }));
+    const rows = await qb.getRawMany<{
+      period: string;
+      totalClick: string;
+      totalClickSuccess: string;
+    }>();
+    return rows.map((r) => ({
+      period: r.period,
+      totalClick: Number(r.totalClick) || 0,
+      totalClickSuccess: Number(r.totalClickSuccess) || 0,
+    }));
   }
 
   async getTopCountries(params: {

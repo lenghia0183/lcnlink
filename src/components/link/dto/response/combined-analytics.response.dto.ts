@@ -1,9 +1,12 @@
 import { Expose } from 'class-transformer';
+
 export class TrendPointDto {
   @Expose()
   period: string;
   @Expose()
-  count: number;
+  totalClick: number;
+  @Expose()
+  totalClickSuccess: number;
 }
 
 export class CountryCountDto {

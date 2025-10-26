@@ -17,7 +17,9 @@ export interface ClickRepositoryInterface
     to?: Date;
     interval?: 'day' | 'week' | 'month';
     filter?: Array<{ column: string; text: string }>;
-  }): Promise<Array<{ period: string; count: number }>>;
+  }): Promise<
+    Array<{ period: string; totalClick: number; totalClickSuccess: number }>
+  >;
 
   getTopCountries(params: {
     userId: string;

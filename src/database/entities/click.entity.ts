@@ -28,4 +28,7 @@ export class Click extends BaseModel {
 
   @Column({ type: 'text', nullable: true })
   referrer: string;
+
+  @Column({ type: 'boolean', default: false })
+  isSuccessful: boolean;
 }

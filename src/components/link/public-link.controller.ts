@@ -33,8 +33,9 @@ export class PublicLinkController {
     }
 
     if (result.requiresPassword) {
+      // Pass clickId to the frontend so it can be used for password verification
       return res.redirect(
-        `${frontendUrl}/passkey?alias=${alias}&shortedUrl=${result.link.shortedUrl}`,
+        `${frontendUrl}/passkey?alias=${alias}&shortedUrl=${result.link.shortedUrl}&clickId=${result.clickId}`,
       );
     }
 
