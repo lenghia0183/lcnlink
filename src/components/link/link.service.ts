@@ -236,13 +236,15 @@ export class LinkService {
       link.maxClicks = null;
     }
 
-    let password: string | undefined = link.password;
+    let password: string | null = link.password;
 
     if (
       'currentPassword' in payload &&
       payload.currentPassword !== undefined &&
+      payload.currentPassword !== null &&
       'newPassword' in payload &&
-      payload.newPassword !== undefined
+      payload.newPassword !== undefined &&
+      payload.newPassword !== null
     ) {
       if (link.password) {
         const isCurrentPasswordValid = await bcrypt.compare(
