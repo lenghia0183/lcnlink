@@ -4,6 +4,19 @@ import { ResponseMessageUtil } from './response-message.util';
 import { I18nService } from 'nestjs-i18n';
 
 export class ResponseBuilder<T> {
+  // Static reference to i18nService that can be set during app initialization
+  private static i18nServiceInstance: I18nService | null = null;
+
+  // Method to set the global i18nService instance
+  static setI18nService(i18nService: I18nService): void {
+    ResponseBuilder.i18nServiceInstance = i18nService;
+  }
+
+  // Method to get the global i18nService instance
+  private static getI18nService(): I18nService | null {
+    return ResponseBuilder.i18nServiceInstance;
+  }
+
   private payload: ResponsePayload<T> = {
     statusCode: ResponseCodeEnum.SUCCESS,
   };
@@ -22,16 +35,21 @@ export class ResponseBuilder<T> {
 
   async withCodeI18n(
     code: ResponseCodeEnum,
-    i18nService: I18nService,
+    i18nService?: I18nService,
     lang?: string,
   ): Promise<ResponseBuilder<T>> {
     this.payload.statusCode = code;
-    if (i18nService) {
+    // Use provided i18nService, or global instance, or null
+    const service = i18nService || ResponseBuilder.getI18nService();
+    if (service) {
       this.payload.message = await ResponseMessageUtil.getLocalizedMessage(
-        i18nService,
+        service,
         code,
         lang,
       );
+    } else {
+      // Fallback to default message if no i18n service is available
+      this.payload.message = getMessage(code);
     }
     return this;
   }

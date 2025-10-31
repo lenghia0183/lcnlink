@@ -73,7 +73,7 @@ export class S3Service {
           key,
           size: file.size,
           mimeType: file.mimetype,
-        }).withCodeI18n(ResponseCodeEnum.SUCCESS, this.i18n)
+        }).withCodeI18n(ResponseCodeEnum.SUCCESS)
       ).build();
     } catch (error) {
       this.logger.error('Error uploading file to S3:', error);
@@ -101,7 +101,7 @@ export class S3Service {
           uploadedFiles: successfulUploads.map((result) => result.data),
           totalFiles: files.length,
           successfulUploads: successfulUploads.length,
-        }).withCodeI18n(ResponseCodeEnum.SUCCESS, this.i18n)
+        }).withCodeI18n(ResponseCodeEnum.SUCCESS)
       ).build();
     } catch (error) {
       this.logger.error('Error uploading multiple files to S3:', error);
@@ -124,7 +124,7 @@ export class S3Service {
       return (
         await new ResponseBuilder({
           deletedKey: key,
-        }).withCodeI18n(ResponseCodeEnum.SUCCESS, this.i18n)
+        }).withCodeI18n(ResponseCodeEnum.SUCCESS)
       ).build();
     } catch (error) {
       this.logger.error('Error deleting file from S3:', error);
@@ -149,7 +149,7 @@ export class S3Service {
           deletedFiles: successfulDeletes.map((result) => result.data),
           totalFiles: keys.length,
           successfulDeletes: successfulDeletes.length,
-        }).withCodeI18n(ResponseCodeEnum.SUCCESS, this.i18n)
+        }).withCodeI18n(ResponseCodeEnum.SUCCESS)
       ).build();
     } catch (error) {
       this.logger.error('Error deleting multiple files from S3:', error);
@@ -190,7 +190,7 @@ export class S3Service {
           presignedUrl,
           key,
           expiresIn,
-        }).withCodeI18n(ResponseCodeEnum.SUCCESS, this.i18n)
+        }).withCodeI18n(ResponseCodeEnum.SUCCESS)
       ).build();
     } catch (error) {
       this.logger.error('Error generating presigned URL:', error);

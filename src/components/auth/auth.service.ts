@@ -767,10 +767,7 @@ export class AuthService {
     });
 
     return (
-      await new ResponseBuilder(response).withCodeI18n(
-        ResponseCodeEnum.SUCCESS,
-        this.i18n,
-      )
+      await new ResponseBuilder(response).withCodeI18n(ResponseCodeEnum.SUCCESS)
     ).build();
   }
 
@@ -849,10 +846,7 @@ export class AuthService {
     });
 
     return (
-      await new ResponseBuilder(response).withCodeI18n(
-        ResponseCodeEnum.SUCCESS,
-        this.i18n,
-      )
+      await new ResponseBuilder(response).withCodeI18n(ResponseCodeEnum.SUCCESS)
     ).build();
   }
 
@@ -884,10 +878,7 @@ export class AuthService {
     await this.userRepository.save(user);
 
     return (
-      await new ResponseBuilder().withCodeI18n(
-        ResponseCodeEnum.SUCCESS,
-        this.i18n,
-      )
+      await new ResponseBuilder().withCodeI18n(ResponseCodeEnum.SUCCESS)
     ).build();
   }
 

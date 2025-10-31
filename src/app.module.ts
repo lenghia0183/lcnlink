@@ -29,6 +29,7 @@ import { I18nModule } from './i18n/i18n.module';
 import { I18nService } from 'nestjs-i18n';
 import { RedisModule } from '@core/modules/redis/redis.module';
 import { CustomThrottlerModule } from '@core/modules/throttler/throttler.module';
+import { ResponseBuilder } from '@utils/response-builder';
 
 @Module({
   imports: [
@@ -62,6 +63,9 @@ import { CustomThrottlerModule } from '@core/modules/throttler/throttler.module'
     {
       provide: 'APP_PIPE',
       useFactory: (i18nService: I18nService) => {
+        // Set the global i18nService instance for ResponseBuilder
+        ResponseBuilder.setI18nService(i18nService);
+
         return new ValidationPipe(i18nService, {
           transform: true,
           whitelist: true,
