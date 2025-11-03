@@ -35,12 +35,11 @@ export class ResponseBuilder<T> {
 
   async withCodeI18n(
     code: ResponseCodeEnum,
-    i18nService?: I18nService,
     lang?: string,
   ): Promise<ResponseBuilder<T>> {
     this.payload.statusCode = code;
-    // Use provided i18nService, or global instance, or null
-    const service = i18nService || ResponseBuilder.getI18nService();
+    // Use global instance
+    const service = ResponseBuilder.getI18nService();
     if (service) {
       this.payload.message = await ResponseMessageUtil.getLocalizedMessage(
         service,

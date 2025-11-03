@@ -336,10 +336,7 @@ export class LinkService {
     });
 
     return (
-      await new ResponseBuilder(response).withCodeI18n(
-        ResponseCodeEnum.SUCCESS,
-        this.i18n,
-      )
+      await new ResponseBuilder(response).withCodeI18n(ResponseCodeEnum.SUCCESS)
     ).build();
   }
 
@@ -377,10 +374,7 @@ export class LinkService {
     });
 
     return (
-      await new ResponseBuilder(response).withCodeI18n(
-        ResponseCodeEnum.SUCCESS,
-        this.i18n,
-      )
+      await new ResponseBuilder(response).withCodeI18n(ResponseCodeEnum.SUCCESS)
     ).build();
   }
 
@@ -497,7 +491,6 @@ export class LinkService {
     const response = plainToInstance(LinkResponseDto, data, {
       excludeExtraneousValues: true,
     });
-
     return (
       await new ResponseBuilder({
         items: response,
@@ -506,7 +499,7 @@ export class LinkService {
           page,
           limit,
         },
-      }).withCodeI18n(ResponseCodeEnum.SUCCESS, this.i18n)
+      }).withCodeI18n(ResponseCodeEnum.SUCCESS)
     ).build();
   }
 

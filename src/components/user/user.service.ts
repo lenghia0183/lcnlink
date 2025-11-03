@@ -57,10 +57,7 @@ export class UserService {
     await this.userRepository.softDelete(id);
 
     return (
-      await new ResponseBuilder().withCodeI18n(
-        ResponseCodeEnum.SUCCESS,
-        this.i18n,
-      )
+      await new ResponseBuilder().withCodeI18n(ResponseCodeEnum.SUCCESS)
     ).build();
   }
 
@@ -78,10 +75,7 @@ export class UserService {
     });
 
     return (
-      await new ResponseBuilder(response).withCodeI18n(
-        ResponseCodeEnum.SUCCESS,
-        this.i18n,
-      )
+      await new ResponseBuilder(response).withCodeI18n(ResponseCodeEnum.SUCCESS)
     ).build();
   }
 
@@ -117,10 +111,7 @@ export class UserService {
     });
 
     return (
-      await new ResponseBuilder(response).withCodeI18n(
-        ResponseCodeEnum.CREATED,
-        this.i18n,
-      )
+      await new ResponseBuilder(response).withCodeI18n(ResponseCodeEnum.CREATED)
     ).build();
   }
 
@@ -154,10 +145,7 @@ export class UserService {
     });
 
     return (
-      await new ResponseBuilder(response).withCodeI18n(
-        ResponseCodeEnum.SUCCESS,
-        this.i18n,
-      )
+      await new ResponseBuilder(response).withCodeI18n(ResponseCodeEnum.SUCCESS)
     ).build();
   }
 
@@ -169,10 +157,7 @@ export class UserService {
     });
 
     return (
-      await new ResponseBuilder(response).withCodeI18n(
-        ResponseCodeEnum.SUCCESS,
-        this.i18n,
-      )
+      await new ResponseBuilder(response).withCodeI18n(ResponseCodeEnum.SUCCESS)
     ).build();
   }
 
@@ -200,7 +185,7 @@ export class UserService {
           page,
           limit,
         },
-      }).withCodeI18n(ResponseCodeEnum.SUCCESS, this.i18n)
+      }).withCodeI18n(ResponseCodeEnum.SUCCESS)
     ).build();
   }
 }
